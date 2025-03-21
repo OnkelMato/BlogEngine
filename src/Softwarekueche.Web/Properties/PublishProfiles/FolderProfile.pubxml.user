@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Workspace\Softwarekueche.Online\src\Softwarekueche\Softwarekueche.Web\..\..\..\publish\softwarekueche</_PublishTargetUrl>
+    <History>True|2025-03-19T13:32:40.5528053Z||;False|2025-03-19T14:32:26.8577455+01:00||;True|2025-03-19T12:58:54.7608449+01:00||;True|2025-03-19T12:53:09.1660259+01:00||;True|2025-03-19T12:46:55.0964713+01:00||;True|2025-03-19T12:46:13.8679443+01:00||;True|2025-03-19T12:44:20.9914606+01:00||;True|2025-03-19T12:38:17.7754666+01:00||;True|2025-03-19T12:36:29.8542043+01:00||;True|2025-03-19T12:35:37.9534243+01:00||;True|2025-03-19T12:34:03.4666709+01:00||;True|2025-03-19T12:33:52.9846478+01:00||;True|2025-03-19T12:31:01.2906682+01:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>
