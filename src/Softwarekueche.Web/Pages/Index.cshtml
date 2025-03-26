@@ -1,9 +1,21 @@
 ﻿@page
+@using Microsoft.AspNetCore.Html
 @model IndexModel
 @{
     ViewData["Title"] = "";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+<div class="boxcontainer">
+    @foreach (var item in Model.Posts)
+    {
+        <div class="box">
+            <h6>@Html.DisplayFor(modelItem => item.UpdatedAt)</h6>
+            <h1>
+                @Html.DisplayFor(modelItem => item.Title)
+            </h1>
+            <p>
+                @(new HtmlString(item.HtmlContent))
+            </p>
+        </div>
+    }
 </div>
