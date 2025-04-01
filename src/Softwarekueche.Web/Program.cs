@@ -40,9 +40,7 @@ public class Program
         var missing = db.Database.GetPendingMigrations();
         if (missing.Any())
             db.Database.Migrate();
-
         var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
-        Debug.WriteLine(cfg.Value.AllowNewPosts);
 
         s.Dispose();
 
