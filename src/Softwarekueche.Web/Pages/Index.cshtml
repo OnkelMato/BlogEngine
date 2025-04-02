@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Html
 @model IndexModel
 @{
-    ViewData["Title"] = "";
+    ViewData["Title"] = "Home";
 }
 
 <div class="boxcontainer">
@@ -13,9 +13,10 @@
             <h1>
                 @Html.DisplayFor(modelItem => item.Title)
             </h1>
-            <p>
-                @(new HtmlString(item.HtmlContent))
-            </p>
+            <div>
+                @(new HtmlString(item.HtmlPreview))
+            </div>
+            <div class="button"><a href="@item.DetailLink" class="button">mehr...</a></div>
         </div>
     }
 </div>

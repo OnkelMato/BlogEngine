@@ -11,6 +11,9 @@ public class PostAdminModel
 
     [MaxLength(4096)]
     public string MdContent { get; set; } = null!;
+    [MaxLength(4096)]
+    public string MdPreview { get; set; } = null!;
 
+    public bool IsPublished { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

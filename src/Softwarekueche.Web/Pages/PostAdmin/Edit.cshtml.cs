@@ -35,7 +35,10 @@ namespace Softwarekueche.Web.Pages.PostAdmin
             {
                 return NotFound();
             }
-            Post = new PostAdminModel() { UniqueId = post.UniqueId, Title = post.Title, MdContent = post.MdContent, UpdatedAt = post.UpdatedAt };
+            Post = new PostAdminModel() { 
+                UniqueId = post.UniqueId, Title = post.Title, MdContent = post.MdContent,
+                UpdatedAt = post.UpdatedAt,
+                IsPublished = post.IsPublished, MdPreview = post.MdPreview };
             Post.UpdatedAt = DateTime.Now;
             return Page();
         }
@@ -53,6 +56,8 @@ namespace Softwarekueche.Web.Pages.PostAdmin
             dbPost.MdContent = Post.MdContent;
             dbPost.Title = Post.Title;
             dbPost.UpdatedAt = DateTime.Now;
+            dbPost.IsPublished = Post.IsPublished;
+            dbPost.MdPreview = Post.MdPreview;
             
             try
             {

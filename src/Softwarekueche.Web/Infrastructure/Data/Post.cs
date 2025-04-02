@@ -15,6 +15,11 @@ public class Post
     [MaxLength(4096)]
     public string MdContent { get; set; } = null!;
 
+    [MaxLength(4096)]
+    public string MdPreview { get; set; } = null!;
+
+    public bool IsPublished { get; set; } = false;
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

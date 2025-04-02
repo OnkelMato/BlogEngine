@@ -42,7 +42,9 @@ namespace Softwarekueche.Web.Pages.PostAdmin
                 return Page();
             }
 
-            _context.Posts.Add(new Post() { CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, UniqueId = Guid.NewGuid(), MdContent = Post.MdContent, Title = Post.Title });
+            _context.Posts.Add(new Post() { 
+                CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, UniqueId = Guid.NewGuid(), MdContent = Post.MdContent, Title = Post.Title ,
+                IsPublished = Post.IsPublished, MdPreview = Post.MdPreview});
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
