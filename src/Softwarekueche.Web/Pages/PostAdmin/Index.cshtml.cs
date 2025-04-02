@@ -19,7 +19,9 @@ namespace Softwarekueche.Web.Pages.PostAdmin
         {
             Debug.WriteLine(_postsConfiguration.Value.AllowNewPosts);
 
-            Post = await _context.Posts.Select(x => new PostAdminModel() { UniqueId = x.UniqueId, MdContent = x.MdContent, Title = x.Title, UpdatedAt = x.UpdatedAt }).ToListAsync();
+            Post = await _context.Posts.Select(x => new PostAdminModel() { 
+                UniqueId = x.UniqueId, MdContent = x.MdContent, Title = x.Title, UpdatedAt = x.UpdatedAt,
+                IsPublished = x.IsPublished }).ToListAsync();
 
             if (!_postsConfiguration.Value.AllowNewPosts)
                 return RedirectToPage("/Index");
