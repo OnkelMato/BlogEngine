@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Softwarekueche.Web.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using Softwarekueche.Web.Infrastructure.Data;
 namespace Softwarekueche.Web.Migrations
 {
     [DbContext(typeof(SoftwarekuecheHomeContext))]
-    partial class SoftwarekuecheHomeContextModelSnapshot : ModelSnapshot
+    [Migration("20250403081532_Image_Support")]
+    partial class Image_Support
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

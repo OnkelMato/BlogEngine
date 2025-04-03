@@ -13,6 +13,7 @@ public class Program
 
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+   Console.WriteLine(connectionString);
         builder.Services.AddDbContext<SoftwarekuecheHomeContext>(options => options.UseSqlServer(connectionString));
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();

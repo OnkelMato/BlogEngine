@@ -1,0 +1,69 @@
+﻿@page
+@model Softwarekueche.Web.Pages.ImageAdmin.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.PostImage[0].UniqueId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PostImage[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PostImage[0].FileName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PostImage[0].ContentType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PostImage[0].AltText)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PostImage[0].CreatedAt)
+                @Html.DisplayNameFor(model => model.PostImage[0].UpdatedAt)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.PostImage) {
+        <tr class="@(item.IsPublished ? "table-success" : "table-danger")">
+            <td>
+                @Html.DisplayFor(modelItem => item.UniqueId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FileName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContentType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AltText)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+                @Html.DisplayFor(modelItem => item.UpdatedAt)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a> |
+                <a asp-page="/Image" asp-route-id="@item.UniqueId">Show</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

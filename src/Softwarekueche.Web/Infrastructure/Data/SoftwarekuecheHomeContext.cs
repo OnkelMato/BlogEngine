@@ -6,4 +6,5 @@ public class SoftwarekuecheHomeContext(DbContextOptions<SoftwarekuecheHomeContex
     : DbContext(options)
 {
     public DbSet<Post> Posts { get; set; }
+    public DbSet<PostImage> PostImages { get; set; }
 }

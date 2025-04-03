@@ -10,7 +10,9 @@ public class PostAdminModel
     public string Title { get; set; } = null!;
 
     [MaxLength(4096)]
-    public string MdContent { get; set; } = null!;
+    [DataType(DataType.MultilineText)]
+    [UIHint("MarkdownEditor")]
+    public string? MdContent { get; set; } = null!;
     [MaxLength(4096)]
     public string MdPreview { get; set; } = null!;
 
