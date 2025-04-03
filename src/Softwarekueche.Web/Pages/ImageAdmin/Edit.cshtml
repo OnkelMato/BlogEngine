@@ -1,0 +1,76 @@
+﻿@page
+@model Softwarekueche.Web.Pages.ImageAdmin.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>PostImage</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="PostImage.Id" />
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="PostImage.UniqueId" class="control-label"></label>
+                <input asp-for="PostImage.UniqueId" class="form-control" />
+                <span asp-validation-for="PostImage.UniqueId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.Image" class="control-label"></label>
+                <input asp-for="PostImage.Image" class="form-control" />
+                <span asp-validation-for="PostImage.Image" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.Name" class="control-label"></label>
+                <input asp-for="PostImage.Name" class="form-control" />
+                <span asp-validation-for="PostImage.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.Filename" class="control-label"></label>
+                <input asp-for="PostImage.Filename" class="form-control" />
+                <span asp-validation-for="PostImage.Filename" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.ContentType" class="control-label"></label>
+                <input asp-for="PostImage.ContentType" class="form-control" />
+                <span asp-validation-for="PostImage.ContentType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.AltText" class="control-label"></label>
+                <input asp-for="PostImage.AltText" class="form-control" />
+                <span asp-validation-for="PostImage.AltText" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="PostImage.IsPublished" /> @Html.DisplayNameFor(model => model.PostImage.IsPublished)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.CreatedAt" class="control-label"></label>
+                <input asp-for="PostImage.CreatedAt" class="form-control" />
+                <span asp-validation-for="PostImage.CreatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostImage.UpdatedAt" class="control-label"></label>
+                <input asp-for="PostImage.UpdatedAt" class="form-control" />
+                <span asp-validation-for="PostImage.UpdatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
