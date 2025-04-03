@@ -18,7 +18,7 @@ public class IndexModel(ILogger<IndexModel> logger, SoftwarekuecheHomeContext co
         public string Title { get; set; } = string.Empty;
         public string HtmlPreview { get; set; } = string.Empty;
         public string DetailLink { get; set; } = string.Empty;
-
+        public bool HasContent { get; set; }
     }
 
     private readonly ILogger<IndexModel> _logger = logger;
@@ -42,6 +42,7 @@ public class IndexModel(ILogger<IndexModel> logger, SoftwarekuecheHomeContext co
             Title = x.Title,
             UniqueId = x.UniqueId,
             UpdatedAt = x.UpdatedAt,
+            HasContent = x.MdContent != null,
             HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
             DetailLink = Url.Page("/Detail", null, new { id = x.UniqueId }, Request.Scheme) ?? string.Empty,
         }).ToList();
