@@ -23,7 +23,7 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
         }
 
         [BindProperty]
-        public PostImageModel PostImage { get; set; } = null!;
+        public PostImageModel PostImage { get; set; } = new PostImageModel();
 
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
@@ -32,8 +32,11 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
             if (!_postsConfiguration.Value.AllowNewPosts)
                 return RedirectToPage("/Index");
 
+            Console.WriteLine("Post Async");
+
             if (!ModelState.IsValid)
             {
+                Console.WriteLine("Model is Invalid");
                 return Page();
             }
 

@@ -1,35 +1,47 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Softwarekueche.Web.Infrastructure.Data;
 
 namespace Softwarekueche.Web.Pages.ImageAdmin
 {
     public class EditModel : PageModel
     {
+        private readonly PostsConfiguration _postsConfiguration;
         private readonly Softwarekueche.Web.Infrastructure.Data.SoftwarekuecheHomeContext _context;
 
-        public EditModel(Softwarekueche.Web.Infrastructure.Data.SoftwarekuecheHomeContext context)
+        public EditModel(Softwarekueche.Web.Infrastructure.Data.SoftwarekuecheHomeContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
         {
+            _postsConfiguration = postsConfiguration.Value;
             _context = context;
         }
 
         [BindProperty]
-        public PostImage PostImage { get; set; } = null!;
+        public PostImageModel PostImage { get; set; } = null!;
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            // make sure it cannot be accessed if new posts are not allowed
+            if (!_postsConfiguration.AllowNewPosts)
+                RedirectToPage("/Index");
 
-            var postimage =  await _context.PostImages.FirstOrDefaultAsync(m => m.Id == id);
+            var postimage =  await _context.PostImages.SingleAsync(m => m.UniqueId == id);
             if (postimage == null)
             {
                 return NotFound();
             }
-            PostImage = postimage;
+
+            PostImage = new PostImageModel() {
+                UniqueId = postimage.UniqueId,
+                Name = postimage.Name,
+                FileName = postimage.Filename,
+                ContentType = postimage.ContentType,
+                AltText = postimage.AltText,
+                IsPublished = postimage.IsPublished,
+                CreatedAt = postimage.CreatedAt,
+                UpdatedAt = postimage.UpdatedAt
+            };
             return Page();
         }
 
@@ -37,12 +49,20 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
         // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
+            // make sure it cannot be accessed if new posts are not allowed
+            if (!_postsConfiguration.AllowNewPosts)
+                RedirectToPage("/Index");
+
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            _context.Attach(PostImage).State = EntityState.Modified;
+            var entity = await _context.PostImages.SingleAsync(x=> x.UniqueId == PostImage.UniqueId);
+            entity.AltText = PostImage.AltText;
+            entity.IsPublished = PostImage.IsPublished;
+            entity.Name = PostImage.Name;
+            entity.UpdatedAt = DateTime.Now;
 
             try
             {
@@ -50,7 +70,7 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PostImageExists(PostImage.Id))
+                if (!PostImageExists(entity.Id))
                 {
                     return NotFound();
                 }

@@ -14,10 +14,7 @@ namespace Softwarekueche.Web.Pages
         public ActionResult OnGet()
         {
             var img = _context.PostImages.Single(x => x.UniqueId == Id);
-
             return File(img.Image, img.ContentType);
         }
-
-
     }
 }

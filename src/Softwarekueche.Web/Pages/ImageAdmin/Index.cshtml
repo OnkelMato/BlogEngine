@@ -20,7 +20,7 @@
                 @Html.DisplayNameFor(model => model.PostImage[0].Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.PostImage[0].Filename)
+                @Html.DisplayNameFor(model => model.PostImage[0].FileName)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.PostImage[0].ContentType)
@@ -29,12 +29,7 @@
                 @Html.DisplayNameFor(model => model.PostImage[0].AltText)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.PostImage[0].IsPublished)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.PostImage[0].CreatedAt)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.PostImage[0].UpdatedAt)
             </th>
             <th></th>
@@ -42,7 +37,7 @@
     </thead>
     <tbody>
 @foreach (var item in Model.PostImage) {
-        <tr>
+        <tr class="@(item.IsPublished ? "table-success" : "table-danger")">
             <td>
                 @Html.DisplayFor(modelItem => item.UniqueId)
             </td>
@@ -50,7 +45,7 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Filename)
+                @Html.DisplayFor(modelItem => item.FileName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.ContentType)
@@ -59,18 +54,14 @@
                 @Html.DisplayFor(modelItem => item.AltText)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IsPublished)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.UpdatedAt)
             </td>
             <td>
-                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a> |
+                <a asp-page="/Image" asp-route-id="@item.UniqueId">Show</a>
             </td>
         </tr>
 }
