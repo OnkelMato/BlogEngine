@@ -1,0 +1,13 @@
+﻿@page
+@using Microsoft.AspNetCore.Html
+@model MyApp.Namespace.DetailModel
+@{
+    ViewData["Title"] = Model.Post.Title;
+}
+<div class="button"><a href="/" class="button">&lt;Home</a></div>
+
+<h1>@Model.Post.Title</h1>
+<div class="tldr">@(new HtmlString(Model.Post.HtmlPreview))</div>
+<div>@(new HtmlString(Model.Post.HtmlContent))</div>
+
+<div class="button"><a href="/" class="button">&lt;Home</a></div>

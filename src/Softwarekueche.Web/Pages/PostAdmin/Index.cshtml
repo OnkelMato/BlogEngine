@@ -1,0 +1,56 @@
+﻿@page
+@model Softwarekueche.Web.Pages.PostAdmin.IndexModel
+
+@{
+    ViewData["Title"] = "Posts";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].UniqueId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].MdContent)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].UpdatedAt)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Post)
+        {
+            <tr class="@(item.IsPublished ? "table-success" : "table-danger")">
+                <td>
+                    @Html.DisplayFor(modelItem => item.UniqueId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MdContent)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UpdatedAt)
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
