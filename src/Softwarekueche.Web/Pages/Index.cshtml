@@ -17,7 +17,9 @@
                 @(new HtmlString(item.HtmlPreview))
             </div>
             @if (item.HasContent) {
-                <div class="button"><a href="@item.DetailLink" class="button">mehr...</a></div>
+                <div class="button"><a href="@item.DetailLink" class="button">
+                <i class="bi bi-arrow-right-circle"></i>
+                </a></div>
             }
         </div>
     }
