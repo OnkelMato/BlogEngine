@@ -30,26 +30,21 @@ footer {
     align-content: center
 }
 
-container {
-    align-content: center
-}
-
-.boxcontainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: left;
-}
-
 .box {
-    float: left;
-    width: 33.33%; /* three boxes (use 25% for four, and 50% for two, etc) */
-    padding: 50px; /* if you want space between the images */
+    width: 400px; /* three boxes (use 25% for four, and 50% for two, etc) */
+    padding: 10px; /* if you want space between the boxes */
 }
+
 .box img {
     max-height: 100%;
     max-width: 100%;
 }
+
 .button {
     width: 100%;
     text-align: right;
+}
+
+.card {
+    margin: 10px;
 }
