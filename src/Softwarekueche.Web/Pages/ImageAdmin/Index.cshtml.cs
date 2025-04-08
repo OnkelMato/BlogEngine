@@ -16,13 +16,10 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
         }
 
         public IList<PostImageModel> PostImage { get;set; } = null!;
+        public bool AllowNewPosts => _postsConfiguration.AllowNewPosts;
 
         public async Task OnGetAsync()
         {
-            // make sure it cannot be accessed if new posts are not allowed
-            if (!_postsConfiguration.AllowNewPosts)
-                RedirectToPage("/Index");
-
             PostImage = await _context.PostImages.Select(x=> new PostImageModel(){
                 UniqueId = x.UniqueId,
                 Name = x.Name,

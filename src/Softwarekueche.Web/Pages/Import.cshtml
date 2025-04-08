@@ -15,11 +15,8 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div>
                 <label asp-for="Entity" class="control-label"></label>
-                <select name="entity">
-                    <option value="">Select an Entity</option>
-                    <option value="1">Post</option>
-                    <option value="2">PostImage</option>
-                </select>
+                <select asp-for="Entity" asp-items="Model.EntityList"></select>
+                <span asp-validation-for="Entity" class="text-danger"></span>
             </div>
             @if (!Model.UseTextarea)
             {
@@ -42,6 +39,7 @@
                 <div class="form-group">
                     <label asp-for="SignatureFile" class="control-label"></label>
                     <input type="file" asp-for="SignatureFile" />
+                    <p>@Model.SignaturePublicKey</p>
                     <span asp-validation-for="SignatureFile" class="text-danger"></span>
                 </div>
             }
@@ -50,6 +48,7 @@
                 <div class="form-group">
                     <label asp-for="Signature" class="control-label"></label>
                     <textarea asp-for="Signature" class="form-control" rows="10" cols="150"></textarea>
+                    <p>@Model.SignaturePublicKey</p>
                     <span asp-validation-for="Signature" class="text-danger"></span>
                 </div>
             }
