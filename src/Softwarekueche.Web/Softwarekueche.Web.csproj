@@ -20,6 +20,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="demo.crt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="demo.crt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Markdig" Version="0.40.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.14" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />

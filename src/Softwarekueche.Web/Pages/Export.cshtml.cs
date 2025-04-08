@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 using Softwarekueche.Web.Infrastructure.Data;
+using System.Text;
 
 namespace Softwarekueche.Web.Pages
 {
@@ -13,29 +14,44 @@ namespace Softwarekueche.Web.Pages
         public Guid Id { get; set; } = Guid.Empty;
 
         [BindProperty(SupportsGet = true)]
-        public string? Entity { get; set; };
+        public string? Entity { get; set; }
 
         public ActionResult OnGet()
         {
             if (Entity is null)
                 throw new ArgumentException(nameof(Entity));
 
-            Func<PostImage, bool> filter = Id == Guid.Empty 
-                ? ((x) => true) 
-                : ((x) => x.UniqueId == Id);
-            
-            var json = string.Empty;
-            if (Entity.ToLower() == "posts")
+            switch (Entity.ToLower())
             {
-                var img = _context.PostImages.Where(filter);
-                json = JsonSerializer.Serialize(img);
-            } else if (Entity.ToLower() == "postimages") {
-                var img = _context.PostImages.Where(filter);
-                json = JsonSerializer.Serialize(img);
-            }
+                case "posts":
+                    {
+                        Func<Post, bool> filter = Id == Guid.Empty
+                            ? ((x) => true)
+                            : ((x) => x.UniqueId == Id);
 
-            // we serialize a list so we can do batch import and export
-            return File(json, "application/json");
+                        var pst = _context.Posts.Where(filter).ToArray();
+                        var filename = !pst.Any()
+                            ? $"Posts.{DateTime.Now.ToShortDateString()}.json"
+                            : $"{pst.First().Title}.json";
+                        var json = JsonSerializer.Serialize(pst);
+                        return File(Encoding.UTF8.GetBytes(json), "application/json", filename);
+                    }
+                case "postimages":
+                    {
+                        Func<PostImage, bool> filter = Id == Guid.Empty
+                            ? ((x) => true)
+                            : ((x) => x.UniqueId == Id);
+
+                        var img = _context.PostImages.Where(filter);
+                        var filename = !img.Any()
+                            ? $"PostImages.{DateTime.Now.ToShortDateString()}.json"
+                            : $"{img.First().Filename}.json";
+                        var json = JsonSerializer.Serialize(img);
+                        return File(Encoding.UTF8.GetBytes(json), "application/json", filename);
+                    }
+                default:
+                    return BadRequest();
+            }
         }
     }
 }
