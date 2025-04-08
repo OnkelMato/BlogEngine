@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Softwarekueche.Web.Infrastructure.Data;
@@ -13,11 +12,26 @@ public class Program
 
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-   Console.WriteLine(connectionString);
-        builder.Services.AddDbContext<SoftwarekuecheHomeContext>(options => options.UseSqlServer(connectionString));
+        var databaseProvider = builder.Configuration.GetConnectionString("DefaultProvider");//?? "mssql";
+
+        if (string.Compare(databaseProvider, "mssql", StringComparison.InvariantCultureIgnoreCase) == 0)
+        {
+            builder.Services
+                .AddDbContext<SoftwarekuecheHomeContext>(options =>
+                    options.UseSqlServer(connectionString));
+        }
+        else if (string.Compare(databaseProvider, "sqlite", StringComparison.InvariantCultureIgnoreCase) == 0)
+        {
+            builder.Services
+                .AddDbContext<SoftwarekuecheHomeContext>(options =>
+                    options.UseSqlite(connectionString));
+        }
+        else
+        {
+            throw new InvalidOperationException($"Database provider '{databaseProvider}' is not supported.");
+        }
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
         builder.Services.AddRazorPages();
         builder.Services.Configure<PostsConfiguration>(builder.Configuration.GetSection("Posts"));
 
@@ -42,18 +56,12 @@ public class Program
         if (missing.Any())
             db.Database.Migrate();
         var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
-
         s.Dispose();
 
-
         app.UseStaticFiles();
-
         app.UseRouting();
-
         app.UseAuthorization();
-
         app.MapRazorPages();
-
         app.Run();
     }
 }

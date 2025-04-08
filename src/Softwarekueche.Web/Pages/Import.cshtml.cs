@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,11 +11,13 @@ namespace Softwarekueche.Web.Pages
 {
     public class ImportModel(SoftwarekuecheHomeContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration) : PageModel
     {
+        public string SignaturePublicKey => postsConfiguration.Value.CertificateFile;
+
         [BindProperty(SupportsGet = true)]
         public bool UseTextarea { get; set; }
 
         [BindProperty]
-        public string? JsonDocument { get; set; } = null!;
+        public string? JsonDocument { get; set; }
         [BindProperty]
         public IFormFile? JsonDocumentFile { get; set; } = null!;
         [BindProperty]
@@ -47,15 +51,17 @@ namespace Softwarekueche.Web.Pages
             if (string.IsNullOrEmpty(Signature) && !postsConfiguration.Value.AcceptUnsignedImport)
             {
                 ModelState.AddModelError(nameof(Signature), "Signature is required because 'AcceptUnsignedImport' is set to false.");
+                ModelState.AddModelError(nameof(SignatureFile), "Signature is required because 'AcceptUnsignedImport' is set to false.");
                 return Page();
             }
 
             if (Signature is not null)
             {
                 var cert = new X509Certificate2(postsConfiguration.Value.CertificateFile);
-                if (!SignatureUtil.Verify(JsonDocument, Signature, cert))
+                if (!Verify(JsonDocument, Signature, cert))
                 {
                     ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
+                    ModelState.AddModelError(nameof(SignatureFile), "Signature is invalid.");
                     return Page();
                 }
             }
@@ -118,6 +124,26 @@ namespace Softwarekueche.Web.Pages
                     }
                 default:
                     return RedirectToPage("./Index");
+            }
+        }
+
+        public static bool Verify(string data, string signature, X509Certificate2 serverCert)
+        {
+            try
+            {
+                using var publicKey = serverCert.GetRSAPublicKey();
+                var dataByteArray = Encoding.UTF8.GetBytes(data);
+                var signatureByteArray = Convert.FromBase64String(signature);
+
+                return publicKey.VerifyData(
+                    data: dataByteArray,
+                    signature: signatureByteArray,
+                    hashAlgorithm: HashAlgorithmName.SHA256,
+                    padding: RSASignaturePadding.Pkcs1);
+            }
+            catch (System.Exception)
+            {
+                return false;
             }
         }
     }

@@ -31,7 +31,7 @@ footer {
 }
 
 .box {
-    width: 475px; /* three boxes (use 25% for four, and 50% for two, etc) */
+    width: 415px; /* three boxes (use 25% for four, and 50% for two, etc) */
     padding: 10px; /* if you want space between the boxes */
 }
 
