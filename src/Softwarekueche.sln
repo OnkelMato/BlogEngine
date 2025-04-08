@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Softwarekueche.Web", "Softw
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Softwarekueche.Signing", "Softwarekueche.Signing\Softwarekueche.Signing.csproj", "{15DEFFA2-9602-431F-BA37-4ABBC3F7D4F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnkelMato.Web", "OnkelMato.Web\OnkelMato.Web.csproj", "{0CD93E9D-AF92-4851-8888-DF6D12A6264F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnkelMato.BlogEngine", "OnkelMato.BlogEngine\OnkelMato.BlogEngine.csproj", "{7AD146A9-637A-405D-85C3-D40F5DCD060D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{15DEFFA2-9602-431F-BA37-4ABBC3F7D4F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15DEFFA2-9602-431F-BA37-4ABBC3F7D4F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15DEFFA2-9602-431F-BA37-4ABBC3F7D4F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CD93E9D-AF92-4851-8888-DF6D12A6264F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CD93E9D-AF92-4851-8888-DF6D12A6264F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CD93E9D-AF92-4851-8888-DF6D12A6264F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CD93E9D-AF92-4851-8888-DF6D12A6264F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AD146A9-637A-405D-85C3-D40F5DCD060D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AD146A9-637A-405D-85C3-D40F5DCD060D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AD146A9-637A-405D-85C3-D40F5DCD060D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AD146A9-637A-405D-85C3-D40F5DCD060D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

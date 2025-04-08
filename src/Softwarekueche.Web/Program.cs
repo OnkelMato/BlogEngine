@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Softwarekueche.Web.Infrastructure.Data;
+using OnkelMato.BlogEngine;
+using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Pages;
+using Softwarekueche.Web.Pages;
 
 namespace Softwarekueche.Web;
 
@@ -18,13 +21,13 @@ public class Program
         if (string.Compare(databaseProvider, "mssql", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
             builder.Services
-                .AddDbContext<SoftwarekuecheHomeContext>(options =>
+                .AddDbContext<BlogEngineContext>(options =>
                     options.UseSqlServer(connectionString));
         }
         else if (string.Compare(databaseProvider, "sqlite", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
             builder.Services
-                .AddDbContext<SoftwarekuecheHomeContext>(options =>
+                .AddDbContext<BlogEngineContext>(options =>
                     options.UseSqlite(connectionString));
         }
         else
@@ -33,7 +36,7 @@ public class Program
         }
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages().AddApplicationPart(typeof(AdminModel).Assembly);
         builder.Services.Configure<PostsConfiguration>(builder.Configuration.GetSection("Posts"));
 
         var app = builder.Build();
@@ -52,7 +55,7 @@ public class Program
 
         // create database if not exists
         var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        var db = s.ServiceProvider.GetRequiredService<SoftwarekuecheHomeContext>();
+        var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
         var missing = db.Database.GetPendingMigrations();
         if (missing.Any())
             db.Database.Migrate();

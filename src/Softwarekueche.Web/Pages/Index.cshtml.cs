@@ -1,13 +1,14 @@
 using Markdig;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Softwarekueche.Web.Infrastructure.Data;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using OnkelMato.BlogEngine;
+using OnkelMato.BlogEngine.Database;
 
 namespace Softwarekueche.Web.Pages;
 
-public class IndexModel(ILogger<IndexModel> logger, SoftwarekuecheHomeContext context, IOptions<PostsConfiguration> postsConfiguration)
+public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, IOptions<PostsConfiguration> postsConfiguration)
     : PageModel
 {
     public class PostModel
@@ -22,7 +23,7 @@ public class IndexModel(ILogger<IndexModel> logger, SoftwarekuecheHomeContext co
     }
 
     private readonly ILogger<IndexModel> _logger = logger;
-    private readonly SoftwarekuecheHomeContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly PostsConfiguration _postsConfiguration = postsConfiguration.Value ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public IList<PostModel> Posts { get; set; } = [];

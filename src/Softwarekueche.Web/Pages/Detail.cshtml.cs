@@ -2,12 +2,13 @@ using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
+using OnkelMato.BlogEngine;
+using OnkelMato.BlogEngine.Database;
 using Softwarekueche.Web;
-using Softwarekueche.Web.Infrastructure.Data;
 
 namespace MyApp.Namespace;
 
-public class DetailModel(ILogger<DetailModel> logger, SoftwarekuecheHomeContext context, IOptions<PostsConfiguration> postsConfiguration) : PageModel
+public class DetailModel(ILogger<DetailModel> logger, BlogEngineContext context, IOptions<PostsConfiguration> postsConfiguration) : PageModel
 {
     public class PostModel
     {
@@ -19,7 +20,7 @@ public class DetailModel(ILogger<DetailModel> logger, SoftwarekuecheHomeContext 
     }
 
     private readonly ILogger<DetailModel> _logger = logger;
-    private readonly SoftwarekuecheHomeContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly PostsConfiguration _postsConfiguration = postsConfiguration.Value ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public PostModel Post { get; set; } = new PostModel();

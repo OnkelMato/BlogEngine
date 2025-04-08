@@ -20,10 +20,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="demo.crt" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Content Include="demo.crt">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -40,6 +36,10 @@
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
 		<PackageReference Include="System.Text.Json" Version="9.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\OnkelMato.BlogEngine\OnkelMato.BlogEngine.csproj" />
 	</ItemGroup>
 
 </Project>
