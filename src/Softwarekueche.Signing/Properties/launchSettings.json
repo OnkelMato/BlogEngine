@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Softwarekueche.Signing": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

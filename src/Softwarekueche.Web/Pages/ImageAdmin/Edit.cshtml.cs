@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Softwarekueche.Web.Infrastructure.Data;
 
 namespace Softwarekueche.Web.Pages.ImageAdmin
 {

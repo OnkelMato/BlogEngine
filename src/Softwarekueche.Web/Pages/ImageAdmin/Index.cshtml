@@ -36,34 +36,36 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.PostImage) {
-        <tr class="@(item.IsPublished ? "table-success" : "table-danger")">
-            <td>
-                @Html.DisplayFor(modelItem => item.UniqueId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ContentType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AltText)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-                @Html.DisplayFor(modelItem => item.UpdatedAt)
-            </td>
-            <td>
-                <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a> |
-                <a asp-page="/Image" asp-route-id="@item.UniqueId">Show</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.PostImage)
+        {
+            <tr class="@(item.IsPublished ? "table-success" : "table-danger")">
+                <td>
+                    @Html.DisplayFor(modelItem => item.UniqueId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FileName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ContentType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AltText)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedAt)
+                    @Html.DisplayFor(modelItem => item.UpdatedAt)
+                </td>
+                <td>
+                    <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a> |
+                    <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a> |
+                    <a asp-page="/Image" asp-route-id="@item.UniqueId">Show</a>
+                    <a asp-page="/Export" asp-route-entity="PostImages" asp-route-id="@item.UniqueId">Export</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
