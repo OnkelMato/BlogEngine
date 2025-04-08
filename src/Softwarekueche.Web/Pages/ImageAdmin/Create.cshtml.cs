@@ -34,14 +34,15 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
 
             Console.WriteLine("Post Async");
 
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || PostImage.File is null)
             {
                 Console.WriteLine("Model is Invalid");
                 return Page();
             }
 
             using var stream = new MemoryStream();
-            await PostImage.File.CopyToAsync(stream);
+            if (PostImage.File is not null)
+                await PostImage.File.CopyToAsync(stream);
             var imageRaw = stream.ToArray();
 
             var entity = new PostImage()
@@ -50,8 +51,8 @@ namespace Softwarekueche.Web.Pages.ImageAdmin
                 UpdatedAt = DateTime.Now,
                 UniqueId = Guid.NewGuid(),
                 Name = PostImage.Name,
-                Filename = PostImage.File.FileName,
-                ContentType = PostImage.File.ContentType,
+                Filename = PostImage.File?.FileName!,
+                ContentType = PostImage.File?.ContentType!,
                 AltText = PostImage.AltText,
                 IsPublished = PostImage.IsPublished,
                 Image = imageRaw

@@ -8,9 +8,12 @@
 
 <h1>Index</h1>
 
-<p>
-    <a asp-page="Create">Create New</a>
-</p>
+@if (Model.AllowNewPosts)
+{
+    <p>
+        <a asp-page="Create">Create New</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -46,9 +49,12 @@
                     @Html.DisplayFor(modelItem => item.UpdatedAt)
                 </td>
                 <td>
-                    <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a> |
-                    <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a>
+                    @if (Model.AllowNewPosts)
+                    {
+                        <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a>
+                        <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a>
+                    }
+                    <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a>
                     <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId">Export</a>
                 </td>
             </tr>

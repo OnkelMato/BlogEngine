@@ -1,0 +1,81 @@
+﻿@page
+@using Microsoft.AspNetCore.Html
+@model Softwarekueche.Web.Pages.AdminModel
+@{
+    ViewData["Title"] = "Admin";
+    Layout = "_Layout";
+}
+
+<h2>Admin</h2>
+@if (Model.AllowNewPosts)
+{
+    <div class="alert-danger">
+        <p>New posts are allowed. This should be turned off in production and the import process shall be used.</p>
+    </div>
+}
+@if (Model.AcceptUnsignedImport)
+{
+    <div class="alert-danger">
+        <p>Unsigned imports are turned on. This should be turned off in production.</p>
+    </div>
+}
+<div class="row">
+    <div class="card box">
+        <h1>
+            Import
+        </h1>
+        <div>
+            <p>Import exported json into database. This option is preferred in production to upload new articles.</p>
+            <p>Use a local staging environment for editing and reviewing the posts.</p>
+        </div>
+        <div class="button">
+            <a asp-page="/Import" asp-route-entity="Posts">
+                Posts <i class="bi bi-arrow-right-circle"></i>
+            </a>
+        </div>
+        <div class="button">
+            <a asp-page="/Import" asp-route-entity="PostImages">
+                Post Images <i class="bi bi-arrow-right-circle"></i>
+            </a>
+        </div>
+    </div>
+    @if (Model.AllowNewPosts)
+    {
+        <div class="card box">
+        <h1>
+            Export
+        </h1>
+        <div>
+            <p>Export all posts or post images to a json file.</p>
+        </div>
+        <div class="button">
+            <a asp-page="/Export" asp-route-entity="Posts">
+                Posts <i class="bi bi-arrow-right-circle"></i>
+            </a>
+        </div>
+        <div class="button">
+            <a asp-page="/Export" asp-route-entity="PostImages">
+                Post Images <i class="bi bi-arrow-right-circle"></i>
+            </a>
+        </div>
+    </div>
+        <div class="card box">
+            <h1>
+                Manage
+            </h1>
+            <div>
+                <p>Manage posts directly on this web page.</p>
+            </div>
+            <div class="button">
+                <a asp-page="/PostAdmin/Index">
+                    Posts <i class="bi bi-arrow-right-circle"></i>
+                </a>
+            </div>
+            <div class="button">
+                <a asp-page="/ImageAdmin/Index">
+                    Post Images <i class="bi bi-arrow-right-circle"></i>
+                </a>
+            </div>
+        </div>
+    }
+</div>

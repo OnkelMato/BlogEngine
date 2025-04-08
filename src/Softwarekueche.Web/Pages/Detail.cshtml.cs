@@ -35,7 +35,7 @@ public class DetailModel(ILogger<DetailModel> logger, SoftwarekuecheHomeContext 
             UniqueId = x.UniqueId,
             UpdatedAt = x.UpdatedAt,
             HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
-            HtmlContent = Markdown.ToHtml(x.MdContent, null, null)
+            HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
         }).Single();
     }
 }

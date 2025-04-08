@@ -27,24 +27,27 @@ public class IndexModel(ILogger<IndexModel> logger, SoftwarekuecheHomeContext co
 
     public IList<PostModel> Posts { get; set; } = [];
 
-    [BindProperty(SupportsGet = true)]
-    public int Skip { get; set; } = 0;
+    [BindProperty(SupportsGet = true)] public int CurrentPage { get; set; } = 1;
+    public int NumOfPages { get; set; }
 
     public void OnGet()
     {
+        NumOfPages = (_context.Posts.Count() / _postsConfiguration.PageSize) + 1;
+
         Posts = _context.Posts
             .Where(x => x.IsPublished)
             .OrderByDescending(x => x.UpdatedAt)
-            .Skip(Skip * _postsConfiguration.PageSize)
+            .Skip((CurrentPage - 1) * _postsConfiguration.PageSize)
             .Take(_postsConfiguration.PageSize)
             .Select(x => new PostModel()
-        {
-            Title = x.Title,
-            UniqueId = x.UniqueId,
-            UpdatedAt = x.UpdatedAt,
-            HasContent = x.MdContent != null,
-            HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
-            DetailLink = Url.Page("/Detail", null, new { id = x.UniqueId }, Request.Scheme) ?? string.Empty,
-        }).ToList();
+            {
+                Title = x.Title,
+                UniqueId = x.UniqueId,
+                UpdatedAt = x.UpdatedAt,
+                HasContent = x.MdContent != null,
+                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
+                DetailLink = Url.Page("/Detail", null, new { id = x.UniqueId }, Request.Scheme) ?? string.Empty,
+            }).ToList();
     }
+
 }
