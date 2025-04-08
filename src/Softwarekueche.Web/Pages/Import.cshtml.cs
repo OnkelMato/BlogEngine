@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Softwarekueche.Web.Infrastructure.Data;
 
@@ -24,8 +25,11 @@ namespace Softwarekueche.Web.Pages
         public string? Signature { get; set; }
         [BindProperty]
         public IFormFile? SignatureFile { get; set; } = null!;
-        [BindProperty]
-        public int Entity { get; set; }
+     
+        [BindProperty(SupportsGet = true)]
+        public string? Entity { get; set; }
+
+        public SelectList EntityList { get; set; } = new(new[] { "Posts", "PostImages" });
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -66,9 +70,9 @@ namespace Softwarekueche.Web.Pages
                 }
             }
 
-            switch (Entity)
+            switch (Entity.ToLower())
             {
-                case 1:
+                case "posts":
                     {
                         var entities = JsonSerializer.Deserialize<IEnumerable<Post>>(JsonDocument) ?? [];
                         foreach (var entity in entities)
@@ -93,7 +97,7 @@ namespace Softwarekueche.Web.Pages
                         await context.SaveChangesAsync();
                         return RedirectToPage("./Index");
                     }
-                case 2:
+                case "postimages":
                     {
                         var entities = JsonSerializer.Deserialize<IEnumerable<PostImage>>(JsonDocument) ?? [];
                         foreach (var entity in entities)

@@ -14,6 +14,7 @@ public class Program
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         var databaseProvider = builder.Configuration.GetConnectionString("DefaultProvider");//?? "mssql";
 
+        // strategy pattern?
         if (string.Compare(databaseProvider, "mssql", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
             builder.Services

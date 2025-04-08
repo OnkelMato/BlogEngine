@@ -21,7 +21,6 @@
 
 	<ItemGroup>
 	  <None Remove="demo.crt" />
-	  <None Remove="softwarekueche.home.crt" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -41,12 +40,6 @@
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
 		<PackageReference Include="System.Text.Json" Version="9.0.3" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Page Include="softwarekueche.home.crt">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Page>
 	</ItemGroup>
 
 </Project>
