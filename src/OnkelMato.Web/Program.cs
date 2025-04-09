@@ -1,3 +1,5 @@
+using OnkelMato.BlogEngine;
+
 namespace OnkelMato.Web
 {
     public class Program
@@ -7,8 +9,8 @@ namespace OnkelMato.Web
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.AddBlogEngine();
             builder.Services.AddRazorPages();
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

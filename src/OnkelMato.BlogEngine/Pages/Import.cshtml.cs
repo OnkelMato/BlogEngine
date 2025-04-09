@@ -27,7 +27,7 @@ namespace OnkelMato.BlogEngine.Pages
         public IFormFile? SignatureFile { get; set; } = null!;
      
         [BindProperty(SupportsGet = true)]
-        public string? Entity { get; set; }
+        public string Entity { get; set; } = null!;
 
         public SelectList EntityList { get; set; } = new(new[] { "Posts", "PostImages" });
 
@@ -62,7 +62,7 @@ namespace OnkelMato.BlogEngine.Pages
             if (Signature is not null)
             {
                 var cert = new X509Certificate2(postsConfiguration.Value.CertificateFile);
-                if (!Verify(JsonDocument, Signature, cert))
+                if (!Verify(JsonDocument!, Signature, cert))
                 {
                     ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
                     ModelState.AddModelError(nameof(SignatureFile), "Signature is invalid.");
@@ -74,7 +74,7 @@ namespace OnkelMato.BlogEngine.Pages
             {
                 case "posts":
                     {
-                        var entities = JsonSerializer.Deserialize<IEnumerable<Post>>(JsonDocument) ?? [];
+                        var entities = JsonSerializer.Deserialize<IEnumerable<Post>>(JsonDocument!) ?? [];
                         foreach (var entity in entities)
                         {
                             var post = context.Posts.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
@@ -99,7 +99,7 @@ namespace OnkelMato.BlogEngine.Pages
                     }
                 case "postimages":
                     {
-                        var entities = JsonSerializer.Deserialize<IEnumerable<PostImage>>(JsonDocument) ?? [];
+                        var entities = JsonSerializer.Deserialize<IEnumerable<PostImage>>(JsonDocument!) ?? [];
                         foreach (var entity in entities)
                         {
                             var postImage = context.PostImages.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
@@ -139,7 +139,7 @@ namespace OnkelMato.BlogEngine.Pages
                 var dataByteArray = Encoding.UTF8.GetBytes(data);
                 var signatureByteArray = Convert.FromBase64String(signature);
 
-                return publicKey.VerifyData(
+                return publicKey!.VerifyData(
                     data: dataByteArray,
                     signature: signatureByteArray,
                     hashAlgorithm: HashAlgorithmName.SHA256,

@@ -18,7 +18,6 @@ public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, I
         public DateTime UpdatedAt { get; set; }
         public string Title { get; set; } = string.Empty;
         public string HtmlPreview { get; set; } = string.Empty;
-        public string DetailLink { get; set; } = string.Empty;
         public bool HasContent { get; set; }
     }
 
@@ -46,8 +45,7 @@ public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, I
                 UniqueId = x.UniqueId,
                 UpdatedAt = x.UpdatedAt,
                 HasContent = x.MdContent != null,
-                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
-                DetailLink = Url.Page("/Detail", null, new { id = x.UniqueId }, Request.Scheme) ?? string.Empty,
+                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null)
             }).ToList();
     }
 
