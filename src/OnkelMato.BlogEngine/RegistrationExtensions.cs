@@ -37,4 +37,18 @@ public static class RegistrationExtensions {
         
         return builder;
     }
+
+    public static WebApplication EnsureDatabase(this WebApplication app) 
+    {
+        // create database if not exists
+        var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
+        var missing = db.Database.GetPendingMigrations();
+        if (missing.Any())
+            db.Database.Migrate();
+        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
+        s.Dispose();
+
+        return app;
+    }
 }

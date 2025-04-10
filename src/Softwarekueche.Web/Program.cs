@@ -27,14 +27,7 @@ public class Program
             app.UseHsts();
         }
 
-        // create database if not exists
-        var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
-        var missing = db.Database.GetPendingMigrations();
-        if (missing.Any())
-            db.Database.Migrate();
-        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
-        s.Dispose();
+        app.EnsureDatabase();
 
         app.UseStaticFiles();
         app.UseRouting();

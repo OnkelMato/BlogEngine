@@ -3,16 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - OnkelMato.Web</title>
+    <title>@ViewData["Title"] - Softwarek&uuml;che</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/OnkelMato.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Softwarekueche.Web.styles.css" asp-append-version="true" />
+    <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">OnkelMato.Web</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">Softwarek&uuml;che</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -23,10 +24,14 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark" href="https://www.linkedin.com/in/thomas-ley/" target="_blank">Linkedin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="https://github.com/onkelmato/" target="_blank">Github</a>
                         </li>
                     </ul>
-                </div>
+@*                     <partial name="_LoginPartial" />
+ *@                </div>
             </div>
         </nav>
     </header>
@@ -38,7 +43,10 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - OnkelMato.Web - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - <a href="https://github.com/OnkelMato/Softwarekueche.Home" target="_blank">Onkel Mato</a> | 
+            <a asp-area="" asp-page="/Meta/Impressum">Impressum</a> | 
+            <a asp-area="" asp-page="/Meta/Datenschutz">Datenschutz</a> |
+            <a asp-area="" asp-page="/Admin">Admin</a>
         </div>
     </footer>
 
