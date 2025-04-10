@@ -2,19 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OnkelMato.BlogEngine.Database;
 
-namespace OnkelMato.BlogEngine.Pages
+namespace OnkelMato.BlogEngine.Pages;
+
+public class ImageModel(BlogEngineContext context) : PageModel
 {
-    public class ImageModel(BlogEngineContext context) : PageModel
+    private readonly BlogEngineContext _context = context;
+
+    [BindProperty(SupportsGet = true)]
+    public Guid Id { get; set; } = Guid.Empty;
+
+    public ActionResult OnGet()
     {
-        private readonly BlogEngineContext _context = context;
-
-        [BindProperty(SupportsGet = true)]
-        public Guid Id { get; set; } = Guid.Empty;
-
-        public ActionResult OnGet()
-        {
-            var img = _context.PostImages.Single(x => x.UniqueId == Id);
-            return File(img.Image, img.ContentType);
-        }
+        var img = _context.PostImages.SingleOrDefault(x => x.UniqueId == Id);
+        return img is null 
+            ? File(Properties.Resources._1x1, "image/png") // maybe this is not the best idea
+            : File(img.Image, img.ContentType);
     }
 }

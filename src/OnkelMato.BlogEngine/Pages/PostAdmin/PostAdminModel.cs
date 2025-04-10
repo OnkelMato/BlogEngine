@@ -11,7 +11,6 @@ public class PostAdminModel
 
     [MaxLength(4096)]
     [DataType(DataType.MultilineText)]
-    [UIHint("MarkdownEditor")]
     public string? MdContent { get; set; } = null!;
     [MaxLength(4096)]
     public string MdPreview { get; set; } = null!;

@@ -4,45 +4,44 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
 
-namespace OnkelMato.BlogEngine.Pages.ImageAdmin
+namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
+
+public class DetailsModel : PageModel
 {
-    public class DetailsModel : PageModel
+    private readonly PostsConfiguration _postsConfiguration;
+    private readonly BlogEngineContext _context;
+
+    public DetailsModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
     {
-        private readonly PostsConfiguration _postsConfiguration;
-        private readonly BlogEngineContext _context;
+        _postsConfiguration = postsConfiguration.Value;
+        _context = context;
+    }
 
-        public DetailsModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+    public PostImageModel PostImage { get; set; } = null!;
+
+    public async Task<IActionResult> OnGetAsync(Guid id)
+    {
+        // make sure it cannot be accessed if new posts are not allowed
+        if (!_postsConfiguration.AllowNewPosts)
+            RedirectToPage("/Index");
+
+        var postimage =  await _context.PostImages.SingleAsync(m => m.UniqueId == id);
+        if (postimage == null)
         {
-            _postsConfiguration = postsConfiguration.Value;
-            _context = context;
+            return NotFound();
         }
 
-        public PostImageModel PostImage { get; set; } = null!;
+        PostImage = new PostImageModel() {
+            UniqueId = postimage.UniqueId,
+            Name = postimage.Name,
+            FileName = postimage.Filename,
+            ContentType = postimage.ContentType,
+            AltText = postimage.AltText,
+            IsPublished = postimage.IsPublished,
+            CreatedAt = postimage.CreatedAt,
+            UpdatedAt = postimage.UpdatedAt
+        };
 
-        public async Task<IActionResult> OnGetAsync(Guid id)
-        {
-            // make sure it cannot be accessed if new posts are not allowed
-            if (!_postsConfiguration.AllowNewPosts)
-                RedirectToPage("/Index");
-
-            var postimage =  await _context.PostImages.SingleAsync(m => m.UniqueId == id);
-            if (postimage == null)
-            {
-                return NotFound();
-            }
-
-            PostImage = new PostImageModel() {
-                UniqueId = postimage.UniqueId,
-                Name = postimage.Name,
-                FileName = postimage.Filename,
-                ContentType = postimage.ContentType,
-                AltText = postimage.AltText,
-                IsPublished = postimage.IsPublished,
-                CreatedAt = postimage.CreatedAt,
-                UpdatedAt = postimage.UpdatedAt
-            };
-
-            return Page();
-        }
+        return Page();
     }
 }

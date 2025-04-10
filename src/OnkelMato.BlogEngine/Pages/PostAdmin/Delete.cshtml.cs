@@ -4,57 +4,56 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
 
-namespace OnkelMato.BlogEngine.Pages.PostAdmin
+namespace OnkelMato.BlogEngine.Pages.PostAdmin;
+
+public class DeleteModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+    : PageModel
 {
-    public class DeleteModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
-        : PageModel
+    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private Post? _originalPost;
+
+    [BindProperty]
+    public PostAdminModel Post { get; set; } = null!;
+
+    public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-        private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
-        private Post? _originalPost;
+        if (!_postsConfiguration.Value.AllowNewPosts)
+            return RedirectToPage("/Index");
 
-        [BindProperty]
-        public PostAdminModel Post { get; set; } = null!;
-
-        public async Task<IActionResult> OnGetAsync(Guid? id)
+        if (id == null)
         {
-            if (!_postsConfiguration.Value.AllowNewPosts)
-                return RedirectToPage("/Index");
-
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            _originalPost = await _context.Posts.FirstOrDefaultAsync(m => m.UniqueId == id);
-
-            if (_originalPost == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                // todo there must be something more elegant than this. Maybe a generic mapper?
-                Post = new PostAdminModel() {MdContent = _originalPost.MdContent, Title = _originalPost.Title, UniqueId = _originalPost.UniqueId, UpdatedAt = _originalPost.UpdatedAt};
-            }
-            return Page();
+            return NotFound();
         }
 
-        public async Task<IActionResult> OnPostAsync(int? id)
+        _originalPost = await _context.Posts.FirstOrDefaultAsync(m => m.UniqueId == id);
+
+        if (_originalPost == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var post = await _context.Posts.FindAsync(id);
-            if (post != null)
-            {
-                _context.Posts.Remove(_originalPost!);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
+            return NotFound();
         }
+        else
+        {
+            // todo there must be something more elegant than this. Maybe a generic mapper?
+            Post = new PostAdminModel() {MdContent = _originalPost.MdContent, Title = _originalPost.Title, UniqueId = _originalPost.UniqueId, UpdatedAt = _originalPost.UpdatedAt};
+        }
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var post = await _context.Posts.FindAsync(id);
+        if (post != null)
+        {
+            _context.Posts.Remove(_originalPost!);
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToPage("./Index");
     }
 }
