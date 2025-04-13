@@ -62,12 +62,18 @@ public static class RegistrationExtensions
         var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
         var settings = s.ServiceProvider.GetService<IOptionsMonitor<PostsConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
 
-        if (!db.Blogs.Any())
+        // this is the perfect way and blog is configured correctly
+        if (db.Blogs.Count(x => x.UniqueId == settings.CurrentValue.BlogUniqueId) == 1)
+            return app;
+
+        // there is a new DB without blog
+        if (!db.Blogs.Any() && settings.CurrentValue.CreateBlogIfNotExist)
         {
+            var id = settings.CurrentValue.BlogUniqueId == Guid.Empty ? Guid.NewGuid() : settings.CurrentValue.BlogUniqueId;
             // create blog if not exists and use it
             var blog = new Blog()
             {
-                UniqueId = Guid.NewGuid(),
+                UniqueId = id,
                 Title = "My Blog",
                 Description = "My Blog",
                 CreatedAt = DateTime.Now,
@@ -80,7 +86,8 @@ public static class RegistrationExtensions
 
             settings.CurrentValue.BlogUniqueId = blog.UniqueId;
         }
-        else if (settings.CurrentValue.BlogUniqueId == null &&  db.Blogs.Count() == 1 && settings.CurrentValue.UseSingleBlog)
+        // if there is exactly one blog, and we are allowed to use it, do so
+        else if (settings.CurrentValue.BlogUniqueId == Guid.Empty && db.Blogs.Count() == 1 && settings.CurrentValue.UseSingleBlog)
         {
             // use blog if not set
             var blog = db.Blogs.Single();
@@ -90,7 +97,7 @@ public static class RegistrationExtensions
         }
 
         // validate of blog is set correctly
-        if (settings.CurrentValue.BlogUniqueId == null)
+        if (settings.CurrentValue.BlogUniqueId == Guid.Empty)
             throw new InvalidOperationException("BlogUniqueId is not set in configuration and no blog exists. Please create a blog or set BlogUniqueId in configuration.");
         if (!db.Blogs.Any(x => x.UniqueId == settings.CurrentValue.BlogUniqueId))
             throw new InvalidOperationException($"Blog with id '{settings.CurrentValue.BlogUniqueId}' does not exist. Please create a blog or set BlogUniqueId in configuration.");
