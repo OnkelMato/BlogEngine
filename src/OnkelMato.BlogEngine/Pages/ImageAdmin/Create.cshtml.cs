@@ -33,8 +33,6 @@ public class CreateModel(
         if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
-        Console.WriteLine("Post Async");
-
         if (!ModelState.IsValid || PostImage.File is null)
         {
             Console.WriteLine("Model is Invalid");

@@ -6,16 +6,11 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.BlogAdmin;
 
-public class EditModel : PageModel
+public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    : PageModel
 {
-    private readonly BlogEngineContext _context;
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration;
-
-    public EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
-    }
+    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     [BindProperty]
     public BlogAdminModel Blog { get; set; } = null!;
@@ -37,8 +32,6 @@ public class EditModel : PageModel
         return Page();
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://aka.ms/RazorPagesCRUD.
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)

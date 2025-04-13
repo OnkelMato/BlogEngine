@@ -6,50 +6,44 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
-public class EditModel : PageModel
+public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    : PageModel
 {
-    private readonly PostsConfiguration _postsConfiguration;
-    private readonly BlogEngineContext _context;
-
-    public EditModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
-    {
-        _postsConfiguration = postsConfiguration.Value;
-        _context = context;
-    }
-
     [BindProperty]
     public PostImageModel PostImage { get; set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
+        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.AllowBlogAdministration)
+        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
             RedirectToPage("/Index");
 
-        var postimage =  await _context.PostImages.SingleAsync(m => m.UniqueId == id);
-        if (postimage == null)
-        {
-            return NotFound();
-        }
+        var postImage = await context.PostImages.SingleOrDefaultAsync(m => m.UniqueId == id && m.Blog == blog);
+        if (postImage == null) { return NotFound($"Cannot find image with id {id}"); }
 
-        PostImage = new PostImageModel() {
-            UniqueId = postimage.UniqueId,
-            Name = postimage.Name,
-            ContentType = postimage.ContentType,
-            AltText = postimage.AltText,
-            IsPublished = postimage.IsPublished,
-            CreatedAt = postimage.CreatedAt,
-            UpdatedAt = postimage.UpdatedAt
+        PostImage = new PostImageModel()
+        {
+            UniqueId = postImage.UniqueId,
+            Name = postImage.Name,
+            ContentType = postImage.ContentType,
+            AltText = postImage.AltText,
+            IsPublished = postImage.IsPublished,
+            CreatedAt = postImage.CreatedAt,
+            UpdatedAt = postImage.UpdatedAt
         };
         return Page();
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://aka.ms/RazorPagesCRUD.
     public async Task<IActionResult> OnPostAsync()
     {
+        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.AllowBlogAdministration)
+        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
             RedirectToPage("/Index");
 
         if (!ModelState.IsValid)
@@ -57,7 +51,9 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var entity = await _context.PostImages.SingleAsync(x=> x.UniqueId == PostImage.UniqueId);
+        var entity = await context.PostImages.SingleOrDefaultAsync(x => x.UniqueId == PostImage.UniqueId && x.Blog == blog);
+        if (entity == null) { return NotFound($"Cannot find image with id {PostImage.UniqueId}"); }
+
         entity.AltText = PostImage.AltText;
         entity.IsPublished = PostImage.IsPublished;
         entity.Name = PostImage.Name;
@@ -65,11 +61,11 @@ public class EditModel : PageModel
 
         try
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!PostImageExists(entity.Id))
+            if (!context.PostImages.Any(e => e.Id == entity.Id))
             {
                 return NotFound();
             }
@@ -82,8 +78,4 @@ public class EditModel : PageModel
         return RedirectToPage("./Index");
     }
 
-    private bool PostImageExists(int id)
-    {
-        return _context.PostImages.Any(e => e.Id == id);
-    }
 }

@@ -5,41 +5,49 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<form method="post">
+    <div class="col-md-6">
+        <div class="card">
 
-<h4>PostImage</h4>
-<hr />
-<div class="row">
-    <div class="col-md-12">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="PostImage.UniqueId" />
-            <div class="form-group">
-                <label asp-for="PostImage.Name" class="control-label"></label>
-                <input asp-for="PostImage.Name" class="form-control" />
-                <span asp-validation-for="PostImage.Name" class="text-danger"></span>
+            <div class="card-header">
+                <h1>Edit Post Image</h1>
             </div>
-            <div class="form-group">
-                <label asp-for="PostImage.AltText" class="control-label"></label>
-                <input asp-for="PostImage.AltText" class="form-control" />
-                <span asp-validation-for="PostImage.AltText" class="text-danger"></span>
+
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="PostImage.UniqueId" />
+                <div class="form-group">
+                    <label asp-for="PostImage.File" class="control-label"></label>
+                    <img src="@Url.Content($"../Image?id={Model.PostImage.UniqueId}")" alt="@Model.PostImage.AltText" class="img-thumbnail" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="PostImage.Name" class="control-label"></label>
+                    <input asp-for="PostImage.Name" class="form-control" />
+                    <span asp-validation-for="PostImage.Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PostImage.AltText" class="control-label"></label>
+                    <input asp-for="PostImage.AltText" class="form-control" />
+                    <span asp-validation-for="PostImage.AltText" class="text-danger"></span>
+                </div>
+                <div class="form-group form-check">
+                    <label class="form-check-label">
+                        <input class="form-check-input" asp-for="PostImage.IsPublished" /> @Html.DisplayNameFor(model => model.PostImage.IsPublished)
+                    </label>
+                </div>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="PostImage.IsPublished" /> @Html.DisplayNameFor(model => model.PostImage.IsPublished)
-                </label>
-            </div>
-            <div class="form-group">
+
+            <div class="card-footer">
                 <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
             </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-page="./Index">Back to List</a>
-</div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

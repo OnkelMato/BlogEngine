@@ -6,40 +6,35 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
-public class DeleteModel : PageModel
+public class DeleteModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    : PageModel
 {
-    private readonly PostsConfiguration _postsConfiguration;
-    private readonly BlogEngineContext _context;
-
-    public DeleteModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
-    {
-        _postsConfiguration = postsConfiguration.Value;
-        _context = context;
-    }
+    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
     [BindProperty]
     public PostImageModel PostImage { get; set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
+        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             RedirectToPage("/Index");
 
-        var postimage =  await _context.PostImages.SingleAsync(m => m.UniqueId == id);
-        if (postimage == null)
-        {
-            return NotFound();
-        }
+        var postImage =  await _context.PostImages.SingleOrDefaultAsync(m => m.UniqueId == id && m.Blog == blog);
+        if (postImage == null) { return NotFound($"Cannot find image with id {id}"); }
 
         PostImage = new PostImageModel() {
-            UniqueId = postimage.UniqueId,
-            Name = postimage.Name,
-            ContentType = postimage.ContentType,
-            AltText = postimage.AltText,
-            IsPublished = postimage.IsPublished,
-            CreatedAt = postimage.CreatedAt,
-            UpdatedAt = postimage.UpdatedAt
+            UniqueId = postImage.UniqueId,
+            Name = postImage.Name,
+            ContentType = postImage.ContentType,
+            AltText = postImage.AltText,
+            IsPublished = postImage.IsPublished,
+            CreatedAt = postImage.CreatedAt,
+            UpdatedAt = postImage.UpdatedAt
         };
 
         return Page();
@@ -47,11 +42,16 @@ public class DeleteModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(Guid id)
     {
+        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             RedirectToPage("/Index");
 
-        var entity = _context.PostImages.Single(x => x.UniqueId == id);
+        var entity = _context.PostImages.SingleOrDefault(x => x.UniqueId == id && x.Blog == blog);
+        if (entity == null) { return NotFound($"Cannot find image with id {id}"); }
+        
         _context.PostImages.Remove(entity);
         await _context.SaveChangesAsync();
         return RedirectToPage("./Index");
