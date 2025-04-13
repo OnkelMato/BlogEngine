@@ -56,7 +56,7 @@ namespace OnkelMato.BlogEngine.Migrations
                     b.ToTable("Blogs");
                 });
 
-            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Post", b =>
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Posts", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -162,7 +162,7 @@ namespace OnkelMato.BlogEngine.Migrations
                     b.ToTable("PostImages");
                 });
 
-            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Post", b =>
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Posts", b =>
                 {
                     b.HasOne("OnkelMato.BlogEngine.Database.Blog", "Blog")
                         .WithMany("Posts")

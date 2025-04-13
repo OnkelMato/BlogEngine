@@ -22,6 +22,7 @@ public class IndexModel(BlogEngineContext context, IOptionsMonitor<PostsConfigur
         
         PostImage = await _context.PostImages
             .Where(x=> x.Blog == blog)
+            .OrderByDescending(x=> x.UpdatedAt)
             .Select(x=> new PostImageModel(){
                 UniqueId = x.UniqueId,
                 Name = x.Name,

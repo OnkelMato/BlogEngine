@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine;
 using OnkelMato.BlogEngine.Database;
@@ -19,6 +20,8 @@ public class DetailModel(ILogger<DetailModel> logger, BlogEngineContext context,
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
         public DateTime UpdatedAt { get; set; }
+
+        public Guid? HeaderImage { get; set; }
     }
 
     private readonly ILogger<DetailModel> _logger = logger;
@@ -32,14 +35,17 @@ public class DetailModel(ILogger<DetailModel> logger, BlogEngineContext context,
 
     public void OnGet()
     {
-        Post = _context.Posts.Where(x => x.UniqueId == Id).Select(x => new PostModel()
-        {
-            Title = x.Title,
-            UniqueId = x.UniqueId,
-            UpdatedAt = x.UpdatedAt,
-            HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
-            HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
-        }).Single();
+        Post = _context.Posts
+            .Include(x => x.HeaderImage)
+            .Where(x => x.UniqueId == Id).Select(x => new PostModel()
+            {
+                Title = x.Title,
+                UniqueId = x.UniqueId,
+                UpdatedAt = x.UpdatedAt,
+                HeaderImage = x.HeaderImage == null ? null : x.HeaderImage.UniqueId,
+                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
+                HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
+            }).Single();
     }
 }
 

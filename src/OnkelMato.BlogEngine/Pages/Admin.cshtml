@@ -36,16 +36,6 @@
             </div>
             <div class="card-footer">
                 <div class="button">
-                    <a asp-page="/Import" asp-route-entity="Posts">
-                        Posts <i class="bi bi-arrow-right-circle"></i>
-                    </a>
-                </div>
-                <div class="button">
-                    <a asp-page="/Import" asp-route-entity="PostImages">
-                        Post Images <i class="bi bi-arrow-right-circle"></i>
-                    </a>
-                </div>
-                <div class="button">
                     <a asp-page="/Import" asp-route-entity="Blog">
                         Blog (full/partial) <i class="bi bi-arrow-right-circle"></i>
                     </a>
@@ -66,18 +56,8 @@
                     <p>Export all posts or post images to a json file.</p>
                 </div>
                 <div class="card-footer">
-                    <div class="button">
-                        <a asp-page="/Export" asp-route-entity="Posts">
-                            Posts <i class="bi bi-arrow-right-circle"></i>
-                        </a>
-                    </div>
-                    <div class="button">
-                        <a asp-page="/Export" asp-route-entity="PostImages">
-                            Post Images <i class="bi bi-arrow-right-circle"></i>
-                        </a>
-                    </div>
-                    <div class="button">
-                        <a asp-page="/Import" asp-route-entity="Blog">
+                     <div class="button">
+                        <a asp-page="/Export">
                             Blog (full) <i class="bi bi-arrow-right-circle"></i>
                         </a>
                     </div>
@@ -102,7 +82,7 @@
                     </div>
                     <div class="button">
                         <a asp-page="/ImageAdmin/Index">
-                            Post Images <i class="bi bi-arrow-right-circle"></i>
+                            Posts Images <i class="bi bi-arrow-right-circle"></i>
                         </a>
                     </div>
                     <div class="button">

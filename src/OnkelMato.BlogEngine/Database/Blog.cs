@@ -14,4 +14,5 @@ public class Blog
     public DateTime UpdatedAt { get; set; }
 
     public List<Post> Posts { get; set; } = [];
+    public List<PostImage> PostImages { get; set; } = [];
 }

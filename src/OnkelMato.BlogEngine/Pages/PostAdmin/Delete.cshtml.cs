@@ -6,11 +6,11 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
-public class DeleteModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+public class DeleteModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
     : PageModel
 {
     private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
     private Post? _originalPost;
 
     [BindProperty]
@@ -18,42 +18,45 @@ public class DeleteModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.Value.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
-        if (id == null)
-        {
-            return NotFound();
-        }
+        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
-        _originalPost = await _context.Posts.FirstOrDefaultAsync(m => m.UniqueId == id);
+        if (id == null) { return NotFound("no id provided"); }
+
+        _originalPost = await _context.Posts.FirstOrDefaultAsync(m => m.UniqueId == id && m.Blog == blog);
 
         if (_originalPost == null)
+            return NotFound("Post not found");
+
+        Post = new PostAdminModel()
         {
-            return NotFound();
-        }
-        else
-        {
-            // todo there must be something more elegant than this. Maybe a generic mapper?
-            Post = new PostAdminModel() {MdContent = _originalPost.MdContent, Title = _originalPost.Title, UniqueId = _originalPost.UniqueId, UpdatedAt = _originalPost.UpdatedAt};
-        }
+            MdContent = _originalPost.MdContent,
+            MdPreview = _originalPost.MdPreview,
+            Title = _originalPost.Title,
+            UniqueId = _originalPost.UniqueId,
+            UpdatedAt = _originalPost.UpdatedAt
+        };
+
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int? id)
+    public async Task<IActionResult> OnPostAsync(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
-        var post = await _context.Posts.FindAsync(id);
-        if (post != null)
-        {
-            _context.Posts.Remove(_originalPost!);
-            await _context.SaveChangesAsync();
-        }
+        // make sure it cannot be accessed if new posts are not allowed
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+            RedirectToPage("/Index");
 
+        var entity = _context.Posts.SingleOrDefault(x => x.UniqueId == id && x.Blog == blog);
+        if (entity == null) { return NotFound($"Cannot find image with id {id}"); }
+
+        _context.Posts.Remove(entity);
+        await _context.SaveChangesAsync();
         return RedirectToPage("./Index");
     }
 }

@@ -39,3 +39,8 @@ footer {
 .card {
     margin: 10px;
 }
+
+.footer {
+    min-width: 100%;
+    min-height: 45px;
+}

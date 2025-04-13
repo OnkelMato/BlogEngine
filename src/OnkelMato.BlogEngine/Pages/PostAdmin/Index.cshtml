@@ -7,62 +7,80 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h1>Posts Overview</h1>
+<div class="row">
 
-@if (Model.AllowNewPosts)
-{
-    <p>
-        <a asp-page="Create">Create New</a>
-    </p>
-}
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Post.First().HasHeaderImage)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Post.First().Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Post.First().MdContent)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Post.First().UpdatedAt)
-                @Html.DisplayNameFor(model => model.Post.First().Order)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Post)
-        {
-            <tr class="@(item.ShowState == ShowStateModel.None ? "table-danger" : "table-success")">
-                <td>
-                    @Html.DisplayFor(modelItem => item.HasHeaderImage)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Title)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MdPreview)
-                    <hr />
-                    @Html.DisplayFor(modelItem => item.MdContent)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UpdatedAt)
-                    @Html.DisplayFor(modelItem => item.Order)
-                </td>
-                <td>
+    <form method="post">
+        <div class="col-md-12">
+            <div class="card">
+
+                <div class="card-header">
+                    <h1>Index Postss</h1>
+                </div>
+
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Posts.First().Order)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Posts.First().Title)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Posts.First().MdPreview)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Posts.First().UpdatedAt)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Posts.First().ShowState)
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Posts)
+                            {
+                                <tr class="@(item.ShowState == ShowStateModel.None ? "table-danger" : "table-success")">
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Order)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </td>
+                                    <td>
+                                        <p>@Html.DisplayFor(modelItem => item.MdPreview)</p>
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.UpdatedAt)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.ShowState)
+                                    </td>
+                                    <td>
+                                        @if (Model.AllowNewPosts)
+                                        {
+                                            <a asp-page="./Edit" asp-route-id="@item.UniqueId" class="btn btn-primary">Edit</a>
+                                            <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
+                                        }
+                                        <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
+                                        <a asp-page="/Export" asp-route-entity="PostsImages" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-footer">
                     @if (Model.AllowNewPosts)
                     {
-                        <a asp-page="./Edit" asp-route-id="@item.UniqueId" class="btn btn-primary">Edit</a>
-                        <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
+                        <a asp-page="Create" class="btn btn-primary">Create New</a>
                     }
-                    <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
-                    <a asp-page="/Export" asp-route-entity="PostImages" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

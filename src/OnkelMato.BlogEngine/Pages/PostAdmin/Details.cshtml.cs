@@ -29,7 +29,7 @@ public class DetailsModel : PageModel
             return NotFound();
         }
 
-        var post = await _context.Posts.FirstOrDefaultAsync(m => m.UniqueId == id);
+        var post = await _context.Posts.Include(x=> x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
         if (post == null)
         {
             return NotFound();
@@ -41,7 +41,11 @@ public class DetailsModel : PageModel
                 UniqueId = post.UniqueId,
                 Title = post.Title,
                 MdContent = post.MdContent,
-                UpdatedAt = post.UpdatedAt
+                MdPreview = post.MdPreview,
+                UpdatedAt = post.UpdatedAt,
+                ShowState = post.ShowState.ToShowStateModel(),
+                Order = post.Order,
+                HeaderImage = post.HeaderImage?.UniqueId,
             };
         }
         return Page();

@@ -5,59 +5,60 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
+<form method="post" enctype="multipart/form-data">
+    <div class="col-md-6">
+        <div class="card">
 
-<h4>Post</h4>
-<hr />
-<div class="row">
-    <div class="col-md-12">
-        <form method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div>
-                <label asp-for="Entity" class="control-label"></label>
-                <select asp-for="Entity" asp-items="Model.EntityList"></select>
-                <span asp-validation-for="Entity" class="text-danger"></span>
+            <div class="card-header">
+                <h1>Import Postss and Images</h1>
             </div>
-            @if (!Model.UseTextarea)
-            {
-                <div class="form-group">
-                    <label asp-for="JsonDocumentFile" class="control-label"></label>
-                    <input type="file" asp-for="JsonDocumentFile" />
-                    <span asp-validation-for="JsonDocumentFile" class="text-danger"></span>
+
+            <div class="card-body">
+                <div class="row">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Entity" class="control-label col-sm-3"></label>
+                        <select asp-for="Entity" asp-items="Model.EntityList"></select>
+                        <span asp-validation-for="Entity" class="text-danger"></span>
+                    </div>
+                    @if (Model.UseTextarea)
+                    {
+                        <div class="form-group">
+                            <label asp-for="JsonDocument" class="control-label" col-sm-3></label>
+                            <textarea asp-for="JsonDocument" class="form-control" rows="20" cols="150"></textarea>
+                            <span asp-validation-for="JsonDocument" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Signature" class="control-label" col-sm-3></label>
+                            <textarea asp-for="Signature" class="form-control" rows="10" cols="150"></textarea>
+                            <span asp-validation-for="Signature" class="text-danger"></span>
+                        </div>
+                    }
+                    @if (!Model.UseTextarea)
+                    {
+                        <div class="form-group">
+                            <label asp-for="JsonDocumentFile" class="control-label col-sm-3"></label>
+                            <input type="file" asp-for="JsonDocumentFile" class="form-control-file" />
+                            <span asp-validation-for="JsonDocumentFile" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="SignatureFile" class="control-label col-sm-3"></label>
+                            <input type="file" asp-for="SignatureFile" class="form-control-file" />
+                            <span asp-validation-for="SignatureFile" class="text-danger"></span>
+                        </div>
+                    }
                 </div>
-            }
-            @if (Model.UseTextarea)
-            {
-                <div class="form-group">
-                    <label asp-for="JsonDocument" class="control-label"></label>
-                    <textarea asp-for="JsonDocument" class="form-control" rows="20" cols="150"></textarea>
-                    <span asp-validation-for="JsonDocument" class="text-danger"></span>
-                </div>
-            }
-            @if (!Model.UseTextarea)
-            {
-                <div class="form-group">
-                    <label asp-for="SignatureFile" class="control-label"></label>
-                    <input type="file" asp-for="SignatureFile" />
-                    <p>@Model.SignaturePublicKey</p>
-                    <span asp-validation-for="SignatureFile" class="text-danger"></span>
-                </div>
-            }
-            @if (Model.UseTextarea)
-            {
-                <div class="form-group">
-                    <label asp-for="Signature" class="control-label"></label>
-                    <textarea asp-for="Signature" class="form-control" rows="10" cols="150"></textarea>
-                    <p>@Model.SignaturePublicKey</p>
-                    <span asp-validation-for="Signature" class="text-danger"></span>
-                </div>
-            }
-            <div class="form-group">
-                    <input type="submit" value="Save" class="btn btn-primary" />
-                </div>
-        </form>
+                <small id="SignatureFileHelp" class="form-text text-muted">The public certificate "@Model.SignaturePublicKey" is used</small>
+            </div>
+
+            <div class="card-footer">
+                <input type="submit" value="Import" class="btn btn-primary" />
+                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+            </div>
+        </div>
     </div>
-</div>
+</form>
+
 
 @section Scripts {
     @{

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using OnkelMato.BlogEngine.Database;
-
+ 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
 public class PostAdminModel
@@ -12,18 +11,26 @@ public class PostAdminModel
 
     [MaxLength(4096)]
     [DataType(DataType.MultilineText)]
+    [Display(Name = "Contents (Markdown)")]
     public string? MdContent { get; set; } = null!;
+
+    [Display(Name = "Preview (Markdown)")]
+    [DataType(DataType.MultilineText)]
     [MaxLength(4096)]
     public string MdPreview { get; set; } = null!;
 
     public ShowStateModel ShowState { get; set; } = ShowStateModel.None;
 
     [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
+    [Display(Name = "Last Update")]
     public DateTime UpdatedAt { get; set; }
 
     public int Order { get; set; } = 1000;
 
+    [Display(Name = "Posts Image Guid")]
     public Guid?  HeaderImage { get; set; }
+
+    [Display(Name = "Posts Image")]
     public bool HasHeaderImage => HeaderImage is not null;
 }
 

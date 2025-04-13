@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -5,36 +6,47 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
+using static OnkelMato.BlogEngine.Pages.BlogExportModel;
 
 namespace OnkelMato.BlogEngine.Pages;
 
-public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration) : PageModel
+public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
 {
-    public string SignaturePublicKey => postsConfiguration.Value.CertificateFile;
+    public string SignaturePublicKey => postsConfiguration.CurrentValue.CertificateFile;
 
     [BindProperty(SupportsGet = true)]
     public bool UseTextarea { get; set; }
 
     [BindProperty]
+    [Display(Name = "Json with Data")]
     public string? JsonDocument { get; set; }
     [BindProperty]
+    [Display(Name = "Json with Data")]
     public IFormFile? JsonDocumentFile { get; set; } = null!;
     [BindProperty]
+    [Display(Name = "Signature for Json")]
     public string? Signature { get; set; }
     [BindProperty]
+    [Display(Name = "Signature for Json")]
     public IFormFile? SignatureFile { get; set; } = null!;
 
     [BindProperty(SupportsGet = true)]
+    [Display(Name = "Import Type")]
     public string Entity { get; set; } = null!;
 
+    // todo remotve this
     public SelectList EntityList { get; set; } = new(new[] { "Posts", "PostImages", "Blog" });
 
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
             return Page();
+
+        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
         if (JsonDocumentFile is not null)
         {
@@ -52,7 +64,7 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
             Signature = await new StreamReader(stream).ReadToEndAsync();
         }
 
-        if (string.IsNullOrEmpty(Signature) && !postsConfiguration.Value.AcceptUnsignedImport)
+        if (string.IsNullOrEmpty(Signature) && !postsConfiguration.CurrentValue.AcceptUnsignedImport)
         {
             ModelState.AddModelError(nameof(Signature), "Signature is required because 'AcceptUnsignedImport' is set to false.");
             ModelState.AddModelError(nameof(SignatureFile), "Signature is required because 'AcceptUnsignedImport' is set to false.");
@@ -61,7 +73,7 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
 
         if (Signature is not null)
         {
-            var cert = new X509Certificate2(postsConfiguration.Value.CertificateFile);
+            var cert = new X509Certificate2(postsConfiguration.CurrentValue.CertificateFile);
             if (!Verify(JsonDocument!, Signature, cert))
             {
                 ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
@@ -69,6 +81,17 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
                 return Page();
             }
         }
+
+        // todo isfullexport
+
+        //var blogExport = JsonSerializer.Deserialize<BlogExportModel>(JsonDocument!) ?? new ();
+
+        //foreach (var post in blog.Posts??Array.Empty<PostExportModel>())
+        //{
+            
+        //}
+
+        
         // this is perfect for strategy pattern
         switch (Entity.ToLower())
         {
@@ -81,10 +104,13 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
                         if (post is null)
                         {
                             entity.Id = 0;
+                            entity.Blog = blog;
                             context.Posts.Add(entity);
                         }
                         else
                         {
+                            post.Blog = blog;
+                            post.HeaderImage = entity.HeaderImage;
                             post.MdContent = entity.MdContent;
                             post.Title = entity.Title;
                             post.UpdatedAt = DateTime.Now;
@@ -106,15 +132,16 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
                         if (postImage is null)
                         {
                             entity.Id = 0;
+                            entity.Blog = blog;
                             context.PostImages.Add(entity);
                         }
                         else
                         {
                             postImage.AltText = entity.AltText;
+                            postImage.Blog = blog;
                             postImage.ContentType = entity.ContentType;
                             postImage.Name = entity.Name;
                             postImage.Image = entity.Image;
-                            postImage.UniqueId = entity.UniqueId;
                             postImage.UpdatedAt = DateTime.Now;
                             postImage.IsPublished = entity.IsPublished;
                             postImage.UpdatedAt = entity.UpdatedAt;
@@ -123,10 +150,10 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
                     }
 
                     await context.SaveChangesAsync();
-                    return RedirectToPage("./Index");
+                    return RedirectToPage("./ImageAdmin/Index");
                 }
             default:
-                return RedirectToPage("./Index");
+                return RedirectToPage("./Admin");
         }
     }
 
@@ -144,7 +171,7 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
                 hashAlgorithm: HashAlgorithmName.SHA256,
                 padding: RSASignaturePadding.Pkcs1);
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             return false;
         }

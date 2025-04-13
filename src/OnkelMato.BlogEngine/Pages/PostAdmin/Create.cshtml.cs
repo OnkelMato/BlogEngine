@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.CodeAnalysis.Operations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
 
@@ -8,9 +10,9 @@ namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 public class CreateModel : PageModel
 {
     private readonly BlogEngineContext _context;
-    private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration;
+    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration;
 
-    public CreateModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+    public CreateModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
@@ -21,7 +23,7 @@ public class CreateModel : PageModel
     public IActionResult OnGet()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.Value.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         return Page();
@@ -34,22 +36,32 @@ public class CreateModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.Value.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         if (!ModelState.IsValid)
+            return Page();
+
+        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
+
+        var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage && x.Blog == blog);
+        if (postHeaderImage is null)
         {
+            ModelState.AddModelError(nameof(postHeaderImage), $"Cannot find header image {postHeaderImage} in post images of blog {blog.UniqueId}");
             return Page();
         }
 
-        var _postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage);
+
         _context.Posts.Add(new Post()
         {
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             UniqueId = Guid.NewGuid(),
+            Blog = blog,
             MdContent = Post.MdContent,
-            HeaderImage = _postHeaderImage,
+            HeaderImage = postHeaderImage,
             Title = Post.Title,
             Order = Post.Order,
             ShowState = Post.ShowState.ToShowState(),

@@ -23,8 +23,8 @@
             public int ShowState { get; set; }
             public DateTime CreatedAt { get; set; }
             public DateTime UpdatedAt { get; set; }
-
-            public bool IsPublished { get; set; } = false;
+            public int Order { get; set; } = 1000;
+            public Guid? HeaderImage { get; set; }
 
         }
 
@@ -33,6 +33,11 @@
 
         public List<PostExportModel> Posts { get; set; } = [];
         public List<PostImageExportModel> PostImages { get; set; } = [];
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
+        public bool IsFullExport { get; set; }
+
     }
 
 }
