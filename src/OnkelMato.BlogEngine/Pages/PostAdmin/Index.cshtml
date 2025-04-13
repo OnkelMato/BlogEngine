@@ -1,4 +1,5 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Pages.PostAdmin
 @model OnkelMato.BlogEngine.Pages.PostAdmin.IndexModel
 
 @{
@@ -6,7 +7,7 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<h1>Posts Overview</h1>
 
 @if (Model.AllowNewPosts)
 {
@@ -18,16 +19,17 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Post[0].UniqueId)
+                @Html.DisplayNameFor(model => model.Post.First().HasHeaderImage)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Post[0].Title)
+                @Html.DisplayNameFor(model => model.Post.First().Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Post[0].MdContent)
+                @Html.DisplayNameFor(model => model.Post.First().MdContent)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Post[0].UpdatedAt)
+                @Html.DisplayNameFor(model => model.Post.First().UpdatedAt)
+                @Html.DisplayNameFor(model => model.Post.First().Order)
             </th>
             <th></th>
         </tr>
@@ -35,27 +37,30 @@
     <tbody>
         @foreach (var item in Model.Post)
         {
-            <tr class="@(item.IsPublished ? "table-success" : "table-danger")">
+            <tr class="@(item.ShowState == ShowStateModel.None ? "table-danger" : "table-success")">
                 <td>
-                    @Html.DisplayFor(modelItem => item.UniqueId)
+                    @Html.DisplayFor(modelItem => item.HasHeaderImage)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.MdPreview)
+                    <hr />
                     @Html.DisplayFor(modelItem => item.MdContent)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.UpdatedAt)
+                    @Html.DisplayFor(modelItem => item.Order)
                 </td>
                 <td>
                     @if (Model.AllowNewPosts)
                     {
-                        <a asp-page="./Edit" asp-route-id="@item.UniqueId">Edit</a>
-                        <a asp-page="./Delete" asp-route-id="@item.UniqueId">Delete</a>
+                        <a asp-page="./Edit" asp-route-id="@item.UniqueId" class="btn btn-primary">Edit</a>
+                        <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
                     }
-                    <a asp-page="./Details" asp-route-id="@item.UniqueId">Details</a>
-                    <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId">Export</a>
+                    <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
+                    <a asp-page="/Export" asp-route-entity="PostImages" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
                 </td>
             </tr>
         }

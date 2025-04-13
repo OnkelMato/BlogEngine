@@ -17,14 +17,13 @@ public class IndexModel : PageModel
     }
 
     public IList<PostImageModel> PostImage { get;set; } = null!;
-    public bool AllowNewPosts => _postsConfiguration.AllowNewPosts;
+    public bool AllowNewPosts => _postsConfiguration.AllowBlogAdministration;
 
     public async Task OnGetAsync()
     {
         PostImage = await _context.PostImages.Select(x=> new PostImageModel(){
             UniqueId = x.UniqueId,
             Name = x.Name,
-            FileName = x.Filename,
             ContentType = x.ContentType,
             AltText = x.AltText,
             IsPublished = x.IsPublished,

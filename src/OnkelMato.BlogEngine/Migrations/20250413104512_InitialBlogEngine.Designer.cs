@@ -9,11 +9,11 @@ using OnkelMato.BlogEngine.Database;
 
 #nullable disable
 
-namespace Softwarekueche.Web.Migrations
+namespace OnkelMato.BlogEngine.Migrations
 {
     [DbContext(typeof(BlogEngineContext))]
-    [Migration("20250403081532_Image_Support")]
-    partial class Image_Support
+    [Migration("20250413104512_InitialBlogEngine")]
+    partial class InitialBlogEngine
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace Softwarekueche.Web.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Softwarekueche.Web.Infrastructure.Data.Post", b =>
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Blog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,17 +36,9 @@ namespace Softwarekueche.Web.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsPublished")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MdContent")
-                        .HasMaxLength(4096)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MdPreview")
-                        .IsRequired()
-                        .HasMaxLength(4096)
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -61,10 +53,68 @@ namespace Softwarekueche.Web.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Title")
+                        .IsUnique();
+
+                    b.ToTable("Blogs");
+                });
+
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Post", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("HeaderImageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MdContent")
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MdPreview")
+                        .IsRequired()
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShowState")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid>("UniqueId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.HasIndex("HeaderImageId");
+
+                    b.HasIndex("Title")
+                        .IsUnique();
+
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("Softwarekueche.Web.Infrastructure.Data.PostImage", b =>
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.PostImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -76,6 +126,9 @@ namespace Softwarekueche.Web.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ContentType")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -83,11 +136,6 @@ namespace Softwarekueche.Web.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Filename")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
 
                     b.Property<byte[]>("Image")
                         .IsRequired()
@@ -109,7 +157,45 @@ namespace Softwarekueche.Web.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BlogId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("PostImages");
+                });
+
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Post", b =>
+                {
+                    b.HasOne("OnkelMato.BlogEngine.Database.Blog", "Blog")
+                        .WithMany("Posts")
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnkelMato.BlogEngine.Database.PostImage", "HeaderImage")
+                        .WithMany()
+                        .HasForeignKey("HeaderImageId");
+
+                    b.Navigation("Blog");
+
+                    b.Navigation("HeaderImage");
+                });
+
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.PostImage", b =>
+                {
+                    b.HasOne("OnkelMato.BlogEngine.Database.Blog", "Blog")
+                        .WithMany()
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Blog");
+                });
+
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Blog", b =>
+                {
+                    b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618
         }

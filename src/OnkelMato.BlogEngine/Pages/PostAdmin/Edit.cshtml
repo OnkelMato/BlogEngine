@@ -1,4 +1,6 @@
 ﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using OnkelMato.BlogEngine.Pages.PostAdmin
 @model OnkelMato.BlogEngine.Pages.PostAdmin.EditModel
 
 @{
@@ -6,10 +8,8 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h1>Edit</h1>
+<h1>Edit Post</h1>
 
-<h4>Post</h4>
-<hr />
 <div class="row">
     <div class="col-md-12">
         <form method="post">
@@ -22,7 +22,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Post.MdPreview" class="control-label"></label>
-                <textarea asp-for="Post.MdPreview" class="form-control" rows="30" cols="60"></textarea>
+                <textarea asp-for="Post.MdPreview" class="form-control" rows="10" cols="60"></textarea>
                 <span asp-validation-for="Post.MdPreview" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -31,9 +31,21 @@
                 <span asp-validation-for="Post.MdContent" class="text-danger"></span>
             </div>
             <div>
-                <label asp-for="Post.IsPublished" class="control-label"></label>
-                <input asp-for="Post.IsPublished" class="form-check-input" />
-                <span asp-validation-for="Post.IsPublished" class="text-danger"></span>
+                <label asp-for="Post.ShowState" class="control-label"></label>
+                <select asp-for="Post.ShowState" asp-items="Html.GetEnumSelectList<ShowStateModel>()">
+                    <option value="">Show Option</option>
+                </select>
+                <span asp-validation-for="Post.ShowState" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.HeaderImage" class="control-label"></label>
+                <input asp-for="Post.HeaderImage" class="form-control" />
+                <span asp-validation-for="Post.HeaderImage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.Order" class="control-label"></label>
+                <input asp-for="Post.Order" class="form-control" />
+                <span asp-validation-for="Post.Order" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
@@ -47,5 +59,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

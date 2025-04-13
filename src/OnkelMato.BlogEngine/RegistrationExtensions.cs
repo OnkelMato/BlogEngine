@@ -11,7 +11,8 @@ public static class RegistrationExtensions
         builder.Services.AddRazorPages().AddApplicationPart(typeof(RegistrationExtensions).Assembly);
 
         // Add services to the container.
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+                               throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         var databaseProvider = builder.Configuration.GetConnectionString("DefaultProvider") ?? "mssql";
 
         // strategy pattern?
@@ -49,6 +50,50 @@ public static class RegistrationExtensions
             db.Database.Migrate();
         var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
         s.Dispose();
+
+        app.EnsureBlog();
+
+        return app;
+    }
+
+    public static WebApplication EnsureBlog(this WebApplication app)
+    {
+        using var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
+        var settings = s.ServiceProvider.GetService<IOptionsMonitor<PostsConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
+
+        if (!db.Blogs.Any())
+        {
+            // create blog if not exists and use it
+            var blog = new Blog()
+            {
+                UniqueId = Guid.NewGuid(),
+                Title = "My Blog",
+                Description = "My Blog",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+            };
+            db.Blogs.Add(blog);
+            db.SaveChanges();
+
+            Console.WriteLine($@"New blog created with id '{blog.UniqueId}'");
+
+            settings.CurrentValue.BlogUniqueId = blog.UniqueId;
+        }
+        else if (settings.CurrentValue.BlogUniqueId == null &&  db.Blogs.Count() == 1 && settings.CurrentValue.UseSingleBlog)
+        {
+            // use blog if not set
+            var blog = db.Blogs.Single();
+            Console.WriteLine($@"Existing single blog used with id '{blog.UniqueId}'");
+
+            settings.CurrentValue.BlogUniqueId = blog.UniqueId;
+        }
+
+        // validate of blog is set correctly
+        if (settings.CurrentValue.BlogUniqueId == null)
+            throw new InvalidOperationException("BlogUniqueId is not set in configuration and no blog exists. Please create a blog or set BlogUniqueId in configuration.");
+        if (!db.Blogs.Any(x => x.UniqueId == settings.CurrentValue.BlogUniqueId))
+            throw new InvalidOperationException($"Blog with id '{settings.CurrentValue.BlogUniqueId}' does not exist. Please create a blog or set BlogUniqueId in configuration.");
 
         return app;
     }

@@ -6,7 +6,7 @@ namespace OnkelMato.BlogEngine.Pages;
 public class AdminModel(IOptionsSnapshot<PostsConfiguration> postsConfiguration) : PageModel
 {
     private readonly PostsConfiguration _postsConfiguration = postsConfiguration.Value;
-    public bool AllowNewPosts => _postsConfiguration.AllowNewPosts;
+    public bool AllowNewPosts => _postsConfiguration.AllowBlogAdministration;
     public bool AcceptUnsignedImport => _postsConfiguration.AcceptUnsignedImport;
     public void OnGet()
     {

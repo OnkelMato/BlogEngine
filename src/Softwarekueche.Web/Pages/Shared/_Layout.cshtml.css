@@ -43,6 +43,8 @@ button.accept-policy {
   position: absolute;
   bottom: 0;
   width: 100%;
+  align-content: center;
+  text-align: center;
   white-space: nowrap;
-  line-height: 60px;
+  line-height: 30px;
 }

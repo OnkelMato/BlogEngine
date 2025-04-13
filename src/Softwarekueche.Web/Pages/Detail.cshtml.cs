@@ -1,12 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine;
 using OnkelMato.BlogEngine.Database;
-using Softwarekueche.Web;
 
-namespace MyApp.Namespace;
+namespace Softwarekueche.Web.Pages;
 
 public class DetailModel(ILogger<DetailModel> logger, BlogEngineContext context, IOptions<PostsConfiguration> postsConfiguration) : PageModel
 {
@@ -16,6 +16,8 @@ public class DetailModel(ILogger<DetailModel> logger, BlogEngineContext context,
         public string Title { get; set; } = string.Empty;
         public string HtmlContent { get; set; } = string.Empty;
         public string HtmlPreview { get; set; } = string.Empty;
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
         public DateTime UpdatedAt { get; set; }
     }
 

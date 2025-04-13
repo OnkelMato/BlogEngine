@@ -22,7 +22,7 @@ public class EditModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.Value.AllowNewPosts)
+        if (!_postsConfiguration.Value.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         if (id == null)
@@ -30,15 +30,22 @@ public class EditModel : PageModel
             return NotFound();
         }
 
-        var post =  await _context.Posts.FirstOrDefaultAsync(m => m.UniqueId == id);
+        var post = await _context.Posts.Include(x=> x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
         if (post == null)
         {
             return NotFound();
         }
-        Post = new PostAdminModel() { 
-            UniqueId = post.UniqueId, Title = post.Title, MdContent = post.MdContent,
+        Post = new PostAdminModel()
+        {
+            UniqueId = post.UniqueId,
+            Title = post.Title,
+            MdContent = post.MdContent,
             UpdatedAt = post.UpdatedAt,
-            IsPublished = post.IsPublished, MdPreview = post.MdPreview };
+            Order = post.Order,
+            ShowState = post.ShowState.ToShowStateModel(),
+            HeaderImage = post.HeaderImage?.UniqueId,
+            MdPreview = post.MdPreview
+        };
         Post.UpdatedAt = DateTime.Now;
         return Page();
     }
@@ -52,13 +59,16 @@ public class EditModel : PageModel
             return Page();
         }
 
+        var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage);
         var dbPost = await _context.Posts.SingleAsync(m => m.UniqueId == Post.UniqueId);
         dbPost.MdContent = Post.MdContent;
         dbPost.Title = Post.Title;
+        dbPost.Order = Post.Order;
         dbPost.UpdatedAt = DateTime.Now;
-        dbPost.IsPublished = Post.IsPublished;
+        dbPost.HeaderImage = postHeaderImage;
+        dbPost.ShowState = Post.ShowState.ToShowState();
         dbPost.MdPreview = Post.MdPreview;
-            
+        
         try
         {
             await _context.SaveChangesAsync();

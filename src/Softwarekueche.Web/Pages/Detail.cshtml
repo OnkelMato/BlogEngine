@@ -1,13 +1,41 @@
 ﻿@page
 @using Microsoft.AspNetCore.Html
-@model MyApp.Namespace.DetailModel
+@model DetailModel
 @{
     ViewData["Title"] = Model.Post.Title;
 }
-<div class="button"><a href="/" class="button"><i class="bi bi-arrow-left-circle"></i></a></div>
 
-<h1>@Model.Post.Title</h1>
-<div class="tldr">@(new HtmlString(Model.Post.HtmlPreview))</div>
-<div>@(new HtmlString(Model.Post.HtmlContent))</div>
+<div class="button"><a href="/" class="button"><i class="bi bi-arrow-left-circle"></i></a></div>
+<h6>@Html.DisplayFor(item => item.Post.UpdatedAt)</h6>
+
+<h1>@Html.DisplayFor(item => item.Post.Title)</h1>
+@* 
+<div class="panel-group">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" href="#collapse1">tl;dr;</a>
+            </h4>
+        </div>
+        <div id="collapse1" class="panel-collapse collapse">
+            <div class="panel-body"></div>
+        </div>
+    </div>
+</div>
+ *@
+
+<div class="collapse" id="collapseExample">
+    <div class="card card-body">
+        @(new HtmlString(Model.Post.HtmlPreview))
+    </div>
+</div>
+
+<div class="card card-body">
+    @(new HtmlString(Model.Post.HtmlPreview))
+</div>
+
+<div class="card card-body">
+    @(new HtmlString(Model.Post.HtmlContent))
+</div>
 
 <div class="button"><a href="/" class="button"><i class="bi bi-arrow-left-circle"></i></a></div>

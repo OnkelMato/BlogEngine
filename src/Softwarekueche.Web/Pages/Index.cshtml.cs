@@ -15,10 +15,12 @@ public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, I
     {
         public Guid UniqueId { get; set; }
         [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
         public DateTime UpdatedAt { get; set; }
         public string Title { get; set; } = string.Empty;
         public string HtmlPreview { get; set; } = string.Empty;
         public bool HasContent { get; set; }
+        public Guid? HeaderImage { get; set; } = null!;
     }
 
     private readonly ILogger<IndexModel> _logger = logger;
@@ -35,8 +37,8 @@ public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, I
         NumOfPages = (_context.Posts.Count() / _postsConfiguration.PageSize) + 1;
 
         Posts = _context.Posts
-            .Where(x => x.IsPublished)
-            .OrderByDescending(x => x.UpdatedAt)
+            .Where(x => x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu)
+            .OrderBy(x => x.Order)
             .Skip((CurrentPage - 1) * _postsConfiguration.PageSize)
             .Take(_postsConfiguration.PageSize)
             .Select(x => new PostModel()
@@ -45,6 +47,7 @@ public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, I
                 UniqueId = x.UniqueId,
                 UpdatedAt = x.UpdatedAt,
                 HasContent = x.MdContent != null,
+                HeaderImage = (x.HeaderImage != null) ? x.HeaderImage.UniqueId : null,
                 HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null)
             }).ToList();
     }

@@ -22,7 +22,7 @@ public class DetailsModel : PageModel
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.AllowNewPosts)
+        if (!_postsConfiguration.AllowBlogAdministration)
             RedirectToPage("/Index");
 
         var postimage =  await _context.PostImages.SingleAsync(m => m.UniqueId == id);
@@ -34,7 +34,6 @@ public class DetailsModel : PageModel
         PostImage = new PostImageModel() {
             UniqueId = postimage.UniqueId,
             Name = postimage.Name,
-            FileName = postimage.Filename,
             ContentType = postimage.ContentType,
             AltText = postimage.AltText,
             IsPublished = postimage.IsPublished,

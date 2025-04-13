@@ -21,7 +21,7 @@ public class CreateModel : PageModel
     public IActionResult OnGet()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.Value.AllowNewPosts)
+        if (!_postsConfiguration.Value.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         return Page();
@@ -34,7 +34,7 @@ public class CreateModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.Value.AllowNewPosts)
+        if (!_postsConfiguration.Value.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         if (!ModelState.IsValid)
@@ -42,9 +42,19 @@ public class CreateModel : PageModel
             return Page();
         }
 
-        _context.Posts.Add(new Post() { 
-            CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now, UniqueId = Guid.NewGuid(), MdContent = Post.MdContent, Title = Post.Title ,
-            IsPublished = Post.IsPublished, MdPreview = Post.MdPreview});
+        var _postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage);
+        _context.Posts.Add(new Post()
+        {
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+            UniqueId = Guid.NewGuid(),
+            MdContent = Post.MdContent,
+            HeaderImage = _postHeaderImage,
+            Title = Post.Title,
+            Order = Post.Order,
+            ShowState = Post.ShowState.ToShowState(),
+            MdPreview = Post.MdPreview
+        });
         await _context.SaveChangesAsync();
 
         return RedirectToPage("./Index");

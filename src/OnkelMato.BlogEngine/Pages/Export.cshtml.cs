@@ -30,7 +30,7 @@ public class ExportModel(BlogEngineContext context) : PageModel
                     : ((x) => x.UniqueId == Id);
 
                 var pst = _context.Posts.Where(filter).ToArray();
-                var filename = !pst.Any()
+                var filename = pst.Length != 1
                     ? $"Posts.{DateTime.Now.ToShortDateString()}.json"
                     : $"{pst.First().Title}.json";
                 var json = JsonSerializer.Serialize(pst);
@@ -43,9 +43,9 @@ public class ExportModel(BlogEngineContext context) : PageModel
                     : ((x) => x.UniqueId == Id);
 
                 var img = _context.PostImages.Where(filter);
-                var filename = !img.Any()
+                var filename = img.Count() != 1
                     ? $"PostImages.{DateTime.Now.ToShortDateString()}.json"
-                    : $"{img.First().Filename}.json";
+                    : $"{img.First().Name}.json";
                 var json = JsonSerializer.Serialize(img);
                 return File(Encoding.UTF8.GetBytes(json), "application/json", filename);
             }

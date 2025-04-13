@@ -25,11 +25,11 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
     public string? Signature { get; set; }
     [BindProperty]
     public IFormFile? SignatureFile { get; set; } = null!;
-     
+
     [BindProperty(SupportsGet = true)]
     public string Entity { get; set; } = null!;
 
-    public SelectList EntityList { get; set; } = new(new[] { "Posts", "PostImages" });
+    public SelectList EntityList { get; set; } = new(new[] { "Posts", "PostImages", "Blog" });
 
     public async Task<IActionResult> OnPostAsync()
     {
@@ -69,63 +69,62 @@ public class ImportModel(BlogEngineContext context, IOptionsSnapshot<PostsConfig
                 return Page();
             }
         }
-
+        // this is perfect for strategy pattern
         switch (Entity.ToLower())
         {
             case "posts":
-            {
-                var entities = JsonSerializer.Deserialize<IEnumerable<Post>>(JsonDocument!) ?? [];
-                foreach (var entity in entities)
                 {
-                    var post = context.Posts.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
-                    if (post is null)
+                    var entities = JsonSerializer.Deserialize<IEnumerable<Post>>(JsonDocument!) ?? [];
+                    foreach (var entity in entities)
                     {
-                        entity.Id = 0;
-                        context.Posts.Add(entity);
+                        var post = context.Posts.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
+                        if (post is null)
+                        {
+                            entity.Id = 0;
+                            context.Posts.Add(entity);
+                        }
+                        else
+                        {
+                            post.MdContent = entity.MdContent;
+                            post.Title = entity.Title;
+                            post.UpdatedAt = DateTime.Now;
+                            post.ShowState = entity.ShowState;
+                            post.MdPreview = entity.MdPreview;
+                            post.CreatedAt = entity.CreatedAt;
+                        }
                     }
-                    else
-                    {
-                        post.MdContent = entity.MdContent;
-                        post.Title = entity.Title;
-                        post.UpdatedAt = DateTime.Now;
-                        post.IsPublished = entity.IsPublished;
-                        post.MdPreview = entity.MdPreview;
-                        post.CreatedAt = entity.CreatedAt;
-                    }
-                }
 
-                await context.SaveChangesAsync();
-                return RedirectToPage("./Index");
-            }
+                    await context.SaveChangesAsync();
+                    return RedirectToPage("./Index");
+                }
             case "postimages":
-            {
-                var entities = JsonSerializer.Deserialize<IEnumerable<PostImage>>(JsonDocument!) ?? [];
-                foreach (var entity in entities)
                 {
-                    var postImage = context.PostImages.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
-                    if (postImage is null)
+                    var entities = JsonSerializer.Deserialize<IEnumerable<PostImage>>(JsonDocument!) ?? [];
+                    foreach (var entity in entities)
                     {
-                        entity.Id = 0;
-                        context.PostImages.Add(entity);
+                        var postImage = context.PostImages.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
+                        if (postImage is null)
+                        {
+                            entity.Id = 0;
+                            context.PostImages.Add(entity);
+                        }
+                        else
+                        {
+                            postImage.AltText = entity.AltText;
+                            postImage.ContentType = entity.ContentType;
+                            postImage.Name = entity.Name;
+                            postImage.Image = entity.Image;
+                            postImage.UniqueId = entity.UniqueId;
+                            postImage.UpdatedAt = DateTime.Now;
+                            postImage.IsPublished = entity.IsPublished;
+                            postImage.UpdatedAt = entity.UpdatedAt;
+                            postImage.CreatedAt = entity.CreatedAt;
+                        }
                     }
-                    else
-                    {
-                        postImage.AltText = entity.AltText;
-                        postImage.ContentType = entity.ContentType;
-                        postImage.Name = entity.Name;
-                        postImage.Image = entity.Image;
-                        postImage.Filename = entity.Filename;
-                        postImage.UniqueId = entity.UniqueId;
-                        postImage.UpdatedAt = DateTime.Now;
-                        postImage.IsPublished = entity.IsPublished;
-                        postImage.UpdatedAt = entity.UpdatedAt;
-                        postImage.CreatedAt = entity.CreatedAt;
-                    }
-                }
 
-                await context.SaveChangesAsync();
-                return RedirectToPage("./Index");
-            }
+                    await context.SaveChangesAsync();
+                    return RedirectToPage("./Index");
+                }
             default:
                 return RedirectToPage("./Index");
         }

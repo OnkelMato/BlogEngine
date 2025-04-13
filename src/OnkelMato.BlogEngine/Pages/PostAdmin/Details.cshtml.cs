@@ -21,7 +21,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.Value.AllowNewPosts)
+        if (!_postsConfiguration.Value.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         if (id == null)

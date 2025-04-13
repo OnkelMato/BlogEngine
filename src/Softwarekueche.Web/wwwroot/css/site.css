@@ -30,19 +30,10 @@ footer {
     align-content: center
 }
 
-.box {
-    width: 415px; /* three boxes (use 25% for four, and 50% for two, etc) */
-    padding: 10px; /* if you want space between the boxes */
-}
-
-.box img {
-    max-height: 100%;
-    max-width: 100%;
-}
-
-.button {
-    width: 100%;
-    text-align: right;
+.card-header {
+    margin: 0px;
+    align-content: center;
+    font-weight: bolder;
 }
 
 .card {

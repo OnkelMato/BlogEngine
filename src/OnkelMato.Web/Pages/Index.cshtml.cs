@@ -35,8 +35,8 @@ public class IndexModel(ILogger<IndexModel> logger, BlogEngineContext context, I
         NumOfPages = (_context.Posts.Count() / _postsConfiguration.PageSize) + 1;
 
         Posts = _context.Posts
-            .Where(x => x.IsPublished)
-            .OrderByDescending(x => x.UpdatedAt)
+            .Where(x => x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu)
+            .OrderBy(x => x.Order)
             .Skip((CurrentPage - 1) * _postsConfiguration.PageSize)
             .Take(_postsConfiguration.PageSize)
             .Select(x => new PostModel()

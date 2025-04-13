@@ -1,0 +1,38 @@
+﻿namespace OnkelMato.BlogEngine.Pages
+{
+    public class BlogExportModel
+    {
+        public class PostImageExportModel
+        {
+            public Guid UniqueId { get; set; }
+            public byte[] Image { get; set; } = null!;
+            public string? Name { get; set; }
+            public string? ContentType { get; set; }
+            public string? AltText { get; set; }
+            public bool IsPublished { get; set; } = false;
+            public DateTime CreatedAt { get; set; }
+            public DateTime UpdatedAt { get; set; }
+        }
+
+        public class PostExportModel
+        {
+            public Guid UniqueId { get; set; }
+            public string Title { get; set; } = null!;
+            public string MdPreview { get; set; } = null!;
+            public string? MdContent { get; set; }
+            public int ShowState { get; set; }
+            public DateTime CreatedAt { get; set; }
+            public DateTime UpdatedAt { get; set; }
+
+            public bool IsPublished { get; set; } = false;
+
+        }
+
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+
+        public List<PostExportModel> Posts { get; set; } = [];
+        public List<PostImageExportModel> PostImages { get; set; } = [];
+    }
+
+}

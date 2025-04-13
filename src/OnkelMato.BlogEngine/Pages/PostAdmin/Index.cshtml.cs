@@ -17,14 +17,22 @@ public class IndexModel : PageModel
         _postsConfiguration = postsConfiguration.Value;
     }
 
-    public IList<PostAdminModel> Post { get; set; } = null!;
-    public bool AllowNewPosts => _postsConfiguration.AllowNewPosts;
+    public IEnumerable<PostAdminModel> Post { get; set; } = null!;
+    public bool AllowNewPosts => _postsConfiguration.AllowBlogAdministration;
 
     public async Task<IActionResult> OnGetAsync(int? id)
     {
-        Post = await _context.Posts.Select(x => new PostAdminModel() { 
-            UniqueId = x.UniqueId, MdContent = x.MdContent, Title = x.Title, UpdatedAt = x.UpdatedAt,
-            IsPublished = x.IsPublished }).ToListAsync();
+        Post = await _context.Posts
+            .OrderBy(x=> x.Order)
+            .Select(x => new PostAdminModel() { 
+                UniqueId = x.UniqueId,
+                MdPreview = x.MdPreview,
+                MdContent = x.MdContent,
+                Title = x.Title,
+                UpdatedAt = x.UpdatedAt,
+                Order = x.Order,
+                ShowState = x.ShowState.ToShowStateModel() })
+            .ToListAsync();
 
         return Page();
     }
