@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
- 
+
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
 public class PostAdminModel
@@ -27,8 +27,7 @@ public class PostAdminModel
 
     public int Order { get; set; } = 1000;
 
-    [Display(Name = "Posts Image Guid")]
-    public Guid?  HeaderImage { get; set; }
+    [Display(Name = "Posts Image Guid")] public Guid? HeaderImage { get; set; } = Guid.Empty;
 
     [Display(Name = "Posts Image")]
     public bool HasHeaderImage => HeaderImage is not null;
@@ -39,6 +38,6 @@ public enum ShowStateModel
     [Display(Name = "Unpublished")] None = 0,
     [Display(Name = "Show in Blog")] Blog = 1,
     [Display(Name = "Show in Menu")] Menu = 2,
-    [Display(Name = "Show in Blog an Menu")] BlogAndMenu = 3
-
+    [Display(Name = "Show in Blog an Menu")] BlogAndMenu = 3,
+    [Display(Name = "Show as Link im Menu")] Link = 4
 }
