@@ -9,6 +9,7 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

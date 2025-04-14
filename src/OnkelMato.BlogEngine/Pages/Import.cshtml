@@ -14,6 +14,14 @@
             </div>
 
             <div class="card-body">
+                @if (Model.AcceptUnsignedImport)
+                {
+                    <div class="card alert-danger">
+                        <div class="card-body">
+                            <p>Unsigned imports are turned on. This should be turned off in production.</p>
+                        </div>
+                    </div>
+                }
                 <div class="row">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="form-group">

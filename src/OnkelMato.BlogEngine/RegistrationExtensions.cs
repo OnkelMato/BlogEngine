@@ -56,6 +56,14 @@ public static class RegistrationExtensions
         return app;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>It is important that with the default settings, no fallback is used.</remarks>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public static WebApplication EnsureBlog(this WebApplication app)
     {
         using var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
@@ -66,8 +74,19 @@ public static class RegistrationExtensions
         if (db.Blogs.Count(x => x.UniqueId == settings.CurrentValue.BlogUniqueId) == 1)
             return app;
 
-        // there is a new DB without blog
-        if (!db.Blogs.Any() && settings.CurrentValue.CreateBlogIfNotExist)
+        // Blog id is not set but in case there is only one DB, this should be used
+        if (settings.CurrentValue.BlogUniqueId == Guid.Empty && db.Blogs.Count() == 1 && settings.CurrentValue.UseSingleBlog)
+        {
+            // use blog if not set
+            var blog = db.Blogs.Single();
+            Console.WriteLine($@"Existing single blog used with id '{blog.UniqueId}'");
+
+            settings.CurrentValue.BlogUniqueId = blog.UniqueId;
+            return app;
+        }
+
+        // A blog id is set (or not), cannot be found and the blog is not created (and should be created)
+        if (settings.CurrentValue.CreateBlogIfNotExist)
         {
             var id = settings.CurrentValue.BlogUniqueId == Guid.Empty ? Guid.NewGuid() : settings.CurrentValue.BlogUniqueId;
             // create blog if not exists and use it
@@ -85,15 +104,7 @@ public static class RegistrationExtensions
             Console.WriteLine($@"New blog created with id '{blog.UniqueId}'");
 
             settings.CurrentValue.BlogUniqueId = blog.UniqueId;
-        }
-        // if there is exactly one blog, and we are allowed to use it, do so
-        else if (settings.CurrentValue.BlogUniqueId == Guid.Empty && db.Blogs.Count() == 1 && settings.CurrentValue.UseSingleBlog)
-        {
-            // use blog if not set
-            var blog = db.Blogs.Single();
-            Console.WriteLine($@"Existing single blog used with id '{blog.UniqueId}'");
-
-            settings.CurrentValue.BlogUniqueId = blog.UniqueId;
+            return app;
         }
 
         // validate of blog is set correctly
@@ -102,6 +113,6 @@ public static class RegistrationExtensions
         if (!db.Blogs.Any(x => x.UniqueId == settings.CurrentValue.BlogUniqueId))
             throw new InvalidOperationException($"Blog with id '{settings.CurrentValue.BlogUniqueId}' does not exist. Please create a blog or set BlogUniqueId in configuration.");
 
-        return app;
+        throw new ArgumentException("Cannot determine or create blog. Please set the blog Uid in App Settings.");
     }
 }

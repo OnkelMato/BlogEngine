@@ -14,7 +14,7 @@
             <div class="card">
 
                 <div class="card-header">
-                    <h1>Index Postss</h1>
+                    <h1>Index Posts</h1>
                 </div>
 
                 <div class="card-body">
@@ -65,7 +65,7 @@
                                             <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
                                         }
                                         <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
-                                        <a asp-page="/Export" asp-route-entity="PostsImages" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
+                                        <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
                                     </td>
                                 </tr>
                             }

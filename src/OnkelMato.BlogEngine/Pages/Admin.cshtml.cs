@@ -3,11 +3,10 @@ using Microsoft.Extensions.Options;
 
 namespace OnkelMato.BlogEngine.Pages;
 
-public class AdminModel(IOptionsSnapshot<PostsConfiguration> postsConfiguration) : PageModel
+public class AdminModel(IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
 {
-    private readonly PostsConfiguration _postsConfiguration = postsConfiguration.Value;
-    public bool AllowNewPosts => _postsConfiguration.AllowBlogAdministration;
-    public bool AcceptUnsignedImport => _postsConfiguration.AcceptUnsignedImport;
+    public bool AllowNewPosts => postsConfiguration.CurrentValue.AllowBlogAdministration;
+    public bool AcceptUnsignedImport => postsConfiguration.CurrentValue.AcceptUnsignedImport;
     public void OnGet()
     {
     }
