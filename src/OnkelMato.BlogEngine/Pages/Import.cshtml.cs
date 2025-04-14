@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
 using static OnkelMato.BlogEngine.Pages.BlogExportModel;
@@ -39,8 +40,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
     [Display(Name = "Import Type")]
     public string Entity { get; set; } = null!;
 
-    // todo remotve this
-    public SelectList EntityList { get; set; } = new(new[] { "Posts", "PostImages", "Blog" });
+    public SelectList EntityList { get; set; } = new(new[] { "Blog" });
 
     public async Task<IActionResult> OnPostAsync()
     {
@@ -95,81 +95,25 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                     await context.SaveChangesAsync();
                     return RedirectToPage("./Index");
                 }
-            case "posts":
-                {
-                    var entities = JsonSerializer.Deserialize<IEnumerable<Post>>(JsonDocument!) ?? [];
-                    foreach (var entity in entities)
-                        DoImportPost(entity, blog);
-
-                    await context.SaveChangesAsync();
-                    return RedirectToPage("./PostAdmin/Index");
-                }
-            case "postimages":
-                {
-                    var entities = JsonSerializer.Deserialize<IEnumerable<PostImage>>(JsonDocument!) ?? [];
-                    foreach (var entity in entities)
-                        DoImportPostImage(entity, blog);
-
-                    await context.SaveChangesAsync();
-                    return RedirectToPage("./ImageAdmin/Index");
-                }
             default:
                 return RedirectToPage("./Admin");
-        }
-    }
-
-    private void DoImportPostImage(PostImage entity, Blog blog)
-    {
-        var postImage = context.PostImages.SingleOrDefault(x => x.UniqueId == entity.UniqueId);
-        if (postImage is null)
-        {
-            entity.Id = 0;
-            entity.Blog = blog;
-            context.PostImages.Add(entity);
-        }
-        else
-        {
-            postImage.AltText = entity.AltText;
-            postImage.Blog = blog;
-            postImage.ContentType = entity.ContentType;
-            postImage.Name = entity.Name;
-            postImage.Image = entity.Image;
-            postImage.UpdatedAt = DateTime.Now;
-            postImage.IsPublished = entity.IsPublished;
-            postImage.UpdatedAt = entity.UpdatedAt;
-            postImage.CreatedAt = entity.CreatedAt;
-        }
-    }
-
-    private void DoImportPost(Post entity, Blog blog)
-    {
-        var post = context.Posts.SingleOrDefault(x => x.UniqueId == entity.UniqueId && x.Blog == blog);
-        if (post is null)
-        {
-            entity.Id = 0;
-            entity.Blog = blog;
-            context.Posts.Add(entity);
-        }
-        else
-        {
-            post.Blog = blog;
-            post.HeaderImage = entity.HeaderImage;
-            post.MdContent = entity.MdContent;
-            post.Title = entity.Title;
-            post.UpdatedAt = DateTime.Now;
-            post.ShowState = entity.ShowState;
-            post.MdPreview = entity.MdPreview;
-            post.CreatedAt = entity.CreatedAt;
         }
     }
 
     private void DoImportBlog(BlogExportModel importData, Blog blog)
     {
         var blogExport = JsonSerializer.Deserialize<BlogExportModel>(JsonDocument!) ?? new();
-        blog.Title = blogExport.Title ?? blog.Title;
-        blog.Description = blogExport.Description;
-        blog.UpdatedAt = DateTime.Now;
-        context.Blogs.Update(blog);
+
+        // in case only a post or image was exported, the export values will be null.
+        if (blogExport.IsFullExport)
+        {
+            blog.Title = blogExport.Title ?? blog.Title;
+            blog.Description = blogExport.Description;
+            blog.UpdatedAt = DateTime.Now;
+            blog.CreatedAt = blogExport.CreatedAt;
+
+            context.Blogs.Update(blog);
+        }
 
         foreach (var post in blogExport.Posts)
             DoImportPost(post, blog);
@@ -178,68 +122,69 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             DoImportPostImage(postImage, blog);
     }
 
-    private void DoImportPost(PostExportModel entity, Blog blog)
+    private void DoImportPost(PostExportModel postExport, Blog blog)
     {
-        var post = context.Posts.SingleOrDefault(x => x.UniqueId == entity.UniqueId && x.Blog == blog);
-        var headerImage = context.PostImages.SingleOrDefault(x => x.UniqueId == entity.HeaderImage && x.Blog == blog);
-        if (post is null)
+        var postEntity = context.Posts.SingleOrDefault(x => x.UniqueId == postExport.UniqueId && x.Blog == blog);
+        var headerImage = context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
+        if (postEntity is null)
         {
-            post = new Post()
+            postEntity = new Post()
             {
-                UniqueId = entity.UniqueId,
+                UniqueId = postExport.UniqueId,
                 Blog = blog,
                 HeaderImage = headerImage,
-                MdContent = entity.MdContent,
-                Title = entity.Title,
+                MdContent = postExport.MdContent,
+                Title = postExport.Title,
                 UpdatedAt = DateTime.Now,
-                ShowState = (ShowState)entity.ShowState,
-                MdPreview = entity.MdPreview,
-                Order = entity.Order,
-                CreatedAt = entity.CreatedAt
-
+                ShowState = (ShowState)postExport.ShowState,
+                MdPreview = postExport.MdPreview,
+                Order = postExport.Order,
+                CreatedAt = postExport.CreatedAt
             };
-            context.Posts.Add(post);
+            context.Posts.Add(postEntity);
         }
         else
         {
-            post.Blog = blog;
-            post.HeaderImage = headerImage;
-            post.MdContent = entity.MdContent;
-            post.Title = entity.Title;
-            post.UpdatedAt = DateTime.Now;
-            post.ShowState = (ShowState)entity.ShowState;
-            post.MdPreview = entity.MdPreview;
-            post.CreatedAt = entity.CreatedAt;
+            postEntity.Blog = blog;
+            postEntity.HeaderImage = headerImage;
+            postEntity.MdContent = postExport.MdContent;
+            postEntity.Title = postExport.Title;
+            postEntity.UpdatedAt = DateTime.Now;
+            postEntity.ShowState = (ShowState)postExport.ShowState;
+            postEntity.MdPreview = postExport.MdPreview;
+            postEntity.CreatedAt = postExport.CreatedAt;
+            context.Posts.Update(postEntity);
         }
     }
 
-    private void DoImportPostImage(PostImageExportModel postImage, Blog blog)
+    private void DoImportPostImage(PostImageExportModel postImageExport, Blog blog)
     {
-        var postImageEntity = context.PostImages.SingleOrDefault(x => x.UniqueId == postImage.UniqueId && x.Blog == blog);
+        var postImageEntity = context.PostImages.SingleOrDefault(x => x.UniqueId == postImageExport.UniqueId && x.Blog == blog);
         if (postImageEntity is null)
         {
             postImageEntity = new PostImage()
             {
-                UniqueId = postImage.UniqueId,
+                UniqueId = postImageExport.UniqueId,
                 Blog = blog,
-                AltText = postImage.AltText,
-                ContentType = postImage.ContentType,
-                Name = postImage.Name,
-                Image = postImage.Image,
-                IsPublished = postImage.IsPublished,
-                CreatedAt = postImage.CreatedAt
+                AltText = postImageExport.AltText,
+                ContentType = postImageExport.ContentType,
+                Name = postImageExport.Name,
+                Image = postImageExport.Image,
+                IsPublished = postImageExport.IsPublished,
+                CreatedAt = postImageExport.CreatedAt
             };
             context.PostImages.Add(postImageEntity);
         }
         else
         {
             postImageEntity.Blog = blog;
-            postImageEntity.AltText = postImage.AltText;
-            postImageEntity.ContentType = postImage.ContentType;
-            postImageEntity.Name = postImage.Name;
-            postImageEntity.Image = postImage.Image;
-            postImageEntity.IsPublished = postImage.IsPublished;
-            postImageEntity.CreatedAt = postImage.CreatedAt;
+            postImageEntity.AltText = postImageExport.AltText;
+            postImageEntity.ContentType = postImageExport.ContentType;
+            postImageEntity.Name = postImageExport.Name;
+            postImageEntity.Image = postImageExport.Image;
+            postImageEntity.IsPublished = postImageExport.IsPublished;
+            postImageEntity.CreatedAt = postImageExport.CreatedAt;
+            context.PostImages.Update(postImageEntity);
         }
     }
 

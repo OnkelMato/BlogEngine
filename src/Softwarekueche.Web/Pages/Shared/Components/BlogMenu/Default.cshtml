@@ -1,0 +1,8 @@
+﻿@model Softwarekueche.Web.ViewComponents.BlogMenuViewComponent
+
+@foreach (var item in Model.MenuPosts)
+{
+    <li class="nav-item">
+        <a asp-page="/Detail" asp-route-id="@item.UniqueId" class="nav-link text-dark">@item.Title</a>
+    </li>
+}
