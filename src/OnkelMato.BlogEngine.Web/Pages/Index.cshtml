@@ -26,7 +26,7 @@
                         </a>
                         @if (Model.AllowBlogAdministration)
                         {
-                            <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" class="btn btn-dark">
+                            <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Detail?id=@item.UniqueId" class="btn btn-dark">
                                 <i class="bi bi-pen"></i> Bearbeiten
                             </a>
                             <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">

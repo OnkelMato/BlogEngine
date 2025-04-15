@@ -99,7 +99,10 @@ public class EditModel : PageModel
             }
         }
 
-        return RedirectToPage("./Index");
+        if (RedirectUri is not null)
+            return RedirectToPage(RedirectUri.Split("?")[0], new { Id = Post.UniqueId });
+
+        return RedirectToPage((RedirectUri ?? "./Index").Split("?")[0]);
     }
 
     private bool PostExists(Guid id)
