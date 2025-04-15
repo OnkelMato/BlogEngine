@@ -36,7 +36,7 @@
             </div>
             <div class="card-footer">
                 <div class="button">
-                    <a asp-page="/Import" asp-route-entity="Blog">
+                    <a asp-page="/Import" asp-route-entity="Blog" class="btn btn-dark">
                         Blog (full/partial) <i class="bi bi-arrow-right-circle"></i>
                     </a>
                 </div>
@@ -57,7 +57,7 @@
                 </div>
                 <div class="card-footer">
                      <div class="button">
-                        <a asp-page="/Export">
+                        <a asp-page="/Export" class="btn btn-dark">
                             Blog (full) <i class="bi bi-arrow-right-circle"></i>
                         </a>
                     </div>
@@ -75,21 +75,15 @@
                     <p>Manage posts directly on this web page.</p>
                 </div>
                 <div class="card-footer">
-                    <div class="button">
-                        <a asp-page="/PostAdmin/Index">
+                        <a asp-page="/PostAdmin/Index" class="btn btn-dark">
                             Posts <i class="bi bi-arrow-right-circle"></i>
                         </a>
-                    </div>
-                    <div class="button">
-                        <a asp-page="/ImageAdmin/Index">
-                            Posts Images <i class="bi bi-arrow-right-circle"></i>
+                        <a asp-page="/ImageAdmin/Index" class="btn btn-dark">
+                            Images <i class="bi bi-arrow-right-circle"></i>
                         </a>
-                    </div>
-                    <div class="button">
-                        <a asp-page="/BlogAdmin/Edit">
+                        <a asp-page="/BlogAdmin/Edit" class="btn btn-dark">
                             Blog <i class="bi bi-arrow-right-circle"></i>
                         </a>
-                    </div>
                 </div>
             </div>
         </div>
