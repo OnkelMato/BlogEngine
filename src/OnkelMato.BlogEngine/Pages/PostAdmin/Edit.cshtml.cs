@@ -20,17 +20,20 @@ public class EditModel : PageModel
     [BindProperty]
     public PostAdminModel Post { get; set; } = null!;
 
+    [BindProperty(Name = "redirect_uri", SupportsGet = true)]
+    public string? RedirectUri { get; set; }
+
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
         if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
-            return RedirectToPage("/Index");
+            return RedirectToPage(RedirectUri ?? "/Index");
 
         if (id == null)
         {
             return NotFound();
         }
 
-        var post = await _context.Posts.Include(x=> x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
+        var post = await _context.Posts.Include(x => x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
         if (post == null)
         {
             return NotFound();
@@ -79,7 +82,7 @@ public class EditModel : PageModel
         dbPost.HeaderImage = postHeaderImage;
         dbPost.ShowState = Post.ShowState.ToShowState();
         dbPost.MdPreview = Post.MdPreview;
-        
+
         try
         {
             await _context.SaveChangesAsync();
