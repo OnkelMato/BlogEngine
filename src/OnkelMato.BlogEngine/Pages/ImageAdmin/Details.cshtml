@@ -1,0 +1,51 @@
+﻿@page
+@model OnkelMato.BlogEngine.Pages.ImageAdmin.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<div class="col-md-6">
+    <div class="card">
+
+        <div class="card-header">
+            <h1>Details Post Image</h1>
+        </div>
+
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.PostImage.File)
+                </dt>
+                <dd class="col-sm-9">
+                    <img src="@Url.Content($"../Image?id={Model.PostImage.UniqueId}")" alt="@Model.PostImage.AltText" class="img-thumbnail" />
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.PostImage.Name)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.PostImage.Name)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.PostImage.AltText)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.PostImage.AltText)
+                </dd>
+                <dt class="col-sm-3">
+                    @Html.DisplayNameFor(model => model.PostImage.ContentType)
+                </dt>
+                <dd class="col-sm-9">
+                    @Html.DisplayFor(model => model.PostImage.ContentType)
+                </dd>
+            </dl>
+
+        </div>
+
+        <div class="card-footer">
+            <a asp-page="Edit" asp-route-id="@Model.PostImage.UniqueId" class="btn btn-primary">Edit</a>
+            <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+            <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+        </div>
+    </div>
+</div>

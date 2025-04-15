@@ -1,0 +1,15 @@
+﻿@model OnkelMato.BlogEngine.Web.ViewComponents.BlogMenuViewComponent
+
+@foreach (var item in Model.MenuPosts)
+{
+    <li class="nav-item">
+        @if (item.Url != null)
+        {
+            <a href="@item.Url" class="nav-link text-dark">@item.Title</a>
+        }
+        @if (item.Url == null && item.PostId != null)
+        {
+            <a asp-page="/Detail" asp-route-id="@item.PostId" class="nav-link text-dark">@item.Title</a>
+        }
+    </li>
+}

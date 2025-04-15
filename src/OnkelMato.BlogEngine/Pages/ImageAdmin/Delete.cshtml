@@ -1,0 +1,55 @@
+﻿@page
+@model OnkelMato.BlogEngine.Pages.ImageAdmin.DeleteModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="col-md-6">
+    <form method="post">
+        <div class="card">
+
+            <div class="card-header">
+                <h1>Delete Post Image</h1>
+                <p>Are you sure you want to delete this image?</p>
+            </div>
+
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">
+                        @Html.DisplayNameFor(model => model.PostImage.File)
+                    </dt>
+                    <dd class="col-sm-9">
+                        <img src="@Url.Content($"../Image?id={Model.PostImage.UniqueId}")" alt="@Model.PostImage.AltText" class="img-thumbnail" />
+                    </dd>
+                    <dt class="col-sm-3">
+                        @Html.DisplayNameFor(model => model.PostImage.Name)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.PostImage.Name)
+                    </dd>
+                    <dt class="col-sm-3">
+                        @Html.DisplayNameFor(model => model.PostImage.AltText)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.PostImage.AltText)
+                    </dd>
+                    <dt class="col-sm-3">
+                        @Html.DisplayNameFor(model => model.PostImage.ContentType)
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Html.DisplayFor(model => model.PostImage.ContentType)
+                    </dd>
+                </dl>
+
+            </div>
+
+            <div class="card-footer">
+                <input type="hidden" asp-for="PostImage.UniqueId" />
+                <input type="submit" value="Delete" class="btn btn-danger" />
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+            </div>
+        </div>
+    </form>
+</div>
