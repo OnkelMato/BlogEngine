@@ -12,6 +12,7 @@ public static class ShowStateExtensions
             ShowState.Blog => ShowStateModel.Blog,
             ShowState.Menu => ShowStateModel.Menu,
             ShowState.BlogAndMenu => ShowStateModel.BlogAndMenu,
+            ShowState.Link => ShowStateModel.Link,
             _ => throw new ArgumentOutOfRangeException(nameof(showState), showState, null)
         };
     }
@@ -24,6 +25,7 @@ public static class ShowStateExtensions
             ShowStateModel.Blog => ShowState.Blog,
             ShowStateModel.Menu => ShowState.Menu,
             ShowStateModel.BlogAndMenu => ShowState.BlogAndMenu,
+            ShowStateModel.Link => ShowState.Link,
             _ => throw new ArgumentOutOfRangeException(nameof(showState), showState, null)
         };
     }

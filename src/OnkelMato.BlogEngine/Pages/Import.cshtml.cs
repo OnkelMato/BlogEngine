@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
 using static OnkelMato.BlogEngine.Pages.BlogExportModel;
@@ -115,11 +113,11 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             context.Blogs.Update(blog);
         }
 
-        foreach (var post in blogExport.Posts)
-            DoImportPost(post, blog);
-
         foreach (var postImage in blogExport.PostImages)
             DoImportPostImage(postImage, blog);
+
+        foreach (var post in blogExport.Posts)
+            DoImportPost(post, blog);
     }
 
     private void DoImportPost(PostExportModel postExport, Blog blog)
@@ -171,6 +169,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                 Name = postImageExport.Name,
                 Image = postImageExport.Image,
                 IsPublished = postImageExport.IsPublished,
+                UpdatedAt = postImageExport.UpdatedAt,
                 CreatedAt = postImageExport.CreatedAt
             };
             context.PostImages.Add(postImageEntity);
@@ -183,6 +182,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             postImageEntity.Name = postImageExport.Name;
             postImageEntity.Image = postImageExport.Image;
             postImageEntity.IsPublished = postImageExport.IsPublished;
+            postImageEntity.UpdatedAt = postImageExport.UpdatedAt;
             postImageEntity.CreatedAt = postImageExport.CreatedAt;
             context.PostImages.Update(postImageEntity);
         }

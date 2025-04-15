@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.CodeAnalysis.Operations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
@@ -47,7 +46,7 @@ public class CreateModel : PageModel
 
 
         var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage && x.Blog == blog);
-        if (postHeaderImage is null)
+        if (postHeaderImage is not null)
         {
             ModelState.AddModelError(nameof(postHeaderImage), $"Cannot find header image {postHeaderImage} in post images of blog {blog.UniqueId}");
             return Page();

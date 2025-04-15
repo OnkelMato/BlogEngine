@@ -36,6 +36,7 @@ public static class RegistrationExtensions
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
         builder.Services.Configure<PostsConfiguration>(builder.Configuration.GetSection("Posts"));
+        builder.Services.AddScoped<BlogEngineRepository>(); // scoped because DbContext (dependency) is scoped
 
         return builder;
     }
@@ -93,7 +94,7 @@ public static class RegistrationExtensions
             var blog = new Blog()
             {
                 UniqueId = id,
-                Title = "My Blog",
+                Title = $"My Blog #{id}",
                 Description = "My Blog",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,

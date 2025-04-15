@@ -10,9 +10,6 @@ namespace OnkelMato.BlogEngine.Pages;
 
 public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
 {
-    private readonly BlogEngineContext _context = context;
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration;
-
     [BindProperty(SupportsGet = true)]
     public Guid Id { get; set; } = Guid.Empty;
 
@@ -24,8 +21,8 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         if (Entity is null)
             throw new ArgumentException(nameof(Entity));
 
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
         switch (Entity.ToLower())
         {
@@ -35,9 +32,9 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                     blog = await context.Blogs
                         .Include(x=> x.Posts)
                         .Include(x=> x.PostImages)
-                        .FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+                        .FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
 
-                    var filename = $"{blog.Title}.{DateTime.Now.ToString("yyyyMMdd-hhmm")}.json";
+                    var filename = $"{blog!.Title}.{DateTime.Now.ToString("yyyyMMdd-hhmm")}.json";
                     var export = CreateBlogExport(blog);
                     return File(Encoding.UTF8.GetBytes(export), "application/json", filename);
                 }
@@ -47,7 +44,7 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                         ? ((x) => x.Blog == blog)
                         : ((x) => x.UniqueId == Id && x.Blog == blog);
 
-                    var pst = _context.Posts.Where(filter).ToArray();
+                    var pst = context.Posts.Where(filter).ToArray();
                     var filename = pst.Length != 1
                         ? $"Posts.{DateTime.Now.ToShortDateString()}.json"
                         : $"{pst.First().Title}.json";
@@ -60,7 +57,7 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                         ? ((x) => x.Blog == blog)
                         : ((x) => x.UniqueId == Id && x.Blog == blog);
 
-                    var img = _context.PostImages.Where(filter);
+                    var img = context.PostImages.Where(filter);
                     var filename = img.Count() != 1
                         ? $"PostImages.{DateTime.Now.ToShortDateString()}.json"
                         : $"{img.First().Name}.json";

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
-using System.Reflection.Metadata;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
