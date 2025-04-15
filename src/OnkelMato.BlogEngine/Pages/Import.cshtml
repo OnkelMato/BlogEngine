@@ -10,7 +10,7 @@
         <div class="card">
 
             <div class="card-header">
-                <h1>Import Postss and Images</h1>
+                <h1>Import Blog</h1>
             </div>
 
             <div class="card-body">
@@ -19,6 +19,15 @@
                     <div class="card alert-danger">
                         <div class="card-body">
                             <p>Unsigned imports are turned on. This should be turned off in production.</p>
+                        </div>
+                    </div>
+                }
+                @if (!Model.AcceptUnsignedImport)
+                {
+                    <div class="card alert-info">
+                        <div class="card-body">
+                            <p>The import requires a json with the export and a valid RSA signature to import the file.<br />
+                                Make sure you have the proper private key.</p>
                         </div>
                     </div>
                 }

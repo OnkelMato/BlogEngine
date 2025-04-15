@@ -26,6 +26,8 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
 
     public IList<PostModel> Posts { get; set; } = [];
 
+    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowBlogAdministration;
+    
     [BindProperty(SupportsGet = true)] public int CurrentPage { get; set; } = 1;
     public int NumOfPages { get; set; }
 

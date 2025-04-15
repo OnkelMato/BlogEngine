@@ -18,8 +18,18 @@
             </div>
             <div class="card-footer text-right">
                 <a asp-page="/Index" class="btn btn-dark">
-                    <i class="bi bi-arrow-left-circle"></i>
+                    <i class="bi bi-arrow-left-circle"></i> Zur&uuml;ck
                 </a>
+                @if (Model.AllowBlogAdministration)
+                {
+                    <a asp-page="/PostAdmin/Edit" asp-route-id="@Model.Post.UniqueId" class="btn btn-dark">
+                        <i class="bi bi-pen"></i> Bearbeiten
+                    </a>
+                    <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@Model.Post.UniqueId" class="btn btn-warning">
+                        <i class="bi bi-save"></i> Exportieren
+                    </a>
+                }
+            </div>
             </div>
         </div>
     </div>

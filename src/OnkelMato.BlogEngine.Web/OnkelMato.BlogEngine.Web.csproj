@@ -13,30 +13,33 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <DebugType>none</DebugType>
+		<DebugType>none</DebugType>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <DebugType>none</DebugType>
+		<DebugType>none</DebugType>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="demo.crt">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+		<Content Include="demo.crt">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Markdig" Version="0.40.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.14" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0">
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" >
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 		<PackageReference Include="System.Text.Json" Version="9.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\OnkelMato.BlogEngine\OnkelMato.BlogEngine.csproj" />
+		<ProjectReference Include="..\OnkelMato.BlogEngine\OnkelMato.BlogEngine.csproj" />
 	</ItemGroup>
 
 </Project>

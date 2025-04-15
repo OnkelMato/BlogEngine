@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
-public class DetailModel(BlogEngineRepository repository, IOptions<PostsConfiguration> postsConfiguration) : PageModel
+public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
 {
     public class PostModel
     {
@@ -22,8 +22,9 @@ public class DetailModel(BlogEngineRepository repository, IOptions<PostsConfigur
     }
 
     private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    private readonly PostsConfiguration _postsConfiguration = postsConfiguration.Value ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
+    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowBlogAdministration;
     public PostModel Post { get; set; } = new PostModel();
 
     [BindProperty(SupportsGet = true)]
