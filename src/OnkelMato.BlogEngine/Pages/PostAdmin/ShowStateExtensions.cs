@@ -11,8 +11,13 @@ public static class ShowStateExtensions
             ShowState.None => ShowStateModel.None,
             ShowState.Blog => ShowStateModel.Blog,
             ShowState.Menu => ShowStateModel.Menu,
+            ShowState.Footer => ShowStateModel.Footer,
+
             ShowState.BlogAndMenu => ShowStateModel.BlogAndMenu,
-            ShowState.Link => ShowStateModel.Link,
+            ShowState.BlogAndFooter => ShowStateModel.Blog,
+            ShowState.LinkAndMenu => ShowStateModel.LinkAndMenu,
+            ShowState.LinkAndFooter => ShowStateModel.LinkAndFooter,
+
             _ => throw new ArgumentOutOfRangeException(nameof(showState), showState, null)
         };
     }
@@ -24,8 +29,13 @@ public static class ShowStateExtensions
             ShowStateModel.None => ShowState.None,
             ShowStateModel.Blog => ShowState.Blog,
             ShowStateModel.Menu => ShowState.Menu,
+            ShowStateModel.Footer => ShowState.Footer,
+
             ShowStateModel.BlogAndMenu => ShowState.BlogAndMenu,
-            ShowStateModel.Link => ShowState.Link,
+            ShowStateModel.BlogAndFooter => ShowState.BlogAndFooter,
+            ShowStateModel.LinkAndMenu => ShowState.LinkAndMenu,
+            ShowStateModel.LinkAndFooter => ShowState.LinkAndFooter,
+
             _ => throw new ArgumentOutOfRangeException(nameof(showState), showState, null)
         };
     }

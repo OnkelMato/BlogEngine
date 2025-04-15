@@ -7,7 +7,7 @@
 
 <div class="row">
     <div class="col-sm-12">
-        <div class="card">
+        <div class="card post-detail">
             <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(Model.Post.HeaderImage)');">
                 <h6>@Html.DisplayFor(item => item.Post.UpdatedAt)</h6>
                 <h1>@Html.DisplayFor(modelItem => Model.Post.Title)</h1>
@@ -29,7 +29,6 @@
                         <i class="bi bi-save"></i> Exportieren
                     </a>
                 }
-            </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,13 @@
+﻿@model OnkelMato.BlogEngine.Web.ViewComponents.BlogFooterViewComponent
+
+@foreach (var item in Model.MenuPosts)
+{
+    @if (item.Url != null)
+    {
+        <a href="@item.Url">@item.Title</a> <text> |</text>
+    }
+    @if (item.Url == null && item.PostId != null)
+    {
+        <a asp-page="/Detail" asp-route-id="@item.PostId">@item.Title</a><text> |</text>
+    }
+}

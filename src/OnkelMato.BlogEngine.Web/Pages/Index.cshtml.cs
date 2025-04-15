@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -47,8 +48,8 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
                 UniqueId = x.UniqueId,
                 UpdatedAt = x.UpdatedAt,
                 HasContent = x.MdContent != null,
-                HeaderImage = (x.HeaderImage != null) ? x.HeaderImage.UniqueId : null,
-                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null)
+                HeaderImage = x.HeaderImage?.UniqueId,
+                HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null)
             }).ToList();
 
         return Page();

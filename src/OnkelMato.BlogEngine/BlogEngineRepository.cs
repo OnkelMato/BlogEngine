@@ -49,7 +49,7 @@ public class BlogEngineRepository
             .Include(x => x.HeaderImage)
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu))
-            .OrderBy(x => x.Order)
+            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt)
             .Skip((currentPage - 1) * _settings.CurrentValue.PageSize)
             .Take(_settings.CurrentValue.PageSize);
     }
@@ -68,8 +68,22 @@ public class BlogEngineRepository
 
         return _context
             .Posts
+            // todo use flag and or
             .Where(x => x.Blog == _lazyBlog.Value &&
-                        (x.ShowState == ShowState.Menu || x.ShowState == ShowState.BlogAndMenu || x.ShowState == ShowState.Link))
-            .OrderBy(x => x.Order);
+                        (x.ShowState == ShowState.Menu || x.ShowState == ShowState.BlogAndMenu || x.ShowState == ShowState.LinkAndMenu))
+            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt);
+    }
+
+    public IEnumerable<Post> PostsInFooter()
+    {
+        if (_lazyBlog.Value == null)
+            throw new InvalidOperationException($"Configured blog {_settings.CurrentValue.BlogUniqueId} cannot be found");
+
+        return _context
+            .Posts
+            // todo use flag and or
+            .Where(x => x.Blog == _lazyBlog.Value &&
+                        (x.ShowState == ShowState.Footer || x.ShowState == ShowState.BlogAndFooter || x.ShowState == ShowState.LinkAndFooter))
+            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt);
     }
 }

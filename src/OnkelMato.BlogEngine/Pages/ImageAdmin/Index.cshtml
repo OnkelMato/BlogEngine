@@ -56,13 +56,14 @@
                                             <a asp-page="./Edit" asp-route-id="@item.UniqueId" class="btn btn-primary">Edit</a>
                                             <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
                                         }
+                                        <a onclick="navigator.clipboard.writeText('@item.UniqueId');" class="btn btn-primary">Copy UID</a>
                                         <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
                                         <a asp-page="/Image" asp-route-id="@item.UniqueId" class="btn btn-primary">Show</a>
                                         <a asp-page="/Export" asp-route-entity="PostImages" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
                                     </td>
                                 </tr>
                             }
-                        </tbody>
+                        </tbody>navigator.clipboard.writeText(copyText.value);
                     </table>
                 </div>
 
@@ -77,4 +78,3 @@
         </div>
     </form>
 </div>
-

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -41,9 +42,9 @@ public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsC
             Title = x.Title,
             UniqueId = x.UniqueId,
             UpdatedAt = x.UpdatedAt,
-            HeaderImage = x.HeaderImage == null ? null : x.HeaderImage.UniqueId,
-            HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
-            HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
+            HeaderImage = x.HeaderImage?.UniqueId,
+            HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null),
+            HtmlContent = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdContent) ?? string.Empty, null, null)
         };
 
         return Page();

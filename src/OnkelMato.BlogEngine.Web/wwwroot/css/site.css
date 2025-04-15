@@ -36,6 +36,7 @@ footer {
     font-weight: bolder;
 }
 
+/* there is sth in bootstrap */
 .card {
     margin: 10px;
 }
@@ -48,4 +49,8 @@ footer {
 .card img {
     max-height: 100%;
     max-width: 100%;
+}
+
+.post-detail img {
+    width: 300px;
 }
