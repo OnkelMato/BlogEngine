@@ -1,0 +1,68 @@
+﻿@page
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using OnkelMato.BlogEngine.Pages.PostAdmin
+@model OnkelMato.BlogEngine.Pages.PostAdmin.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div class="col-md-12">
+        <div class="card">
+
+            <div class="card-header">
+                <h1>Edit Post</h1>
+            </div>
+
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Post.UniqueId" />
+                <div class="form-group">
+                    <label asp-for="Post.Order" class="control-label"></label>
+                    <input asp-for="Post.Order" class="form-control" />
+                    <span asp-validation-for="Post.Order" class="text-danger"></span>
+                </div>
+                <div>
+                    <label asp-for="Post.ShowState" class="control-label"></label>
+                    <select asp-for="Post.ShowState" asp-items="Html.GetEnumSelectList<ShowStateModel>()">
+                    </select>
+                    <span asp-validation-for="Post.ShowState" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Post.Title" class="control-label"></label>
+                    <input asp-for="Post.Title" class="form-control" />
+                    <span asp-validation-for="Post.Title" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Post.MdPreview" class="control-label"></label>
+                    <textarea asp-for="Post.MdPreview" class="form-control" rows="10" cols="60"></textarea>
+                    <span asp-validation-for="Post.MdPreview" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Post.MdContent" class="control-label"></label>
+                    <textarea asp-for="Post.MdContent" class="form-control" rows="30" cols="60"></textarea>
+                    <span asp-validation-for="Post.MdContent" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Post.HeaderImage" class="control-label"></label>
+                    <input asp-for="Post.HeaderImage" class="form-control" />
+                    <span asp-validation-for="Post.HeaderImage" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
