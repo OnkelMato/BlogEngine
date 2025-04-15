@@ -27,7 +27,7 @@ public class PostAdminModel
 
     public int Order { get; set; } = 1000;
 
-    [Display(Name = "Posts Image Guid")] public Guid? HeaderImage { get; set; } = Guid.Empty;
+    [Display(Name = "Posts Image Guid")] public Guid? HeaderImage { get; set; }
 
     [Display(Name = "Posts Image")]
     public bool HasHeaderImage => HeaderImage is not null;

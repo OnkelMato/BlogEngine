@@ -9,9 +9,9 @@ namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 public class EditModel : PageModel
 {
     private readonly BlogEngineContext _context;
-    private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration;
+    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration;
 
-    public EditModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+    public EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
@@ -22,7 +22,7 @@ public class EditModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.Value.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
             return RedirectToPage("/Index");
 
         if (id == null)
@@ -59,8 +59,19 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage);
-        var dbPost = await _context.Posts.SingleAsync(m => m.UniqueId == Post.UniqueId);
+        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
+        var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage && x.Blog == blog);
+
+        if (Post.HeaderImage != null && postHeaderImage is null)
+        {
+            ModelState.AddModelError("Post.HeaderImage", $"Cannot find header image {Post.HeaderImage} in images");
+            return Page();
+        }
+
+        var dbPost = await _context.Posts.SingleAsync(m => m.UniqueId == Post.UniqueId && m.Blog == blog);
+
         dbPost.MdContent = Post.MdContent;
         dbPost.Title = Post.Title;
         dbPost.Order = Post.Order;

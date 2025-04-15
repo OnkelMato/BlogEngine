@@ -44,14 +44,12 @@ public class CreateModel : PageModel
         var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
         if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
-
         var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage && x.Blog == blog);
-        if (postHeaderImage is not null)
+        if (Post.HeaderImage != null && postHeaderImage is null)
         {
-            ModelState.AddModelError(nameof(postHeaderImage), $"Cannot find header image {postHeaderImage} in post images of blog {blog.UniqueId}");
+            ModelState.AddModelError(nameof(Post.HeaderImage), $"Cannot find header image {Post.HeaderImage} in post images of blog {blog.UniqueId}");
             return Page();
         }
-
 
         _context.Posts.Add(new Post()
         {

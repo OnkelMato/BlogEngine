@@ -23,10 +23,8 @@ public class Program
         }
 
         app.EnsureDatabase();
-
         app.UseStaticFiles();
         app.UseRouting();
-        app.UseAuthorization();
         app.MapRazorPages();
         app.Run();
     }
