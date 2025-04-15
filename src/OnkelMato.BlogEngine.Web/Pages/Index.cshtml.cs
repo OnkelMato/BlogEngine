@@ -49,7 +49,8 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
                 UpdatedAt = x.UpdatedAt,
                 HasContent = x.MdContent != null,
                 HeaderImage = x.HeaderImage?.UniqueId,
-                HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null)
+                //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null)
+                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null)
             }).ToList();
 
         return Page();

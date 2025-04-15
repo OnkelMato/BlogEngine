@@ -43,8 +43,10 @@ public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsC
             UniqueId = x.UniqueId,
             UpdatedAt = x.UpdatedAt,
             HeaderImage = x.HeaderImage?.UniqueId,
-            HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null),
-            HtmlContent = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdContent) ?? string.Empty, null, null)
+            //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null),
+            //HtmlContent = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdContent) ?? string.Empty, null, null)
+            HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
+            HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
         };
 
         return Page();
