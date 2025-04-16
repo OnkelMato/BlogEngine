@@ -21,12 +21,14 @@ public static class RegistrationExtensions
             builder.Services
                 .AddDbContext<BlogEngineContext>(options =>
                     options.UseSqlServer(connectionString));
+            EnsureDatabase(new SqlServerBlogEngineContext(connectionString));
         }
         else if (string.Compare(databaseProvider, "sqlite", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
             builder.Services
                 .AddDbContext<BlogEngineContext>(options =>
                     options.UseSqlite(connectionString));
+            EnsureDatabase(new SqliteBlogEngineContext(connectionString));
         }
         else
         {
@@ -41,15 +43,30 @@ public static class RegistrationExtensions
         return builder;
     }
 
+
+
+
+    public static void EnsureDatabase(BlogEngineContext db)
+    {
+        var missing = db.Database.GetPendingMigrations();
+        if (missing.Any())
+            db.Database.Migrate();
+    }
+
+
+
+
+
     public static WebApplication EnsureDatabase(this WebApplication app)
     {
         // create database if not exists
         var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+
+        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
         var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
         var missing = db.Database.GetPendingMigrations();
         if (missing.Any())
             db.Database.Migrate();
-        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
         s.Dispose();
 
         app.EnsureBlog();

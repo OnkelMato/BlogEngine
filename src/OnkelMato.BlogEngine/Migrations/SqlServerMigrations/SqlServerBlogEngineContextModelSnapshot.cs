@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnkelMato.BlogEngine.Database;
 
 #nullable disable
 
-namespace OnkelMato.BlogEngine.Migrations
+namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
 {
-    [DbContext(typeof(BlogEngineContext))]
-    [Migration("20250413104512_InitialBlogEngine")]
-    partial class InitialBlogEngine
+    [DbContext(typeof(SqlServerBlogEngineContext))]
+    partial class SqlServerBlogEngineContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,7 +182,7 @@ namespace OnkelMato.BlogEngine.Migrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Database.PostImage", b =>
                 {
                     b.HasOne("OnkelMato.BlogEngine.Database.Blog", "Blog")
-                        .WithMany()
+                        .WithMany("PostImages")
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -195,6 +192,8 @@ namespace OnkelMato.BlogEngine.Migrations
 
             modelBuilder.Entity("OnkelMato.BlogEngine.Database.Blog", b =>
                 {
+                    b.Navigation("PostImages");
+
                     b.Navigation("Posts");
                 });
 #pragma warning restore 612, 618

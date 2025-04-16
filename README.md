@@ -11,3 +11,13 @@ Das Project basiert auf einer klassischen ASP.NET Razor Seite mit einem Entity F
 ## Developer Settings
 
     export ASPNETCORE_ENVIRONMENT=Development
+
+## DB Support
+
+Migrations for each RDBMS
+
+    dotnet ef migrations add InitialCreate --context SqlServerBlogEngineContext --output-dir Migrations/SqlServerMigrations
+
+    dotnet ef migrations add InitialCreate --context SqliteBlogEngineContext --output-dir Migrations/SqliteMigrations
+    
+
