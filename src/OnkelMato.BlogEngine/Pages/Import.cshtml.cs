@@ -137,7 +137,8 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                 ShowState = (ShowState)postExport.ShowState,
                 MdPreview = postExport.MdPreview,
                 Order = postExport.Order,
-                CreatedAt = postExport.CreatedAt
+                CreatedAt = postExport.CreatedAt,
+                PublishedAt = postExport.PublishedAt
             };
             context.Posts.Add(postEntity);
         }
@@ -151,6 +152,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             postEntity.ShowState = (ShowState)postExport.ShowState;
             postEntity.MdPreview = postExport.MdPreview;
             postEntity.CreatedAt = postExport.CreatedAt;
+            postEntity.PublishedAt = (postExport.PublishedAt == DateTime.MinValue) ? postExport.CreatedAt : postExport.PublishedAt;
             context.Posts.Update(postEntity);
         }
     }

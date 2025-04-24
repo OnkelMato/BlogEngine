@@ -35,6 +35,7 @@ public class DeleteModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         {
             MdContent = _originalPost.MdContent,
             MdPreview = _originalPost.MdPreview,
+            PublishedAt = _originalPost.PublishedAt,
             Title = _originalPost.Title,
             UniqueId = _originalPost.UniqueId,
             UpdatedAt = _originalPost.UpdatedAt

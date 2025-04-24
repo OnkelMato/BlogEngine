@@ -26,6 +26,7 @@
             public int Order { get; set; } = 1000;
             public Guid? HeaderImage { get; set; }
 
+            public DateTime PublishedAt { get; set; }
         }
 
         public string? Title { get; set; }

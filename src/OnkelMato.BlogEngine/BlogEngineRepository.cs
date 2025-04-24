@@ -49,7 +49,7 @@ public class BlogEngineRepository
             .Include(x => x.HeaderImage)
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt)
+            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
             .Skip((currentPage - 1) * _settings.CurrentValue.PageSize)
             .Take(_settings.CurrentValue.PageSize);
     }
@@ -71,7 +71,7 @@ public class BlogEngineRepository
             // todo use flag and or
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowState.Menu || x.ShowState == ShowState.BlogAndMenu || x.ShowState == ShowState.LinkAndMenu))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt);
+            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
     }
 
     public IEnumerable<Post> PostsInFooter()
@@ -84,6 +84,6 @@ public class BlogEngineRepository
             // todo use flag and or
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowState.Footer || x.ShowState == ShowState.BlogAndFooter || x.ShowState == ShowState.LinkAndFooter))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt);
+            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
     }
 }

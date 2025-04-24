@@ -23,6 +23,7 @@ public class IndexModel(BlogEngineContext context, IOptionsMonitor<PostsConfigur
         Posts = await _context.Posts
             .Where(x => x.Blog == blog)
             .OrderBy(x => x.Order)
+            .ThenByDescending(x => x.PublishedAt)
             .Select(x => new PostAdminModel()
             {
                 UniqueId = x.UniqueId,
@@ -32,6 +33,7 @@ public class IndexModel(BlogEngineContext context, IOptionsMonitor<PostsConfigur
                 UpdatedAt = x.UpdatedAt,
                 HeaderImage = x.HeaderImage == null ? null : x.HeaderImage.UniqueId,
                 Order = x.Order,
+                PublishedAt = x.PublishedAt,
                 ShowState = x.ShowState.ToShowStateModel()
             })
             .ToListAsync();

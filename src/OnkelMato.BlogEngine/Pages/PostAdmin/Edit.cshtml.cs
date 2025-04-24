@@ -44,6 +44,7 @@ public class EditModel : PageModel
             Title = post.Title,
             MdContent = post.MdContent,
             UpdatedAt = post.UpdatedAt,
+            PublishedAt = post.PublishedAt,
             Order = post.Order,
             ShowState = post.ShowState.ToShowStateModel(),
             HeaderImage = post.HeaderImage?.UniqueId,
@@ -78,6 +79,7 @@ public class EditModel : PageModel
         dbPost.MdContent = Post.MdContent;
         dbPost.Title = Post.Title;
         dbPost.Order = Post.Order;
+        dbPost.PublishedAt = Post.PublishedAt;
         dbPost.UpdatedAt = DateTime.Now;
         dbPost.HeaderImage = postHeaderImage;
         dbPost.ShowState = Post.ShowState.ToShowState();

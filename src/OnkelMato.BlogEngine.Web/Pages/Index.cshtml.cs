@@ -20,6 +20,8 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
         public string HtmlPreview { get; set; } = string.Empty;
         public bool HasContent { get; set; }
         public Guid? HeaderImage { get; set; }
+
+        public DateTime PublishedAt { get; set; }
     }
 
     private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -47,6 +49,7 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
                 Title = x.Title,
                 UniqueId = x.UniqueId,
                 UpdatedAt = x.UpdatedAt,
+                PublishedAt = x.PublishedAt,
                 HasContent = x.MdContent != null,
                 HeaderImage = x.HeaderImage?.UniqueId,
                 //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null)

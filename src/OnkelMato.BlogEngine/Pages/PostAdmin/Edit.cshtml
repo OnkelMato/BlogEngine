@@ -30,6 +30,11 @@
                     </select>
                     <span asp-validation-for="Post.ShowState" class="text-danger"></span>
                 </div>
+                <div>
+                    <label asp-for="Post.PublishedAt" class="control-label"></label>
+                    <input asp-for="Post.PublishedAt" class="form-control" asp-format="{0:yyyy-MM-ddTHH:mm}" />
+                    <span asp-validation-for="Post.PublishedAt" class="text-danger"></span>
+                </div>
                 <div class="form-group">
                     <label asp-for="Post.Title" class="control-label"></label>
                     <input asp-for="Post.Title" class="form-control" />

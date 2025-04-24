@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Hosting;
 using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages;
@@ -33,6 +34,7 @@ public static class ExportModelExtensions
             ShowState = (int)post.ShowState,
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
+            PublishedAt = post.PublishedAt,
             Order = post.Order
         };
     }

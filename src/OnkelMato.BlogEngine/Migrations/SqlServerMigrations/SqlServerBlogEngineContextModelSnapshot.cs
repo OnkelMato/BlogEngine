@@ -74,7 +74,7 @@ namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
                         .HasColumnType("int");
 
                     b.Property<string>("MdContent")
-                        .HasMaxLength(4096)
+                        .HasMaxLength(2147483647)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MdPreview")
@@ -84,6 +84,9 @@ namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ShowState")
                         .HasColumnType("int");
@@ -162,6 +165,37 @@ namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
                     b.ToTable("PostImages");
                 });
 
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.PostTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BlogId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid>("UniqueId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostTag");
+                });
+
             modelBuilder.Entity("OnkelMato.BlogEngine.Database.Post", b =>
                 {
                     b.HasOne("OnkelMato.BlogEngine.Database.Blog", "Blog")
@@ -190,11 +224,33 @@ namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
                     b.Navigation("Blog");
                 });
 
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.PostTag", b =>
+                {
+                    b.HasOne("OnkelMato.BlogEngine.Database.Blog", "Blog")
+                        .WithMany("PostTags")
+                        .HasForeignKey("BlogId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnkelMato.BlogEngine.Database.Post", null)
+                        .WithMany("PostTags")
+                        .HasForeignKey("PostId");
+
+                    b.Navigation("Blog");
+                });
+
             modelBuilder.Entity("OnkelMato.BlogEngine.Database.Blog", b =>
                 {
                     b.Navigation("PostImages");
 
+                    b.Navigation("PostTags");
+
                     b.Navigation("Posts");
+                });
+
+            modelBuilder.Entity("OnkelMato.BlogEngine.Database.Post", b =>
+                {
+                    b.Navigation("PostTags");
                 });
 #pragma warning restore 612, 618
         }

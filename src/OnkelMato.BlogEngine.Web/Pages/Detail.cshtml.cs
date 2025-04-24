@@ -20,6 +20,8 @@ public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsC
         public DateTime UpdatedAt { get; set; }
 
         public Guid? HeaderImage { get; set; }
+
+        public DateTime PublishedAt { get; set; }
     }
 
     private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -42,6 +44,7 @@ public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsC
             Title = x.Title,
             UniqueId = x.UniqueId,
             UpdatedAt = x.UpdatedAt,
+            PublishedAt = x.PublishedAt,
             HeaderImage = x.HeaderImage?.UniqueId,
             //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null),
             //HtmlContent = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdContent) ?? string.Empty, null, null)
