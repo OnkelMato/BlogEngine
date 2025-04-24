@@ -43,6 +43,7 @@ public class DetailsModel : PageModel
                 MdContent = post.MdContent,
                 MdPreview = post.MdPreview,
                 UpdatedAt = post.UpdatedAt,
+                PublishedAt = post.PublishedAt,
                 ShowState = post.ShowState.ToShowStateModel(),
                 Order = post.Order,
                 HeaderImage = post.HeaderImage?.UniqueId,

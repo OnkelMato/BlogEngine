@@ -12,13 +12,26 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
     private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
     private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
+    public class BlogEngineInfo
+    {
+        public string Version { get; set; } = "N/A";
+        public string VersionSourceSha { get; set; } = "N/A";
+        public string UncommittedChanges { get; set; } = "N/A";
+        public string BranchName { get; set; } = "N/A";
+    }
+
     [BindProperty]
     public BlogAdminModel Blog { get; set; } = null!;
 
+    public BlogEngineInfo EngineInfo { get; set; } = new();
+
+    public bool AllowBlogAdministration { get; set; } = false;
+
+
     public async Task<IActionResult> OnGetAsync()
     {
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
-            return RedirectToPage("/Index");
+        AllowBlogAdministration = _postsConfiguration.CurrentValue.AllowBlogAdministration;
+        EngineInfo = GetBlogEngineInfo();
 
         var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
         if (blog == null) { return NotFound("Blog not found"); }
@@ -34,6 +47,9 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
 
     public async Task<IActionResult> OnPostAsync()
     {
+        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+            return Page();
+
         if (!ModelState.IsValid)
         {
             return Page();
@@ -64,5 +80,17 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
         }
 
         return RedirectToPage("/Admin");
+    }
+
+    private static BlogEngineInfo GetBlogEngineInfo()
+    {
+        return new BlogEngineInfo()
+        {
+            Version = typeof(BlogEngineContext).Assembly.GetName().Version?.ToString() ?? "N/A",
+            //Version = (typeof(BlogEngineContext).Assembly.GetName().Version?.ToString() ?? "N/A") + $" ({GitVersionInformation.AssemblySemVer})" ,
+            //VersionSourceSha = GitVersionInformation.VersionSourceSha,
+            //UncommittedChanges = GitVersionInformation.UncommittedChanges,
+            //BranchName = GitVersionInformation.BranchName,
+        };
     }
 }

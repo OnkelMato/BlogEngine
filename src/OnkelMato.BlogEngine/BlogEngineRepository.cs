@@ -29,6 +29,7 @@ public class BlogEngineRepository
     /// <exception cref="InvalidOperationException">Configured blog cannot be found</exception>
     public Blog? Blog() => _lazyBlog.Value;
 
+
     public int PostsOnBlogCount()
     {
         if (_lazyBlog.Value == null)
@@ -37,7 +38,7 @@ public class BlogEngineRepository
         return _context
             .Posts
             .Count(x => x.Blog == _lazyBlog.Value && 
-                        (x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu));
+                        (x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu || x.ShowState == ShowState.BlogAndFooter));
     }
 
     public IEnumerable<Post> PostsOnBlog(int currentPage)
@@ -48,8 +49,8 @@ public class BlogEngineRepository
         return _context.Posts
             .Include(x => x.HeaderImage)
             .Where(x => x.Blog == _lazyBlog.Value &&
-                        (x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt)
+                        (x.ShowState == ShowState.Blog || x.ShowState == ShowState.BlogAndMenu || x.ShowState == ShowState.BlogAndFooter))
+            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
             .Skip((currentPage - 1) * _settings.CurrentValue.PageSize)
             .Take(_settings.CurrentValue.PageSize);
     }
@@ -71,7 +72,7 @@ public class BlogEngineRepository
             // todo use flag and or
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowState.Menu || x.ShowState == ShowState.BlogAndMenu || x.ShowState == ShowState.LinkAndMenu))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt);
+            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
     }
 
     public IEnumerable<Post> PostsInFooter()
@@ -84,6 +85,6 @@ public class BlogEngineRepository
             // todo use flag and or
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowState.Footer || x.ShowState == ShowState.BlogAndFooter || x.ShowState == ShowState.LinkAndFooter))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.UpdatedAt);
+            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
     }
 }

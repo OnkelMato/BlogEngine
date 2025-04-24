@@ -13,7 +13,7 @@
         <div class="col-md-12">
             <div class="card">
 
-                <div class="card-header">
+                <div class="card-header text-light bg-dark">
                     <h1>Index Posts</h1>
                 </div>
 
@@ -31,7 +31,7 @@
                                     @Html.DisplayNameFor(model => model.Posts.First().MdPreview)
                                 </th>
                                 <th>
-                                    @Html.DisplayNameFor(model => model.Posts.First().UpdatedAt)
+                                    @Html.DisplayNameFor(model => model.Posts.First().PublishedAt)
                                 </th>
                                 <th>
                                     @Html.DisplayNameFor(model => model.Posts.First().ShowState)
@@ -53,7 +53,7 @@
                                         <p>@Html.DisplayFor(modelItem => item.MdPreview)</p>
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.UpdatedAt)
+                                        @Html.DisplayFor(modelItem => item.PublishedAt)
                                     </td>
                                     <td>
                                         @Html.DisplayFor(modelItem => item.ShowState)

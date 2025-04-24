@@ -15,18 +15,21 @@ public static class RegistrationExtensions
                                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         var databaseProvider = builder.Configuration.GetConnectionString("DefaultProvider") ?? "mssql";
 
-        // strategy pattern?
         if (string.Compare(databaseProvider, "mssql", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
             builder.Services
                 .AddDbContext<BlogEngineContext>(options =>
                     options.UseSqlServer(connectionString));
+            // here we need the concrete context because of automatic DCL script creation and deployment
+            EnsureDatabase(new SqlServerBlogEngineContext(connectionString));
         }
         else if (string.Compare(databaseProvider, "sqlite", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
             builder.Services
                 .AddDbContext<BlogEngineContext>(options =>
                     options.UseSqlite(connectionString));
+            // here we need the concrete context because of automatic DCL script creation and deployment
+            EnsureDatabase(new SqliteBlogEngineContext(connectionString));
         }
         else
         {
@@ -41,15 +44,27 @@ public static class RegistrationExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Parameter must be the concrete type depending on database provider
+    /// </summary>
+    /// <param name="db"></param>
+    public static void EnsureDatabase(BlogEngineContext db)
+    {
+        var missing = db.Database.GetPendingMigrations();
+        if (missing.Any())
+            db.Database.Migrate();
+    }
+
     public static WebApplication EnsureDatabase(this WebApplication app)
     {
         // create database if not exists
         var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+
+        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
         var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
         var missing = db.Database.GetPendingMigrations();
         if (missing.Any())
             db.Database.Migrate();
-        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
         s.Dispose();
 
         app.EnsureBlog();

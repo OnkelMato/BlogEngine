@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
+using SQLitePCL;
 using static OnkelMato.BlogEngine.Pages.BlogExportModel;
 
 namespace OnkelMato.BlogEngine.Pages;
@@ -88,6 +90,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             case "blog":
                 {
                     var importData = JsonSerializer.Deserialize<BlogExportModel>(JsonDocument!) ?? new();
+
                     DoImportBlog(importData, blog);
 
                     await context.SaveChangesAsync();
@@ -98,14 +101,14 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         }
     }
 
-    private void DoImportBlog(BlogExportModel importData, Blog blog)
+    private void DoImportBlog(BlogExportModel blogExport, Blog blog)
     {
-        var blogExport = JsonSerializer.Deserialize<BlogExportModel>(JsonDocument!) ?? new();
+        var blogNameExists = context.Blogs.Any(x => x.Title == blogExport.Title && x.UniqueId != blog.UniqueId);
 
         // in case only a post or image was exported, the export values will be null.
         if (blogExport.IsFullExport)
         {
-            blog.Title = blogExport.Title ?? blog.Title;
+            blog.Title = blogNameExists ? blog.Title : (blogExport.Title ?? blog.Title);
             blog.Description = blogExport.Description;
             blog.UpdatedAt = DateTime.Now;
             blog.CreatedAt = blogExport.CreatedAt;
@@ -115,6 +118,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
         foreach (var postImage in blogExport.PostImages)
             DoImportPostImage(postImage, blog);
+        //context.SaveChanges();
 
         foreach (var post in blogExport.Posts)
             DoImportPost(post, blog);
@@ -123,7 +127,9 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
     private void DoImportPost(PostExportModel postExport, Blog blog)
     {
         var postEntity = context.Posts.SingleOrDefault(x => x.UniqueId == postExport.UniqueId && x.Blog == blog);
-        var headerImage = context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
+        //var headerImage = context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
+        var headerImage = context.PostImages.Local.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog) 
+                          ?? context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
         if (postEntity is null)
         {
             postEntity = new Post()
@@ -137,7 +143,8 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                 ShowState = (ShowState)postExport.ShowState,
                 MdPreview = postExport.MdPreview,
                 Order = postExport.Order,
-                CreatedAt = postExport.CreatedAt
+                CreatedAt = postExport.CreatedAt,
+                PublishedAt = postExport.PublishedAt
             };
             context.Posts.Add(postEntity);
         }
@@ -151,6 +158,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             postEntity.ShowState = (ShowState)postExport.ShowState;
             postEntity.MdPreview = postExport.MdPreview;
             postEntity.CreatedAt = postExport.CreatedAt;
+            postEntity.PublishedAt = (postExport.PublishedAt == DateTime.MinValue) ? postExport.CreatedAt : postExport.PublishedAt;
             context.Posts.Update(postEntity);
         }
     }

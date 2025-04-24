@@ -20,17 +20,20 @@ public class EditModel : PageModel
     [BindProperty]
     public PostAdminModel Post { get; set; } = null!;
 
+    [BindProperty(Name = "redirect_uri", SupportsGet = true)]
+    public string? RedirectUri { get; set; }
+
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
         if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
-            return RedirectToPage("/Index");
+            return RedirectToPage(RedirectUri ?? "/Index");
 
         if (id == null)
         {
             return NotFound();
         }
 
-        var post = await _context.Posts.Include(x=> x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
+        var post = await _context.Posts.Include(x => x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
         if (post == null)
         {
             return NotFound();
@@ -41,6 +44,7 @@ public class EditModel : PageModel
             Title = post.Title,
             MdContent = post.MdContent,
             UpdatedAt = post.UpdatedAt,
+            PublishedAt = post.PublishedAt,
             Order = post.Order,
             ShowState = post.ShowState.ToShowStateModel(),
             HeaderImage = post.HeaderImage?.UniqueId,
@@ -75,11 +79,12 @@ public class EditModel : PageModel
         dbPost.MdContent = Post.MdContent;
         dbPost.Title = Post.Title;
         dbPost.Order = Post.Order;
+        dbPost.PublishedAt = Post.PublishedAt;
         dbPost.UpdatedAt = DateTime.Now;
         dbPost.HeaderImage = postHeaderImage;
         dbPost.ShowState = Post.ShowState.ToShowState();
         dbPost.MdPreview = Post.MdPreview;
-        
+
         try
         {
             await _context.SaveChangesAsync();
@@ -96,7 +101,10 @@ public class EditModel : PageModel
             }
         }
 
-        return RedirectToPage("./Index");
+        if (RedirectUri is not null)
+            return RedirectToPage(RedirectUri.Split("?")[0], new { Id = Post.UniqueId });
+
+        return RedirectToPage((RedirectUri ?? "./Index").Split("?")[0]);
     }
 
     private bool PostExists(Guid id)

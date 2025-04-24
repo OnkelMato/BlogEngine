@@ -9,7 +9,7 @@ public class PostAdminModel
     [MaxLength(256)]
     public string Title { get; set; } = null!;
 
-    [MaxLength(4096)]
+    //[MaxLength(int.MaxValue)]
     [DataType(DataType.MultilineText)]
     [Display(Name = "Contents (Markdown)")]
     public string? MdContent { get; set; } = null!;
@@ -24,6 +24,10 @@ public class PostAdminModel
     [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
     [Display(Name = "Last Update")]
     public DateTime UpdatedAt { get; set; }
+
+    [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
+    [Display(Name = "Published At")]
+    public DateTime PublishedAt { get; set; } = DateTime.Now;
 
     public int Order { get; set; } = 1000;
 

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnkelMato.BlogEngine.Database;
 
-[Index(nameof(Name), IsUnique = true)]
+[Index(nameof(Name), "BlogId", IsUnique = true, AllDescending = false)]
 public class PostImage {
     [Key]
     public int Id { get; set; }

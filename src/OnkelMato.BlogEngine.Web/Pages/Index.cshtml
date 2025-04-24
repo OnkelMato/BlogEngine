@@ -11,30 +11,37 @@
         <div class="col-sm-4">
             <div class="card">
                 <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(item.HeaderImage)');">
-                    <a asp-page="/Detail" asp-route-id="@item.UniqueId" class="link-light link-underline-0">
+                    @if (item.HasContent)
+                    {
+                        <a asp-page="/Detail" asp-route-id="@item.UniqueId" class="link-light link-underline-0">
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </a>
+                    }
+                    @if (!item.HasContent)
+                    {
                         @Html.DisplayFor(modelItem => item.Title)
-                    </a> 
+                    }
                 </div>
                 <div class="card-body">
                     @(new HtmlString(item.HtmlPreview))
                 </div>
-                @if (item.HasContent)
-                {
-                    <div class="card-footer text-right">
+                <div class="card-footer text-right">
+                    @if (item.HasContent)
+                    {
                         <a asp-page="/Detail" asp-route-id="@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-arrow-right-circle"></i> Lesen
                         </a>
-                        @if (Model.AllowBlogAdministration)
-                        {
-                            <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" class="btn btn-dark">
-                                <i class="bi bi-pen"></i> Bearbeiten
-                            </a>
-                            <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">
-                                <i class="bi bi-save"></i> Exportieren
-                            </a>
-                        }
-                    </div>
-                }
+                    }
+                    @if (Model.AllowBlogAdministration)
+                    {
+                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Detail?id=@item.UniqueId" class="btn btn-dark">
+                            <i class="bi bi-pen"></i> Bearbeiten
+                        </a>
+                        <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Exportieren
+                        </a>
+                    }
+                </div>
             </div>
         </div>
     }
