@@ -115,6 +115,12 @@ public static class RegistrationExtensions
                 UpdatedAt = DateTime.Now,
             };
             db.Blogs.Add(blog);
+
+            db.Posts.AddFooterLink(blog, "Onkel Mato Blog Engine", "https://github.com/OnkelMato/BlogEngine");
+            db.Posts.AddFooterLink(blog, "Admin", "/Admin", 20000);
+            db.Posts.AddFooter(blog, "Impressum", "## Impressum", 15100);
+            db.Posts.AddFooter(blog, "Privacy", "## Privacy", 15000);
+            
             db.SaveChanges();
 
             Console.WriteLine($@"New blog created with id '{blog.UniqueId}'");
@@ -130,5 +136,41 @@ public static class RegistrationExtensions
             throw new InvalidOperationException($"Blog with id '{settings.CurrentValue.BlogUniqueId}' does not exist. Please create a blog or set BlogUniqueId in configuration.");
 
         throw new ArgumentException("Cannot determine or create blog. Please set the blog Uid in App Settings.");
+    }
+
+    private static void AddFooter(this DbSet<Post> source, Blog blog, string title, string content, int order = 10000)
+    {
+        var post = new Post()
+        {
+            Title = title,
+            MdContent = content,
+            MdPreview = ".",
+            ShowState = ShowState.Footer,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+            PublishedAt = DateTime.Now,
+            UniqueId = Guid.NewGuid(),
+            Order = order,
+            Blog = blog,
+        };
+
+        source.Add(post);
+    }
+    private static void AddFooterLink(this DbSet<Post> source, Blog blog, string title, string link, int order = 10000)
+    {
+        var post = new Post()
+        {
+            Title = title,
+            MdPreview = link,
+            ShowState = ShowState.LinkAndFooter,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+            PublishedAt = DateTime.Now,
+            UniqueId = Guid.NewGuid(),
+            Order = order,
+            Blog = blog,
+        };
+
+        source.Add(post);
     }
 }

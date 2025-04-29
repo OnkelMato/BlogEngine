@@ -1,4 +1,5 @@
-﻿@model OnkelMato.BlogEngine.Web.ViewComponents.BlogMenuViewComponent
+﻿@using System.Web
+@model OnkelMato.BlogEngine.Web.ViewComponents.BlogMenuViewComponent
 
 @foreach (var item in Model.MenuPosts)
 {
@@ -9,7 +10,7 @@
         }
         @if (item.Url == null && item.PostId != null)
         {
-            <a asp-page="/Detail" asp-route-id="@item.PostId" class="nav-link text-dark">@item.Title</a>
+            <a asp-page="/Post/@HttpUtility.UrlEncode(item.Title)/@item.PostId" class="nav-link text-dark">@item.Title</a>
         }
     </li>
 }
