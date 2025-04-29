@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Web;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -101,14 +102,15 @@ public class EditModel : PageModel
             }
         }
 
-        if (RedirectUri is not null)
-            return RedirectToPage(RedirectUri.Split("?")[0], new { Id = Post.UniqueId });
+        // currently not working. 
+        //if (RedirectUri is not null)
+        //    return RedirectToRoute(RedirectUri);
 
-        return RedirectToPage((RedirectUri ?? "./Index").Split("?")[0]);
+        return RedirectToPage("./Index");
     }
 
     private bool PostExists(Guid id)
     {
-        return _context.Posts.Any(e => e.UniqueId == id);
+        return _context.Posts.Any(e => e.UniqueId == id && e.Blog.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
     }
 }

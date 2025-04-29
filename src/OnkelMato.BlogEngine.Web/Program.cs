@@ -6,7 +6,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.AddBlogEngine();
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages(options =>
+        {
+            options.Conventions.AddPageRoute("/Posts", "/Post/{titleStub}/{id}");
+        });
 
         var app = builder.Build();
 

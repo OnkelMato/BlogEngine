@@ -1,6 +1,8 @@
 ﻿@page
+@using System.Web
 @using Microsoft.AspNetCore.Html
-@model DetailModel
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model PostsModel
 @{
     ViewData["Title"] = Model.Post.Title;
 }
@@ -22,7 +24,7 @@
                 </a>
                 @if (Model.AllowBlogAdministration)
                 {
-                    <a asp-page="/PostAdmin/Edit" asp-route-id="@Model.Post.UniqueId" asp-route-redirect_uri="/Detail?id=@Model.Post.UniqueId" class="btn btn-dark">
+                    <a asp-page="/PostAdmin/Edit" asp-route-id="@Model.Post.UniqueId" asp-route-redirect_uri="/Post/@HttpUtility.UrlEncode(Model.Post.Title)/@Model.Post.UniqueId" class="btn btn-dark">
                         <i class="bi bi-pen"></i> Bearbeiten
                     </a>
                     <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@Model.Post.UniqueId" class="btn btn-warning">

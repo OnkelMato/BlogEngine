@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
-public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
+public class PostsModel(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
 {
     public class PostModel
     {
@@ -32,6 +32,9 @@ public class DetailModel(BlogEngineRepository repository, IOptionsMonitor<PostsC
 
     [BindProperty(SupportsGet = true)]
     public Guid Id { get; set; } = Guid.Empty;
+
+    [BindProperty(SupportsGet = true)]
+    public string? TitleStub { get; set; }
 
     public IActionResult OnGet()
     {
