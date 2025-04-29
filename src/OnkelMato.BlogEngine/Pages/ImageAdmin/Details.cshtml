@@ -12,6 +12,12 @@
             <h1>Details Post Image</h1>
         </div>
 
+        <div class="card-footer">
+            <a asp-page="Edit" asp-route-id="@Model.PostImage.UniqueId" class="btn btn-primary">Edit</a>
+            <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+            <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+        </div>
+
         <div class="card-body">
             <dl class="row">
                 <dt class="col-sm-3">
