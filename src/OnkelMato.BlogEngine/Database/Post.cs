@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OnkelMato.BlogEngine.Database;
 
-[Index(nameof(Title), IsUnique = true)]
+[Index(nameof(Title), "BlogId", IsUnique = true, AllDescending = false)]
 public class Post
 {
     [Key]

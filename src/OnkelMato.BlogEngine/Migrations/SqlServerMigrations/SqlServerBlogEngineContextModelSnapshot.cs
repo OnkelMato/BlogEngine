@@ -108,7 +108,7 @@ namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
 
                     b.HasIndex("HeaderImageId");
 
-                    b.HasIndex("Title")
+                    b.HasIndex("Title", "BlogId")
                         .IsUnique();
 
                     b.ToTable("Posts");
@@ -159,7 +159,7 @@ namespace OnkelMato.BlogEngine.Migrations.SqlServerMigrations
 
                     b.HasIndex("BlogId");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("Name", "BlogId")
                         .IsUnique();
 
                     b.ToTable("PostImages");

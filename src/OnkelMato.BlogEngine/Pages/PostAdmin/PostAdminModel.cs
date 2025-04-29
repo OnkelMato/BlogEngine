@@ -9,7 +9,7 @@ public class PostAdminModel
     [MaxLength(256)]
     public string Title { get; set; } = null!;
 
-    [MaxLength(int.MaxValue)]
+    //[MaxLength(int.MaxValue)]
     [DataType(DataType.MultilineText)]
     [Display(Name = "Contents (Markdown)")]
     public string? MdContent { get; set; } = null!;

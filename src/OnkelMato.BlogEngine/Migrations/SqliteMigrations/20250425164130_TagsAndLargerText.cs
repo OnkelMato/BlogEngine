@@ -11,6 +11,14 @@ namespace OnkelMato.BlogEngine.Migrations.SqliteMigrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_Posts_Title",
+                table: "Posts");
+
+            migrationBuilder.DropIndex(
+                name: "IX_PostImages_Name",
+                table: "PostImages");
+
             migrationBuilder.AddColumn<DateTime>(
                 name: "PublishedAt",
                 table: "Posts",
@@ -46,6 +54,18 @@ namespace OnkelMato.BlogEngine.Migrations.SqliteMigrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Posts_Title_BlogId",
+                table: "Posts",
+                columns: new[] { "Title", "BlogId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostImages_Name_BlogId",
+                table: "PostImages",
+                columns: new[] { "Name", "BlogId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PostTag_BlogId",
                 table: "PostTag",
                 column: "BlogId");
@@ -62,9 +82,29 @@ namespace OnkelMato.BlogEngine.Migrations.SqliteMigrations
             migrationBuilder.DropTable(
                 name: "PostTag");
 
+            migrationBuilder.DropIndex(
+                name: "IX_Posts_Title_BlogId",
+                table: "Posts");
+
+            migrationBuilder.DropIndex(
+                name: "IX_PostImages_Name_BlogId",
+                table: "PostImages");
+
             migrationBuilder.DropColumn(
                 name: "PublishedAt",
                 table: "Posts");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Posts_Title",
+                table: "Posts",
+                column: "Title",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostImages_Name",
+                table: "PostImages",
+                column: "Name",
+                unique: true);
         }
     }
 }
