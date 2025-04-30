@@ -11,7 +11,10 @@
     {
         <a href="@item.Url">@item.Title</a>
 
-        if (counter != Model.MenuPosts.Count) { <text> |</text> }
+        if (counter != Model.MenuPosts.Count)
+        {
+            <text> |</text>
+        }
     }
     @if (string.IsNullOrEmpty(item.Url))
     {

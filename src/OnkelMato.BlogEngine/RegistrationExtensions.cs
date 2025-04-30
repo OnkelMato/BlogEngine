@@ -115,10 +115,10 @@ public static class RegistrationExtensions
             };
             db.Blogs.Add(blog);
 
-            db.Posts.AddFooterLink(blog, "Onkel Mato Blog Engine", "https://github.com/OnkelMato/BlogEngine");
-            db.Posts.AddFooterLink(blog, "Admin", "/Admin", 20000);
-            db.Posts.AddFooter(blog, "Impressum", "## Impressum", 15100);
-            db.Posts.AddFooter(blog, "Privacy", "## Privacy", 15000);
+            db.Posts.AddFooterLink(blog, Guid.Parse("F5C50612-DAAA-44A3-AA2B-49090DE41F90"), "Onkel Mato Blog Engine", "https://github.com/OnkelMato/BlogEngine");
+            db.Posts.AddFooterLink(blog, Guid.Parse("1A12B373-7E48-4E01-B040-DA896CE67F75"), "Admin", "/Admin", 20000);
+            db.Posts.AddFooter(blog, Guid.Parse("1B5FBEA4-10FE-46DD-AC59-7573F54DFDBB"), "Legal Notice", "## Legal Notice", 15100);
+            db.Posts.AddFooter(blog, Guid.Parse("D20F7182-1CB6-4A22-AD20-3B49B47D391F"), "Data Protection", "## Data protection", 15000);
             
             db.SaveChanges();
 
@@ -137,7 +137,7 @@ public static class RegistrationExtensions
         throw new ArgumentException("Cannot determine or create blog. Please set the blog Uid in App Settings.");
     }
 
-    private static void AddFooter(this DbSet<Post> source, Blog blog, string title, string content, int order = 10000)
+    private static void AddFooter(this DbSet<Post> source, Blog blog, Guid id, string title, string content, int order = 10000)
     {
         var post = new Post()
         {
@@ -148,14 +148,14 @@ public static class RegistrationExtensions
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             PublishedAt = DateTime.Now,
-            UniqueId = Guid.NewGuid(),
+            UniqueId = id,
             Order = order,
             Blog = blog,
         };
 
         source.Add(post);
     }
-    private static void AddFooterLink(this DbSet<Post> source, Blog blog, string title, string link, int order = 10000)
+    private static void AddFooterLink(this DbSet<Post> source, Blog blog, Guid id, string title, string link, int order = 10000)
     {
         var post = new Post()
         {
@@ -165,7 +165,7 @@ public static class RegistrationExtensions
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             PublishedAt = DateTime.Now,
-            UniqueId = Guid.NewGuid(),
+            UniqueId = id,
             Order = order,
             Blog = blog,
         };

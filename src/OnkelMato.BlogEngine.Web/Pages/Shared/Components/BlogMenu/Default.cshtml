@@ -10,7 +10,7 @@
         }
         @if (item.Url == null && item.PostId != null)
         {
-            <a asp-page="/Post/@HttpUtility.UrlEncode(item.Title)/@item.PostId" class="nav-link text-dark">@item.Title</a>
+            <a href="/Post/@HttpUtility.UrlEncode(item.Title)/@item.PostId" class="nav-link text-dark">@item.Title</a>
         }
     </li>
 }
