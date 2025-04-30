@@ -60,7 +60,6 @@ public static class RegistrationExtensions
         // create database if not exists
         var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-        var cfg = s.ServiceProvider.GetRequiredService<IOptions<PostsConfiguration>>();
         var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
         var missing = db.Database.GetPendingMigrations();
         if (missing.Any())
@@ -87,7 +86,7 @@ public static class RegistrationExtensions
         var settings = s.ServiceProvider.GetService<IOptionsMonitor<PostsConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
 
         // this is the perfect way and blog is configured correctly
-        if (db.Blogs.Count(x => x.UniqueId == settings.CurrentValue.BlogUniqueId) == 1)
+        if (settings.CurrentValue.BlogUniqueId != Guid.Empty && db.Blogs.Count(x => x.UniqueId == settings.CurrentValue.BlogUniqueId) == 1)
             return app;
 
         // Blog id is not set but in case there is only one DB, this should be used

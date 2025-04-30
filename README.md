@@ -8,6 +8,12 @@ Die Seite enthält einen kleine Blog mit einer einfachen Bilderverwaltung.
 
 Das Project basiert auf einer klassischen ASP.NET Razor Seite mit einem Entity Framework Datenbanklayer.
 
+## Docker Support
+
+The blog can be run in a Docker container. When you map the "/data" folder to a local folder, the database will be stored there. The database is created automatically when the container starts.
+
+    docker run -p 8080:8080 -v .\blogengine\data:/data thomasley/onkelmatoblogengineweb
+
 ## Developer Settings
 
     export ASPNETCORE_ENVIRONMENT=Development
