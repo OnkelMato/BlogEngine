@@ -1,17 +1,20 @@
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.Json;
+using JWT;
+using JWT.Algorithms;
+using JWT.Exceptions;
+using JWT.Serializers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
-using SQLitePCL;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Json;
 using static OnkelMato.BlogEngine.Pages.BlogExportModel;
+using HashAlgorithmName = System.Security.Cryptography.HashAlgorithmName;
 
 namespace OnkelMato.BlogEngine.Pages;
 
@@ -19,6 +22,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 {
     public string SignaturePublicKey => postsConfiguration.CurrentValue.CertificateFile;
     public bool AcceptUnsignedImport => postsConfiguration.CurrentValue.AcceptUnsignedImport;
+    public bool UseJwtTokenSigning => postsConfiguration.CurrentValue.UseJwt;
 
     [BindProperty(SupportsGet = true)]
     public bool UseTextarea { get; set; }
@@ -58,6 +62,52 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             JsonDocument = await new StreamReader(stream).ReadToEndAsync();
         }
 
+        if (postsConfiguration.CurrentValue.UseJwt)
+            return await ImportJwtBlog(blog);
+
+        return await ImportDocSigBlog(blog);
+    }
+
+    private async Task<IActionResult> ImportJwtBlog(Blog blog)
+    {
+        var cert = new X509Certificate2(postsConfiguration.CurrentValue.CertificateFile);
+
+        try
+        {
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IDateTimeProvider provider = new UtcDateTimeProvider();
+            IJwtValidator validator = new JwtValidator(serializer, provider);
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtAlgorithm algorithm = new RS256Algorithm(cert);
+            IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
+
+            var json = decoder.Decode(JsonDocument);
+            var importData = JsonSerializer.Deserialize<BlogExportModel>(json!) ?? new();
+
+            DoImportBlog(importData, blog);
+
+            await context.SaveChangesAsync();
+            return RedirectToPage("./Index");
+        }
+        catch (TokenNotYetValidException)
+        {
+            Console.WriteLine("Token is not valid yet");
+        }
+        catch (TokenExpiredException)
+        {
+            Console.WriteLine("Token has expired");
+        }
+        catch (SignatureVerificationException)
+        {
+            Console.WriteLine("Token has invalid signature");
+        }
+
+        return RedirectToPage("./Index");
+    }
+
+    #region Import Blog with Document File and Signature File
+    private async Task<IActionResult> ImportDocSigBlog(Blog blog)
+    {
         if (SignatureFile is not null)
         {
             using var stream = new MemoryStream();
@@ -101,6 +151,8 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         }
     }
 
+    #endregion
+
     private void DoImportBlog(BlogExportModel blogExport, Blog blog)
     {
         var blogNameExists = context.Blogs.Any(x => x.Title == blogExport.Title && x.UniqueId != blog.UniqueId);
@@ -128,7 +180,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
     {
         var postEntity = context.Posts.SingleOrDefault(x => x.UniqueId == postExport.UniqueId && x.Blog == blog);
         //var headerImage = context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
-        var headerImage = context.PostImages.Local.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog) 
+        var headerImage = context.PostImages.Local.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog)
                           ?? context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
         if (postEntity is null)
         {
@@ -207,7 +259,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             return publicKey!.VerifyData(
                 data: dataByteArray,
                 signature: signatureByteArray,
-                hashAlgorithm: HashAlgorithmName.SHA256,
+                hashAlgorithm: HashAlgorithmName.SHA256, 
                 padding: RSASignaturePadding.Pkcs1);
         }
         catch (Exception)

@@ -46,4 +46,10 @@
 		<ProjectReference Include="..\OnkelMato.BlogEngine\OnkelMato.BlogEngine.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="demo.key">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

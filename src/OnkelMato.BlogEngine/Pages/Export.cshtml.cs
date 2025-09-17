@@ -1,14 +1,14 @@
-using System.Reflection.Metadata;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
+using JWT;
+using JWT.Algorithms;
+using JWT.Serializers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.CodeAnalysis.Differencing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
-using SQLitePCL;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Pages;
 
@@ -39,9 +39,13 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                         .FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
                     if (blog is null) throw new ArgumentException($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found");
 
-                    var export = CreateBlogExport(blog);
+                    var blogExport = CreateBlogExport(blog);
+                    var export = blogExport.AsJson();
+                    if (postsConfiguration.CurrentValue.UseJwt && postsConfiguration.CurrentValue.CertificateKeyFile != "")
+                        export = GetTokenForJson(blogExport);
+
                     var filename = $"{blog!.Title}.{DateTime.Now:yyyyMMdd-hhmm}.json";
-                    return File(Encoding.UTF8.GetBytes(export.AsJson()), "application/json", filename);
+                    return File(Encoding.UTF8.GetBytes(export), "application/json", filename);
                 }
             case "posts":
                 {
@@ -147,5 +151,18 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         };
 
         return export;
+    }
+
+    private string GetTokenForJson(object payload)
+    {
+        var cert = X509Certificate2.CreateFromPemFile(postsConfiguration.CurrentValue.CertificateFile, postsConfiguration.CurrentValue.CertificateKeyFile);
+
+        IJwtAlgorithm algorithm = new RS256Algorithm(cert);
+        IJsonSerializer serializer = new JsonNetSerializer();
+        IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+        IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+        const string key = null; // not needed if algorithm is asymmetric
+
+        return encoder.Encode(payload, key);
     }
 }
