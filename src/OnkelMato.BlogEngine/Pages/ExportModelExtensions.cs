@@ -41,6 +41,6 @@ public static class ExportModelExtensions
 
     public static string AsJson(this BlogExportModel export)
     {
-        return JsonSerializer.Serialize(export, new JsonSerializerOptions() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault });
+        return JsonSerializer.Serialize(export, new JsonSerializerOptions() { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault });
     }
 }
