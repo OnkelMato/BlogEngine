@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NuGet.Protocol;
 using OnkelMato.BlogEngine.Database;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -28,8 +29,12 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
         if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
+        BlogExportModel exportedEntities = null!;
+        var filename = string.Empty;
+
         switch (Entity.ToLower())
         {
+            // todo this could be a strategy pattern
             case "blog":
                 {
                     // load full blog
@@ -39,39 +44,50 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                         .FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
                     if (blog is null) throw new ArgumentException($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found");
 
-                    var blogExport = CreateBlogExport(blog);
-                    var export = blogExport.AsJson();
-                    if (postsConfiguration.CurrentValue.UseJwt && postsConfiguration.CurrentValue.CertificateKeyFile != "")
-                        export = GetTokenForJson(blogExport);
+                    exportedEntities = CreateBlogExport(blog);
+                    filename = $"{blog!.Title}.{DateTime.Now:yyyyMMdd-hhmm}";
 
-                    var filename = $"{blog!.Title}.{DateTime.Now:yyyyMMdd-hhmm}.json";
-                    return File(Encoding.UTF8.GetBytes(export), "application/json", filename);
+                    break;
                 }
             case "posts":
                 {
-                    var export = CreatePostExport(Id, blog);
-                    if (export.Posts.Count == 0)
+                    exportedEntities = CreatePostExport(Id, blog);
+                    if (exportedEntities.Posts.Count == 0)
                         throw new ArgumentException($"No posts found for {Id}");
 
-                    var filename = Id == null
-                        ? $"{blog!.Title}.AllPosts.{DateTime.Now:yyyyMMdd-hhmm}.json"
-                        : $"{export.Posts.First().Title}.{DateTime.Now:yyyyMMdd-hhmm}.json";
-                    return File(Encoding.UTF8.GetBytes(export.AsJson()), "application/json", filename);
+                    filename = Id == null
+                        ? $"{blog!.Title}.AllPosts.{DateTime.Now:yyyyMMdd-hhmm}"
+                        : $"{exportedEntities.Posts.First().Title}.{DateTime.Now:yyyyMMdd-hhmm}";
+
+                    break;
                 }
             case "postimages":
                 {
-                    var export = CreatePostImageExport(Id, blog);
-                    if (export.PostImages.Count == 0)
+                    exportedEntities = CreatePostImageExport(Id, blog);
+                    if (exportedEntities.PostImages.Count == 0)
                         throw new ArgumentException($"No posts found for {Id}");
 
-                    var filename = Id == null
-                        ? $"{blog!.Title}.AllPostImages.{DateTime.Now:yyyyMMdd-hhmm}.json"
-                        : $"{export.PostImages.First().Name}.{DateTime.Now:yyyyMMdd-hhmm}.json";
-                    return File(Encoding.UTF8.GetBytes(export.AsJson()), "application/json", filename);
+                    filename = Id == null
+                        ? $"{blog!.Title}.AllPostImages.{DateTime.Now:yyyyMMdd-hhmm}"
+                        : $"{exportedEntities.PostImages.First().Name}.{DateTime.Now:yyyyMMdd-hhmm}";
+
+                    break;
                 }
             default:
                 return BadRequest();
         }
+
+        var exportAsJson = exportedEntities.AsJson();
+        if (postsConfiguration.CurrentValue.UseJwt &&
+            !string.IsNullOrWhiteSpace(postsConfiguration.CurrentValue.CertificateKeyFile)) // it requires a private key for signing
+        {
+            filename = filename + ".jwt.json";
+            var token = GetTokenForJson(exportAsJson);
+            return File(Encoding.UTF8.GetBytes(token), "application/json", filename);
+        }
+
+        filename = filename + ".json";
+        return File(Encoding.UTF8.GetBytes(exportAsJson), "application/json", filename);
     }
 
     private BlogExportModel CreatePostImageExport(Guid? id, Blog blog)
