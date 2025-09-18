@@ -14,7 +14,7 @@
                 <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(item.HeaderImage)');">
                     @if (item.HasContent)
                     {
-                        <a href="/Post/@HttpUtility.UrlEncode(item.Title)/@item.UniqueId" class="link-light link-underline-0">
+                        <a href="/Post/@item.TitleSEO/@item.UniqueId" class="link-light link-underline-0">
                             @Html.DisplayFor(modelItem => item.Title)
                         </a>
                     }

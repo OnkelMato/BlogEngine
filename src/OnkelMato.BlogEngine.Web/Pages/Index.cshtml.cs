@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.RegularExpressions;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Build.Construction;
 using Microsoft.Extensions.Options;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
@@ -17,6 +19,7 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
         [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
         public DateTime UpdatedAt { get; set; }
         public string Title { get; set; } = string.Empty;
+        public string TitleSEO { get; set; } = string.Empty;
         public string HtmlPreview { get; set; } = string.Empty;
         public bool HasContent { get; set; }
         public Guid? HeaderImage { get; set; }
@@ -47,6 +50,7 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
             .Select(x => new PostModel()
             {
                 Title = x.Title,
+                TitleSEO = Regex.Replace(x.Title, "[^a-zA-Z0-9 ]", "").Replace(" ", "_"),
                 UniqueId = x.UniqueId,
                 UpdatedAt = x.UpdatedAt,
                 PublishedAt = x.PublishedAt,
