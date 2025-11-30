@@ -18,7 +18,7 @@
     }
     @if (string.IsNullOrEmpty(item.Url))
     {
-        <a href="/Post/@HttpUtility.UrlEncode(item.Title)/@item.PostId">@item.Title</a>
+        <a href="/Post/@item.TitleSEO)/@item.PostId">@item.Title</a>
 
         if (counter != Model.MenuPosts.Count)
         {

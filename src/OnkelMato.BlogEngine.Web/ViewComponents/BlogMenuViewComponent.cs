@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
+using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Web.ViewComponents;
 
@@ -19,6 +20,7 @@ public class BlogMenuViewComponent(BlogEngineRepository repository, IOptionsMoni
             {
                 PostId = x.UniqueId,
                 Url = x.ShowState == ShowState.LinkAndMenu ? x.MdPreview : null, // because MdPreview is required
+                TitleSEO = Regex.Replace(x.Title, "[^a-zA-Z0-9 ]", "").Replace(" ", "_"),
                 Title = x.Title
             }).ToList();
 
@@ -30,5 +32,6 @@ public class BlogMenuViewComponent(BlogEngineRepository repository, IOptionsMoni
         public string Title { get; set; } = null!;
         public string? Url { get; set; } = null!;
         public Guid? PostId { get; set; }
+        public string? TitleSEO { get; set; }
     }
 }

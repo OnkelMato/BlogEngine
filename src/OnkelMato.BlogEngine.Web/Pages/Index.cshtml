@@ -1,10 +1,16 @@
 ﻿@page
 @using System.Web
 @using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Http.Extensions
 @model IndexModel
+
 @{
-    ViewData["Title"] = "Home";
+    Html.SetSeoInfo(seo =>
+    {
+        seo.SetCommonInfo(Model.Title, Model.Description, ViewContext.HttpContext.Request.GetDisplayUrl(), []);
+    });
 }
+
 
 <div class="row">
     @foreach (var item in Model.Posts)

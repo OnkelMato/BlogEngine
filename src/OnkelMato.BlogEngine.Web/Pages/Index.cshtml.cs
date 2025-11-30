@@ -4,8 +4,10 @@ using System.Text.RegularExpressions;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Construction;
 using Microsoft.Extensions.Options;
+using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
@@ -39,9 +41,14 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
 
     public IActionResult OnGet()
     {
+        // load blog data
         var blog = _repository.Blog();
         if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
+        this.Title = blog.Title;
+        this.Description = blog.Description;
+
+        // load posts
         var numOfPosts = _repository.PostsOnBlogCount();
         // cf: https://stackoverflow.com/questions/4846493/how-to-always-round-up-to-the-next-integer
         NumOfPages = (numOfPosts + (_postsConfiguration.CurrentValue.PageSize - 1)) / _postsConfiguration.CurrentValue.PageSize;
@@ -62,4 +69,7 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
 
         return Page();
     }
+
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
 }
