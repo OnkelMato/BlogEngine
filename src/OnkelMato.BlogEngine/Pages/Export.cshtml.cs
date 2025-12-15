@@ -5,15 +5,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using NuGet.Protocol;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Database;
+using OnkelMato.BlogEngine.Core.Database.Entity;
+using OnkelMato.BlogEngine.Core.Model;
+using OnkelMato.BlogEngine.Core.Repository;
+using OnkelMato.BlogEngine.Core.Service;
+using System.Reflection.Metadata;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository.Model;
 
 namespace OnkelMato.BlogEngine.Pages;
 
-public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
+public class ExportModel(
+    BlogEngineContext context,
+    BlogEngineReadRepository readRepository,
+    IOptionsMonitor<BlogConfiguration> postsConfiguration,
+    IOptionsMonitor<ImportExportConfiguration> imexConfiguration,
+    IBlogIdProvider blogIdProvider) : PageModel
 {
     [BindProperty(SupportsGet = true)]
     public Guid? Id { get; set; }
@@ -21,13 +32,17 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
     [BindProperty(SupportsGet = true)]
     public string? Entity { get; set; } = "Blog"; // Legacy: Blog, Posts, PostImages
 
+    [BindProperty(SupportsGet = true)]
+    public string? Type { get; set; } = "json"; // TODO replace with content type
+
     public async Task<ActionResult> OnGet()
     {
         if (Entity is null)
             throw new ArgumentException(nameof(Entity));
 
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blogGuid = blogIdProvider.Id;
+        var blog = readRepository.Blog();
+        if (blog == null) { return NotFound($"Blog {blogGuid} not Found"); }
 
         BlogExportModel exportedEntities = null!;
         var filename = string.Empty;
@@ -38,11 +53,8 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             case "blog":
                 {
                     // load full blog
-                    blog = await context.Blogs
-                        .Include(x => x.Posts).ThenInclude(x => x.HeaderImage)
-                        .Include(x => x.PostImages)
-                        .FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-                    if (blog is null) throw new ArgumentException($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found");
+                    blog = await readRepository.GetEntireBlog();
+                    if (blog is null) throw new ArgumentException($"Blog {blogGuid} not Found");
 
                     exportedEntities = CreateBlogExport(blog);
                     filename = $"{blog!.Title}.{DateTime.Now:yyyyMMdd-hhmm}";
@@ -56,7 +68,7 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                         throw new ArgumentException($"No posts found for {Id}");
 
                     filename = Id == null
-                        ? $"{blog!.Title}.AllPosts.{DateTime.Now:yyyyMMdd-hhmm}"
+                        ? $"{blog!.Title}.GetEntireBlog.{DateTime.Now:yyyyMMdd-hhmm}"
                         : $"{exportedEntities.Posts.First().Title}.{DateTime.Now:yyyyMMdd-hhmm}";
 
                     break;
@@ -78,8 +90,9 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         }
 
         var exportAsJson = exportedEntities.AsJson();
-        if (postsConfiguration.CurrentValue.UseJwt &&
-            !string.IsNullOrWhiteSpace(postsConfiguration.CurrentValue.CertificateKeyFile)) // it requires a private key for signing
+        // todo make this selectable
+        if (imexConfiguration.CurrentValue.JwtPublicCertificates.Length > 0 &&
+            !string.IsNullOrWhiteSpace(imexConfiguration.CurrentValue.JwtPrivateCertificates[0])) // it requires a private key for signing
         {
             filename = filename + ".jwt.json";
             var token = GetTokenForJson(exportAsJson);
@@ -92,12 +105,13 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
     private BlogExportModel CreatePostImageExport(Guid? id, Blog blog)
     {
-        Func<PostImage, bool> filter = (Id is null || Id == Guid.Empty)
-            ? ((x) => x.Blog == blog)
-            : ((x) => x.UniqueId == Id && x.Blog == blog);
+        var blogDb = context.Blogs.First(x => x.UniqueId == blog.UniqueId);
+        Func<PostImageDb, bool> filter = (Id is null || Id == Guid.Empty)
+            ? ((x) => x.Blog == blogDb)
+            : ((x) => x.UniqueId == Id && x.Blog == blogDb);
         var img = context.PostImages
             .Where(filter)
-            .Select(x => x.ToPostImageExportModel()).ToArray();
+            .Select(x => x.ToModel().ToPostImageExportModel()).ToArray();
 
         return new BlogExportModel()
         {
@@ -108,20 +122,21 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
     private BlogExportModel CreatePostExport(Guid? id, Blog blog)
     {
-        Func<Post, bool> filter = (Id is null || Id == Guid.Empty)
-            ? ((x) => x.Blog == blog)
-            : ((x) => x.UniqueId == Id && x.Blog == blog);
+        var blogDb = context.Blogs.First(x => x.UniqueId == blog.UniqueId);
+        Func<PostDb, bool> filter = (Id is null || Id == Guid.Empty)
+            ? ((x) => x.Blog == blogDb)
+            : ((x) => x.UniqueId == Id && x.Blog == blogDb);
         var pst = context.Posts
             .Include(x => x.HeaderImage)
             .Where(filter)
-            .Select(x => x.ToPostExportModel()).ToArray();
+            .Select(x => x.ToModel().ToPostExportModel()).ToArray();
 
         var img = new List<PostImage>();
         foreach (var post in pst)
         {
             if (post.HeaderImage == null) continue;
             var imgPost = context.PostImages.FirstOrDefault(x => x.UniqueId == post.HeaderImage);
-            if (imgPost != null) img.Add(imgPost);
+            if (imgPost != null) img.Add(imgPost.ToModel());
         }
 
         var regex = new Regex(@"([Ii][Mm][Aa][Gg][Ee]\?[Ii][Dd]=([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}))");
@@ -134,10 +149,10 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                 .Select(x => x.Value.Substring(regexPrefix))
                 .Distinct()
                 .Select(Guid.Parse)
-                .Select(x => context.PostImages.FirstOrDefault(y => y.UniqueId == x && y.Blog == blog))
-                .Where(x => x is not null);
+                .Select(x => context.PostImages.FirstOrDefault(y => y.UniqueId == x && y.Blog == blogDb))
+                .Where(x => x is not null).Select(x => x.ToModel());
 
-            img.AddRange(imagesForPosts!);
+            img.AddRange(imagesForPosts);
         }
 
         var imageExportList = img.Distinct().Select(x => x.ToPostImageExportModel());
@@ -171,7 +186,9 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
     private string GetTokenForJson(object payload)
     {
-        var cert = X509Certificate2.CreateFromPemFile(postsConfiguration.CurrentValue.CertificateFile, postsConfiguration.CurrentValue.CertificateKeyFile);
+        // todo let user select the certificate -multiuser support :) 
+        var cert = X509Certificate2.CreateFromPemFile(
+            imexConfiguration.CurrentValue.JwtPublicCertificates[0], imexConfiguration.CurrentValue.JwtPrivateCertificates[0]);
 
         IJwtAlgorithm algorithm = new RS256Algorithm(cert);
         IJsonSerializer serializer = new JsonNetSerializer();

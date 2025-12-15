@@ -1,53 +1,45 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.BlogAdmin;
 
-public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class EditModel(BlogEngineEditRepository editRepository, BlogEngineMgmtRepository managementRepository, IOptionsMonitor<BlogConfiguration> blogConfiguration)
     : PageModel
 {
-    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
-
-    public class BlogEngineInfo
-    {
-        public string Version { get; set; } = "N/A";
-        public string VersionSourceSha { get; set; } = "N/A";
-        public string UncommittedChanges { get; set; } = "N/A";
-        public string BranchName { get; set; } = "N/A";
-    }
+    private readonly BlogEngineEditRepository _editRepository = editRepository ?? throw new ArgumentNullException(nameof(editRepository));
+    private readonly BlogEngineMgmtRepository _managementRepository = managementRepository ?? throw new ArgumentNullException(nameof(managementRepository));
+    private readonly IOptionsMonitor<BlogConfiguration> _blogConfiguration = blogConfiguration ?? throw new ArgumentNullException(nameof(blogConfiguration));
 
     [BindProperty]
     public BlogAdminModel Blog { get; set; } = null!;
 
-    public BlogEngineInfo EngineInfo { get; set; } = new();
-
-    public bool AllowBlogAdministration { get; set; } = false;
+    public bool AllowBlogAdministration => _blogConfiguration.CurrentValue.AllowAdministration;
+    public bool AllowBlogDeletion => _blogConfiguration.CurrentValue.AllowBlogDeletion;
+    public bool AllowBlogCreation => _blogConfiguration.CurrentValue.AllowBlogCreation;
+    public bool AllowBlogSelection => _blogConfiguration.CurrentValue.EnableBlogSelection;
 
 
     public async Task<IActionResult> OnGetAsync()
     {
-        AllowBlogAdministration = _postsConfiguration.CurrentValue.AllowBlogAdministration;
-        EngineInfo = GetBlogEngineInfo();
-
-        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound("Blog not found"); }
+        var blog = _editRepository.Blog;
 
         Blog = new BlogAdminModel()
         {
             UniqueId = blog.UniqueId,
             Title = blog.Title,
             Description = blog.Description,
+            CSS = blog.CSS,
+            Blogs = _managementRepository.GetBlogs().Select(x => new BlogAdminModel.BlogItemModel() { BlogId = x.UniqueId, Title = x.Title }).ToArray()
         };
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_blogConfiguration.CurrentValue.AllowAdministration)
             return Page();
 
         if (!ModelState.IsValid)
@@ -55,42 +47,9 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
             return Page();
         }
 
-        var blogUid = _postsConfiguration.CurrentValue.BlogUniqueId;
-        var dbBlog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == blogUid);
-        if (dbBlog == null) { return NotFound(); }
-
-        dbBlog.Title = Blog.Title;
-        dbBlog.Description = Blog.Description;
-        dbBlog.UpdatedAt = DateTime.Now;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!_context.Blogs.Any(e => e.UniqueId == blogUid))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return RedirectToPage("/Admin");
-    }
-
-    private static BlogEngineInfo GetBlogEngineInfo()
-    {
-        return new BlogEngineInfo()
-        {
-            Version = typeof(BlogEngineContext).Assembly.GetName().Version?.ToString() ?? "N/A",
-            //Version = (typeof(BlogEngineContext).Assembly.GetName().Version?.ToString() ?? "N/A") + $" ({GitVersionInformation.AssemblySemVer})" ,
-            //VersionSourceSha = GitVersionInformation.VersionSourceSha,
-            //UncommittedChanges = GitVersionInformation.UncommittedChanges,
-            //BranchName = GitVersionInformation.BranchName,
-        };
+        if (await _editRepository.UpdateBlog(Blog.Title, Blog.Description, Blog.CSS))
+            return RedirectToPage("/Admin");
+        else
+            return NotFound();
     }
 }

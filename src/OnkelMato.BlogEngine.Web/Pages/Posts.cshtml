@@ -1,0 +1,41 @@
+﻿@page
+@using System.Web
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Http.Extensions
+@model PostsModel
+
+@{
+    Html.SetSeoInfo(seo =>
+    {
+        seo.SetCommonInfo(Model.Post.Title, Model.Post.HtmlPreview, ViewContext.HttpContext.Request.GetDisplayUrl(), []);
+    });
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card post-detail">
+            <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(Model.Post.HeaderImage)');">
+                <h6>@Html.DisplayFor(item => item.Post.UpdatedAt)</h6>
+                <h1>@Html.DisplayFor(modelItem => Model.Post.Title)</h1>
+            </div>
+            <div class="card-body">
+                <p>@(new HtmlString(Model.Post.HtmlContent))</p>
+
+            </div>
+            <div class="card-footer text-right">
+                <a asp-page="/Index" class="btn btn-dark">
+                    <i class="bi bi-arrow-left-circle"></i> Zur&uuml;ck
+                </a>
+                @if (Model.AllowBlogAdministration)
+                {
+                    <a asp-page="/PostAdmin/Edit" asp-route-id="@Model.Post.UniqueId" asp-route-redirect_uri="/Post/@HttpUtility.UrlEncode(Model.Post.Title)/@Model.Post.UniqueId" class="btn btn-dark">
+                        <i class="bi bi-pen"></i> Bearbeiten
+                    </a>
+                    <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@Model.Post.UniqueId" class="btn btn-warning">
+                        <i class="bi bi-save"></i> Exportieren
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

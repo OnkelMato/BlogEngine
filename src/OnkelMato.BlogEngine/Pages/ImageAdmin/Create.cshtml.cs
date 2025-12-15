@@ -1,23 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Model;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
 public class CreateModel(
-    BlogEngineContext context,
-    IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    BlogEngineEditRepository editRepository,
+    IOptionsMonitor<BlogConfiguration> blogConfiguration)
     : PageModel
 {
-    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly BlogEngineEditRepository _context = editRepository ?? throw new ArgumentNullException(nameof(editRepository));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = blogConfiguration ?? throw new ArgumentNullException(nameof(blogConfiguration));
 
     public IActionResult OnGet()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         return Page();
@@ -30,7 +31,7 @@ public class CreateModel(
     public async Task<IActionResult> OnPostAsync()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         if (!ModelState.IsValid || PostImage.File is null)
@@ -39,8 +40,7 @@ public class CreateModel(
             return Page();
         }
 
-        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blog = editRepository.Blog;
 
         using var stream = new MemoryStream();
         if (PostImage.File is not null)
@@ -49,7 +49,6 @@ public class CreateModel(
 
         var entity = new PostImage()
         {
-            Blog = blog,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
             UniqueId = Guid.NewGuid(),
@@ -60,8 +59,9 @@ public class CreateModel(
             Image = imageRaw
         };
 
-        _context.PostImages.Add(entity);
-        await _context.SaveChangesAsync();
+        var result = editRepository.AddImage(entity);
+
+
 
         return RedirectToPage("./Index");
     }

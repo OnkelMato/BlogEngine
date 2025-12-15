@@ -17,6 +17,14 @@
                     <h1>Index Posts</h1>
                 </div>
 
+                <div class="card-footer">
+                    @if (Model.AllowNewPosts)
+                    {
+                        <a asp-page="Create" class="btn btn-primary">Create New</a>
+                    }
+                    <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                </div>
+
                 <div class="card-body">
                     <table class="table">
                         <thead>
@@ -63,9 +71,12 @@
                                         {
                                             <a asp-page="./Edit" asp-route-id="@item.UniqueId" class="btn btn-primary">Edit</a>
                                             <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
+                                            <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
                                         }
-                                        <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
-                                        <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
+                                        @if (Model.AllowExport)
+                                        {
+                                            <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
+                                        }
                                     </td>
                                 </tr>
                             }

@@ -1,5 +1,4 @@
 ﻿@page
-@using Microsoft.AspNetCore.Mvc.TagHelpers
 @using OnkelMato.BlogEngine.Pages.PostAdmin
 @model OnkelMato.BlogEngine.Pages.PostAdmin.EditModel
 
@@ -14,6 +13,12 @@
 
             <div class="card-header text-light bg-dark">
                 <h1>Edit Post</h1>
+            </div>
+
+            <div class="card-footer">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
             </div>
 
             <div class="card-body">

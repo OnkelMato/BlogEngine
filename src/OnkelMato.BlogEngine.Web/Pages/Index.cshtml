@@ -1,8 +1,14 @@
 ﻿@page
+@using System.Web
 @using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Http.Extensions
 @model IndexModel
+
 @{
-    ViewData["Title"] = "Home";
+    Html.SetSeoInfo(seo =>
+    {
+        seo.SetCommonInfo(Model.Title, Model.Description, ViewContext.HttpContext.Request.GetDisplayUrl(), []);
+    });
 }
 
 <div class="row">
@@ -13,7 +19,7 @@
                 <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(item.HeaderImage)');">
                     @if (item.HasContent)
                     {
-                        <a asp-page="/Detail" asp-route-id="@item.UniqueId" class="link-light link-underline-0">
+                        <a href="/Post/@item.TitleSEO/@item.UniqueId" class="link-light link-underline-0">
                             @Html.DisplayFor(modelItem => item.Title)
                         </a>
                     }
@@ -28,13 +34,13 @@
                 <div class="card-footer text-right">
                     @if (item.HasContent)
                     {
-                        <a asp-page="/Detail" asp-route-id="@item.UniqueId" class="btn btn-dark">
+                        <a href="/Post/@HttpUtility.UrlEncode(item.Title)/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-arrow-right-circle"></i> Lesen
                         </a>
                     }
                     @if (Model.AllowBlogAdministration)
                     {
-                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Detail?id=@item.UniqueId" class="btn btn-dark">
+                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Post/@HttpUtility.UrlEncode(item.Title)/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-pen"></i> Bearbeiten
                         </a>
                         <a asp-page="/Export" asp-route-entity="Posts" asp-route-id="@item.UniqueId" class="btn btn-warning">

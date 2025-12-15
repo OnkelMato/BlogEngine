@@ -1,13 +1,27 @@
 ﻿@model OnkelMato.BlogEngine.Web.ViewComponents.BlogFooterViewComponent
 
+@{
+    var counter = 0;
+}
 @foreach (var item in Model.MenuPosts)
 {
-    @if (item.Url != null)
+    counter++;
+    @if (!string.IsNullOrEmpty(item.Url))
     {
-        <a href="@item.Url">@item.Title</a> <text> |</text>
+        <a href="@item.Url">@item.Title</a>
+
+        if (counter != Model.MenuPosts.Count)
+        {
+            <text> |</text>
+        }
     }
-    @if (item.Url == null && item.PostId != null)
+    @if (string.IsNullOrEmpty(item.Url))
     {
-        <a asp-page="/Detail" asp-route-id="@item.PostId">@item.Title</a><text> |</text>
+        <a href="/Post/@item.TitleSEO/@item.PostId">@item.Title</a>
+
+        if (counter != Model.MenuPosts.Count)
+        {
+            <text> |</text>
+        }
     }
 }

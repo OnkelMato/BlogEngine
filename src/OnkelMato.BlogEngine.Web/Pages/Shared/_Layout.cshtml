@@ -1,12 +1,11 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@using OnkelMato.BlogEngine
+﻿@using OnkelMato.BlogEngine
+@using OnkelMato.BlogEngine.Core.Repository
 @using OnkelMato.BlogEngine.Web.ViewComponents
-@inject BlogEngineRepository Repository
+<!-- todo refactor me -->
+@inject BlogEngineReadRepository Repository
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - @Repository.Blog()?.Title</title>
+    @Html.SeoTags()
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
@@ -25,6 +24,9 @@
                     <ul class="navbar-nav flex-grow-1">
                         @await Component.InvokeAsync(typeof(BlogMenuViewComponent))
                     </ul>
+                    <ul class="navbar-nav ml-auto">
+                        @await Component.InvokeAsync(typeof(BlogSelectorViewComponent))
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -37,11 +39,7 @@
 
     <footer class="border-top footer text-muted position-absolute bottom-0 translate-middle-x start-50">
         <div class="container">
-            &copy; 2025 - <a href="https://github.com/OnkelMato/BlogEngine" target="_blank">Onkel Mato Blog Engine</a> |
             @await Component.InvokeAsync(typeof(BlogFooterViewComponent))
-            <a asp-area="" asp-page="/Meta/Impressum">Impressum</a> |
-            <a asp-area="" asp-page="/Meta/Datenschutz">Datenschutz</a> |
-            <a asp-area="" asp-page="/Admin">Admin</a>
         </div>
     </footer>
 
@@ -49,15 +47,15 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-            javascript:(function(){
-              allowCopyAndPaste = function(e){
-              e.stopImmediatePropagation();
-              return true;
-              };
-              document.addEventListener('copy', allowCopyAndPaste, true);
-              document.addEventListener('paste', allowCopyAndPaste, true);
-              document.addEventListener('onpaste', allowCopyAndPaste, true);
-            })();
+        javascript:(function(){
+          allowCopyAndPaste = function(e){
+          e.stopImmediatePropagation();
+          return true;
+          };
+          document.addEventListener('copy', allowCopyAndPaste, true);
+          document.addEventListener('paste', allowCopyAndPaste, true);
+          document.addEventListener('onpaste', allowCopyAndPaste, true);
+        })();
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

@@ -1,0 +1,16 @@
+﻿@model OnkelMato.BlogEngine.Web.ViewComponents.BlogSelectorViewComponent
+
+@if (Model.AllowBlogSelection)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="blogSelectorDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Select Blog
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="blogSelectorDropdown">
+            @foreach (var item in Model.MenuBlogs)
+            {
+                <li><a class="dropdown-item" href="?blogid=@item.BlogId">@item.Title</a></li>
+            }
+        </ul>
+    </li>
+}

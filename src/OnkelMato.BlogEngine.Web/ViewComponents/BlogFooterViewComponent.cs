@@ -1,14 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using System.Text.RegularExpressions;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Model;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Web.ViewComponents;
 
-public class BlogFooterViewComponent(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class BlogFooterViewComponent(BlogEngineReadRepository repository, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : ViewComponent
 {
-    private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly BlogEngineReadRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public List<DynamicMenuModel> MenuPosts { get; set; } = [];
 
@@ -19,6 +25,7 @@ public class BlogFooterViewComponent(BlogEngineRepository repository, IOptionsMo
             {
                 PostId = x.UniqueId,
                 Url = x.ShowState == ShowState.LinkAndFooter ? x.MdPreview : null, // because MdPreview is required
+                TitleSEO = Regex.Replace(x.Title, "[^a-zA-Z0-9 ]", "").Replace(" ", "_"),
                 Title = x.Title
             }).ToList();
 
@@ -30,5 +37,6 @@ public class BlogFooterViewComponent(BlogEngineRepository repository, IOptionsMo
         public string Title { get; set; } = null!;
         public string? Url { get; set; } = null!;
         public Guid? PostId { get; set; }
+        public string? TitleSEO { get; set; }
     }
 }

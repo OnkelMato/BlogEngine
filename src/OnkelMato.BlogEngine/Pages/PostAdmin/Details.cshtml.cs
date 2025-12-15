@@ -1,27 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
 public class DetailsModel : PageModel
 {
-    private readonly BlogEngineContext _context;
-    private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration;
+    private readonly BlogEngineReadRepository _readRepository;
+    private readonly IOptionsSnapshot<BlogConfiguration> _blogConfiguration;
 
-    public DetailsModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+    public DetailsModel(BlogEngineReadRepository readRepository, IOptionsSnapshot<BlogConfiguration> blogConfiguration)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-        _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+        _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
+        _blogConfiguration = blogConfiguration ?? throw new ArgumentNullException(nameof(blogConfiguration));
     }
 
-    public PostAdminModel Post { get; set; } = null!;
+    public PostModel Post { get; set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.Value.AllowBlogAdministration)
+        if (!_blogConfiguration.Value.AllowAdministration)
             return RedirectToPage("/Index");
 
         if (id == null)
@@ -29,26 +29,10 @@ public class DetailsModel : PageModel
             return NotFound();
         }
 
-        var post = await _context.Posts.Include(x=> x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
-        if (post == null)
-        {
-            return NotFound();
-        }
-        else
-        {
-            Post = new PostAdminModel()
-            {
-                UniqueId = post.UniqueId,
-                Title = post.Title,
-                MdContent = post.MdContent,
-                MdPreview = post.MdPreview,
-                UpdatedAt = post.UpdatedAt,
-                PublishedAt = post.PublishedAt,
-                ShowState = post.ShowState.ToShowStateModel(),
-                Order = post.Order,
-                HeaderImage = post.HeaderImage?.UniqueId,
-            };
-        }
+        var dbPost = await _readRepository.PostAsync(id.Value);
+        if (dbPost == null) return NotFound();
+        Post = dbPost.ToModel();
+
         return Page();
     }
 }

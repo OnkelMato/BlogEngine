@@ -14,7 +14,7 @@
         </div>
     </div>
 }
-@if (Model.AcceptUnsignedImport)
+@if (Model.AllowUnsignedImport)
 {
     <div class="card alert-danger">
         <div class="card-body">
@@ -43,7 +43,7 @@
             </div>
         </div>
     </div>
-    @if (Model.AllowNewPosts)
+    @if (Model.AllowExport)
     {
         <div class="col-sm-4">
             <div class="card">
@@ -52,6 +52,14 @@
                         Export
                     </h1>
                 </div>
+                @if (Model.JwtCertificateMissing)
+                {
+                    <div class="card alert-danger">
+                        <div class="card-body">
+                            <p>JWT export is enabled but not certificates are defined. This does not work.</p>
+                        </div>
+                    </div>
+                }
                 <div class="card-body">
                     <p>Export all posts or post images to a json file.</p>
                 </div>
@@ -64,6 +72,9 @@
                 </div>
             </div>
         </div>
+    }
+    @if (Model.AllowNewPosts)
+    {
         <div class="col-sm-4">
             <div class="card">
                 <div class="card-header text-light bg-dark">

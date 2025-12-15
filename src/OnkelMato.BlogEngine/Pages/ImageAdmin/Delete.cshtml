@@ -14,6 +14,13 @@
                 <p>Are you sure you want to delete this image?</p>
             </div>
 
+            <div class="card-footer">
+                <input type="hidden" asp-for="PostImage.UniqueId" />
+                <input type="submit" value="Delete" class="btn btn-danger" />
+                <a asp-page="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+            </div>
+
             <div class="card-body">
                 <dl class="row">
                     <dt class="col-sm-3">

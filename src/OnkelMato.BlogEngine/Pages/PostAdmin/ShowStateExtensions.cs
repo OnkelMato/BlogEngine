@@ -1,10 +1,15 @@
-﻿using OnkelMato.BlogEngine.Database;
+﻿using OnkelMato.BlogEngine.Core.Model;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
+/// <summary>
+/// Provides extension methods for converting between ShowState and ShowStateModel enumeration values.
+/// </summary>
+/// <remarks>These methods enable seamless mapping between the ShowState and ShowStateModel types, facilitating
+/// interoperability when working with different representations of show state within the application.</remarks>
 public static class ShowStateExtensions
 {
-    public static ShowStateModel ToShowStateModel(this ShowState showState)
+    public static ShowStateModel FromShowState(this ShowState showState)
     {
         return showState switch
         {

@@ -1,0 +1,17 @@
+services:
+  onkelmatoblogengineweb:
+    image: thomasley/onkelmatoblogengineweb:latest
+    container_name: onkelmato.blog
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultProvider=sqlite
+      - ConnectionStrings__DefaultConnection=Data Source=/data/blog.db
+      - Blog__CreateBlogIfNotExist=true
+      - Blog__AllowAdministration=true
+      - Blog__EnableBlogSelection=true
+      - ImportExport__ValidateCertificates=false
+    volumes:
+      - ./.data:/data
+    restart: unless-stopped

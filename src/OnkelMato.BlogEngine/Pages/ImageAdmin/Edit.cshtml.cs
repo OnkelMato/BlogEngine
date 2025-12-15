@@ -2,11 +2,15 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
-public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class EditModel(
+    BlogEngineEditRepository editRepository,
+    BlogEngineReadRepository readRepository,
+    IOptionsMonitor<BlogConfiguration> blogConfiguration)
     : PageModel
 {
     [BindProperty]
@@ -14,14 +18,13 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blog = editRepository.Blog;
 
         // make sure it cannot be accessed if new posts are not allowed
-        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!blogConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
-        var postImage = await context.PostImages.SingleOrDefaultAsync(m => m.UniqueId == id && m.Blog == blog);
+        var postImage = readRepository.GetImage(id);
         if (postImage == null) { return NotFound($"Cannot find image with id {id}"); }
 
         PostImage = new PostImageModel()
@@ -39,11 +42,10 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
 
     public async Task<IActionResult> OnPostAsync()
     {
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blog = editRepository.Blog;
 
         // make sure it cannot be accessed if new posts are not allowed
-        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!blogConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
         if (!ModelState.IsValid)
@@ -51,29 +53,8 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
             return Page();
         }
 
-        var entity = await context.PostImages.SingleOrDefaultAsync(x => x.UniqueId == PostImage.UniqueId && x.Blog == blog);
-        if (entity == null) { return NotFound($"Cannot find image with id {PostImage.UniqueId}"); }
-
-        entity.AltText = PostImage.AltText;
-        entity.IsPublished = PostImage.IsPublished;
-        entity.Name = PostImage.Name;
-        entity.UpdatedAt = DateTime.Now;
-
-        try
-        {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!context.PostImages.Any(e => e.Id == entity.Id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+        var result = await editRepository.UpdateImage(PostImage.FromModel());
+        if (result.IsFailure) return NotFound();
 
         return RedirectToPage("./Index");
     }

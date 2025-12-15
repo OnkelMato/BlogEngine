@@ -4,251 +4,259 @@ using JWT.Exceptions;
 using JWT.Serializers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
-using static OnkelMato.BlogEngine.Pages.BlogExportModel;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
+using OnkelMato.BlogEngine.Core.Repository.Model;
 using HashAlgorithmName = System.Security.Cryptography.HashAlgorithmName;
 
 namespace OnkelMato.BlogEngine.Pages;
 
-public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
+public class ImportModel(
+    BlogEngineMgmtRepository mgmtRepository,
+    BlogEngineImportExportRepository importExportRepository,
+    IOptionsMonitor<ImportExportConfiguration> imexConfiguration) : PageModel
 {
-    public string SignaturePublicKey => postsConfiguration.CurrentValue.CertificateFile;
-    public bool AcceptUnsignedImport => postsConfiguration.CurrentValue.AcceptUnsignedImport;
-    public bool UseJwtTokenSigning => postsConfiguration.CurrentValue.UseJwt;
 
     [BindProperty(SupportsGet = true)]
-    public bool UseTextarea { get; set; }
+    public string? FormType { get; set; }
 
+    public bool ValidateCertificates => imexConfiguration.CurrentValue.ValidateCertificates;
+
+    #region Json Text and File Import
+
+    public bool UseJsonTextInput => imexConfiguration.CurrentValue.EnableJsonStringImport;
+
+    // Textarea supports direct json input
     [BindProperty]
     [Display(Name = "Json with Data")]
     public string? JsonDocument { get; set; }
-    [BindProperty]
-    [Display(Name = "Json with Data")]
-    public IFormFile? JsonDocumentFile { get; set; } = null!;
+
     [BindProperty]
     [Display(Name = "Signature for Json")]
     public string? Signature { get; set; }
+
+    public bool UseJsonFileInput = imexConfiguration.CurrentValue.EnableJsonFileImport;
+    private string? _signaturePublicKeys;
+
+    // File upload supports json file input
+    [BindProperty]
+    [Display(Name = "Json with Data")]
+    public IFormFile? JsonDocumentFile { get; set; } = null!;
+
     [BindProperty]
     [Display(Name = "Signature for Json")]
     public IFormFile? SignatureFile { get; set; } = null!;
 
+    #endregion
+
+
+    #region  Sync from remote blog
+
+    public bool UseSyncInput => imexConfiguration.CurrentValue.EnableBlogSync;
+
     [BindProperty(SupportsGet = true)]
-    [Display(Name = "Import Type")]
-    public string Entity { get; set; } = null!;
+    [Display(Name = "Remote Blog Url")]
+    public string RemoteSyncUrl { get; set; } = "https://";
 
-    public SelectList EntityList { get; set; } = new(new[] { "Blog" });
-
-    public async Task<IActionResult> OnPostAsync()
-    {
-        if (!ModelState.IsValid)
-            return Page();
-
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
-
-        if (JsonDocumentFile is not null)
-        {
-            using var stream = new MemoryStream();
-            await JsonDocumentFile.CopyToAsync(stream);
-            stream.Position = 0;
-            JsonDocument = await new StreamReader(stream).ReadToEndAsync();
-        }
-
-        if (postsConfiguration.CurrentValue.UseJwt)
-            return await ImportJwtBlog(blog);
-
-        return await ImportDocSigBlog(blog);
-    }
-
-    private async Task<IActionResult> ImportJwtBlog(Blog blog)
-    {
-        var cert = new X509Certificate2(postsConfiguration.CurrentValue.CertificateFile);
-
-        try
-        {
-            IJsonSerializer serializer = new JsonNetSerializer();
-            IDateTimeProvider provider = new UtcDateTimeProvider();
-            IJwtValidator validator = new JwtValidator(serializer, provider);
-            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-            IJwtAlgorithm algorithm = new RS256Algorithm(cert);
-            IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
-
-            var json = decoder.Decode(JsonDocument);
-            var importData = JsonSerializer.Deserialize<BlogExportModel>(json!) ?? new();
-
-            DoImportBlog(importData, blog);
-
-            await context.SaveChangesAsync();
-            return RedirectToPage("./Index");
-        }
-        catch (TokenNotYetValidException)
-        {
-            Console.WriteLine("Token is not valid yet");
-        }
-        catch (TokenExpiredException)
-        {
-            Console.WriteLine("Token has expired");
-        }
-        catch (SignatureVerificationException)
-        {
-            Console.WriteLine("Token has invalid signature");
-        }
-
-        return RedirectToPage("./Index");
-    }
-
-    #region Import Blog with Document File and Signature File
-    private async Task<IActionResult> ImportDocSigBlog(Blog blog)
-    {
-        if (SignatureFile is not null)
-        {
-            using var stream = new MemoryStream();
-            await SignatureFile.CopyToAsync(stream);
-            stream.Position = 0;
-            Signature = await new StreamReader(stream).ReadToEndAsync();
-        }
-
-        if (string.IsNullOrEmpty(Signature) && !postsConfiguration.CurrentValue.AcceptUnsignedImport)
-        {
-            ModelState.AddModelError(nameof(Signature), "Signature is required because 'AcceptUnsignedImport' is set to false.");
-            ModelState.AddModelError(nameof(SignatureFile), "Signature is required because 'AcceptUnsignedImport' is set to false.");
-            return Page();
-        }
-
-        if (Signature is not null)
-        {
-            var cert = new X509Certificate2(postsConfiguration.CurrentValue.CertificateFile);
-            if (!Verify(JsonDocument!, Signature, cert))
-            {
-                ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
-                ModelState.AddModelError(nameof(SignatureFile), "Signature is invalid.");
-                return Page();
-            }
-        }
-
-        // this is perfect for strategy pattern
-        switch (Entity.ToLower())
-        {
-            case "blog":
-                {
-                    var importData = JsonSerializer.Deserialize<BlogExportModel>(JsonDocument!) ?? new();
-
-                    DoImportBlog(importData, blog);
-
-                    await context.SaveChangesAsync();
-                    return RedirectToPage("./Index");
-                }
-            default:
-                return RedirectToPage("./Admin");
-        }
-    }
+    [BindProperty]
+    [Display(Name = "Clear Blog before Sync")]
+    public bool ClearBlogBeforeSync { get; set; } = true;
 
     #endregion
 
-    private void DoImportBlog(BlogExportModel blogExport, Blog blog)
+    #region JwtImport
+
+    public bool UseJwtInput => imexConfiguration.CurrentValue.EnableJwtImport;
+
+    // File upload supports json file input
+    [BindProperty]
+    [Display(Name = "JWT Export")]
+    public IFormFile? JwtDocumentFile { get; set; } = null!;
+
+    public string? SignaturePublicKeys => string.Join(",", imexConfiguration.CurrentValue.JwtPublicCertificates);
+
+    [BindProperty(SupportsGet = true)]
+    [Display(Name = "Import as new Blog")]
+    public bool ImportAsNewBlog { get; set; }
+
+    #endregion
+
+    public async Task<IActionResult> OnGetAsync()
     {
-        var blogNameExists = context.Blogs.Any(x => x.Title == blogExport.Title && x.UniqueId != blog.UniqueId);
-
-        // in case only a post or image was exported, the export values will be null.
-        if (blogExport.IsFullExport)
-        {
-            blog.Title = blogNameExists ? blog.Title : (blogExport.Title ?? blog.Title);
-            blog.Description = blogExport.Description;
-            blog.UpdatedAt = DateTime.Now;
-            blog.CreatedAt = blogExport.CreatedAt;
-
-            context.Blogs.Update(blog);
-        }
-
-        foreach (var postImage in blogExport.PostImages)
-            DoImportPostImage(postImage, blog);
-        //context.SaveChanges();
-
-        foreach (var post in blogExport.Posts)
-            DoImportPost(post, blog);
+        ModelState.Clear();
+        return Page();
     }
 
-    private void DoImportPost(PostExportModel postExport, Blog blog)
+    public async Task<IActionResult> OnPostAsync()
     {
-        var postEntity = context.Posts.SingleOrDefault(x => x.UniqueId == postExport.UniqueId && x.Blog == blog);
-        //var headerImage = context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
-        var headerImage = context.PostImages.Local.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog)
-                          ?? context.PostImages.SingleOrDefault(x => x.UniqueId == postExport.HeaderImage && x.Blog == blog);
-        if (postEntity is null)
+        //var blog = editRepository.Blog();
+        //if (blog == null) { return NotFound($"Blog {blogConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+
+        // todo: change this to just load the blog document (json)
+        // implement sth line a strategy pattern here. Single class strategy? Or just methods?
+        // after json was loaded the procedure is the same (maybe except the clear blog)
+
+        var importModelJson = string.Empty;
+        var clearBlog = false;
+
+        switch (FormType)
         {
-            postEntity = new Post()
-            {
-                UniqueId = postExport.UniqueId,
-                Blog = blog,
-                HeaderImage = headerImage,
-                MdContent = postExport.MdContent,
-                Title = postExport.Title,
-                UpdatedAt = DateTime.Now,
-                ShowState = (ShowState)postExport.ShowState,
-                MdPreview = postExport.MdPreview,
-                Order = postExport.Order,
-                CreatedAt = postExport.CreatedAt,
-                PublishedAt = postExport.PublishedAt
-            };
-            context.Posts.Add(postEntity);
+            // this is the typical pattern for a strategy pattern. Could be refactored to strategy classes later.
+            case "sync":
+                importModelJson = await ImportJsonFromUrl(RemoteSyncUrl);
+                clearBlog = ClearBlogBeforeSync;
+                break;
+            case "jwtFile":
+                {
+                    using var stream = new MemoryStream();
+                    await JwtDocumentFile!.CopyToAsync(stream);
+                    stream.Position = 0;
+                    var jwt = await new StreamReader(stream).ReadToEndAsync();
+
+                    importModelJson = await ImportJsonFromJwt(jwt);
+                    break;
+                }
+            // this is why I don't link to many language features. It makes reading complex when you are new to the code (and the syntactic sugar)
+            case "jsonText" when ValidateCertificates && !SignatureIsValid(JsonDocument, Signature):
+                ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
+                return Page();
+            case "jsonText":
+                importModelJson = JsonDocument;
+                break;
+            case "jsonFile":
+                {
+                    using var stream = new MemoryStream();
+                    await JsonDocumentFile!.CopyToAsync(stream);
+                    stream.Position = 0;
+                    var jsonDocumentTemp = await new StreamReader(stream).ReadToEndAsync();
+
+                    if (ValidateCertificates)
+                    {
+                        using var stream2 = new MemoryStream();
+                        await SignatureFile!.CopyToAsync(stream2);
+                        stream2.Position = 0;
+                        var signatureTemp = await new StreamReader(stream2).ReadToEndAsync();
+
+                        if (!SignatureIsValid(jsonDocumentTemp, signatureTemp))
+                        {
+                            ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
+                            return Page();
+                        }
+                    }
+
+                    importModelJson = jsonDocumentTemp;
+                    break;
+                }
+            default:
+                throw new Exception($"Form Type {FormType} not defined");
+        }
+
+        // clear blog is explicitly selected
+        if (clearBlog)
+            await importExportRepository.ClearBlog();
+
+        // deserialize and import
+        var importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson) ?? throw new ArgumentNullException(nameof(importModelJson));
+
+        if (ImportAsNewBlog)
+        {
+            var blogImportId = await mgmtRepository.DoImportAsNewBlog(importModel);
+            return Redirect("/?blogId=" + blogImportId);
         }
         else
         {
-            postEntity.Blog = blog;
-            postEntity.HeaderImage = headerImage;
-            postEntity.MdContent = postExport.MdContent;
-            postEntity.Title = postExport.Title;
-            postEntity.UpdatedAt = DateTime.Now;
-            postEntity.ShowState = (ShowState)postExport.ShowState;
-            postEntity.MdPreview = postExport.MdPreview;
-            postEntity.CreatedAt = postExport.CreatedAt;
-            postEntity.PublishedAt = (postExport.PublishedAt == DateTime.MinValue) ? postExport.CreatedAt : postExport.PublishedAt;
-            context.Posts.Update(postEntity);
+            await importExportRepository.DoImportBlog(importModel);
+        return Redirect("/");
         }
+
     }
 
-    private void DoImportPostImage(PostImageExportModel postImageExport, Blog blog)
+    private async Task<string?> ImportJsonFromJwt(string token)
     {
-        var postImageEntity = context.PostImages.SingleOrDefault(x => x.UniqueId == postImageExport.UniqueId && x.Blog == blog);
-        if (postImageEntity is null)
+        var result = string.Empty;
+
+        foreach (var certificateFile in imexConfiguration.CurrentValue.JwtPublicCertificates)
         {
-            postImageEntity = new PostImage()
+            try
             {
-                UniqueId = postImageExport.UniqueId,
-                Blog = blog,
-                AltText = postImageExport.AltText,
-                ContentType = postImageExport.ContentType,
-                Name = postImageExport.Name,
-                Image = postImageExport.Image,
-                IsPublished = postImageExport.IsPublished,
-                UpdatedAt = postImageExport.UpdatedAt,
-                CreatedAt = postImageExport.CreatedAt
-            };
-            context.PostImages.Add(postImageEntity);
+                var cert = new X509Certificate2(certificateFile);
+                IJsonSerializer serializer = new JsonNetSerializer();
+                IDateTimeProvider provider = new UtcDateTimeProvider();
+                IJwtValidator validator = new JwtValidator(serializer, provider);
+                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                IJwtAlgorithm algorithm = new RS256Algorithm(cert);
+                IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
+
+                var json = decoder.Decode(token, false);
+                result = JsonSerializer.Deserialize<string>(json!);
+
+                return result;
+            }
+            catch (TokenNotYetValidException)
+            {
+                // todo return to error page
+            }
+            catch (TokenExpiredException)
+            {
+                // todo return to error page
+            }
+            catch (SignatureVerificationException)
+            {
+                // todo return to error page
+            }
         }
-        else
+
+        return null;
+    }
+
+
+    /// <summary>
+    /// Imports the JSON from a remote URL.
+    /// </summary>
+    /// <param name="remoteSyncUrl">The remote URL to import JSON from.</param>
+    /// <returns>The imported JSON as a string.</returns>
+    private async Task<string> ImportJsonFromUrl(string remoteSyncUrl)
+    {
+        try
         {
-            postImageEntity.Blog = blog;
-            postImageEntity.AltText = postImageExport.AltText;
-            postImageEntity.ContentType = postImageExport.ContentType;
-            postImageEntity.Name = postImageExport.Name;
-            postImageEntity.Image = postImageExport.Image;
-            postImageEntity.IsPublished = postImageExport.IsPublished;
-            postImageEntity.UpdatedAt = postImageExport.UpdatedAt;
-            postImageEntity.CreatedAt = postImageExport.CreatedAt;
-            context.PostImages.Update(postImageEntity);
+            // in case of certificate validation disabled
+            var handler = new HttpClientHandler();
+            if (imexConfiguration.CurrentValue.ValidateCertificates)
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+            var client = new HttpClient(handler);
+            using var response = await client.GetAsync(RemoteSyncUrl + "/Export?type=json");
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync();
+            return responseBody;
+        }
+        catch (Exception e)
+        {
+            throw;
         }
     }
 
-    public static bool Verify(string data, string signature, X509Certificate2 serverCert)
+
+    private bool SignatureIsValid(string? jsonDocument, string? signature)
+    {
+        var result = false;
+        foreach (var certificate in imexConfiguration.CurrentValue.JwtPublicCertificates)
+        {
+            var cert = new X509Certificate2(certificate);
+            if (Verify(JsonDocument!, Signature, cert))
+                result = true;
+        }
+
+        return result;
+    }
+
+    private static bool Verify(string data, string signature, X509Certificate2 serverCert)
     {
         try
         {
@@ -259,7 +267,7 @@ public class ImportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
             return publicKey!.VerifyData(
                 data: dataByteArray,
                 signature: signatureByteArray,
-                hashAlgorithm: HashAlgorithmName.SHA256, 
+                hashAlgorithm: HashAlgorithmName.SHA256,
                 padding: RSASignaturePadding.Pkcs1);
         }
         catch (Exception)

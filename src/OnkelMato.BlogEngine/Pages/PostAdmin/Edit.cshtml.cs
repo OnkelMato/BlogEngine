@@ -1,44 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
 public class EditModel : PageModel
 {
-    private readonly BlogEngineContext _context;
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration;
+    private readonly BlogEngineReadRepository _readRepository;
+    private readonly BlogEngineEditRepository _editRepository;
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration;
 
-    public EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    public EditModel(
+        BlogEngineReadRepository readRepository,
+        BlogEngineEditRepository editRepository,
+        IOptionsMonitor<BlogConfiguration> postsConfiguration)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
+        _editRepository = editRepository ?? throw new ArgumentNullException(nameof(editRepository));
         _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
     }
 
     [BindProperty]
-    public PostAdminModel Post { get; set; } = null!;
+    public PostModel Post { get; set; } = null!;
 
     [BindProperty(Name = "redirect_uri", SupportsGet = true)]
     public string? RedirectUri { get; set; }
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
-            return RedirectToPage(RedirectUri ?? "/Index");
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
+            return RedirectToPage(RedirectUri ?? "/");
 
         if (id == null)
         {
             return NotFound();
         }
 
-        var post = await _context.Posts.Include(x => x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
+        var post = await _readRepository.PostAsync(id.Value);
         if (post == null)
         {
             return NotFound();
         }
-        Post = new PostAdminModel()
+        Post = new PostModel()
         {
             UniqueId = post.UniqueId,
             Title = post.Title,
@@ -46,7 +51,7 @@ public class EditModel : PageModel
             UpdatedAt = post.UpdatedAt,
             PublishedAt = post.PublishedAt,
             Order = post.Order,
-            ShowState = post.ShowState.ToShowStateModel(),
+            ShowState = post.ShowState.FromShowState(),
             HeaderImage = post.HeaderImage?.UniqueId,
             MdPreview = post.MdPreview
         };
@@ -63,10 +68,10 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blog = _readRepository.Blog();
 
-        var postHeaderImage = _context.PostImages.SingleOrDefault(x => x.UniqueId == Post.HeaderImage && x.Blog == blog);
+
+        var postHeaderImage = Post.HasHeaderImage ? _readRepository.GetImage(Post.HeaderImage!.Value) : null;
 
         if (Post.HeaderImage != null && postHeaderImage is null)
         {
@@ -74,41 +79,10 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var dbPost = await _context.Posts.SingleAsync(m => m.UniqueId == Post.UniqueId && m.Blog == blog);
+        _editRepository.UpdatePost(PostModelExtensions.FromModel(Post, postHeaderImage, Post.Tags.Split(',')));
 
-        dbPost.MdContent = Post.MdContent;
-        dbPost.Title = Post.Title;
-        dbPost.Order = Post.Order;
-        dbPost.PublishedAt = Post.PublishedAt;
-        dbPost.UpdatedAt = DateTime.Now;
-        dbPost.HeaderImage = postHeaderImage;
-        dbPost.ShowState = Post.ShowState.ToShowState();
-        dbPost.MdPreview = Post.MdPreview;
+       
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!PostExists(Post.UniqueId))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        if (RedirectUri is not null)
-            return RedirectToPage(RedirectUri.Split("?")[0], new { Id = Post.UniqueId });
-
-        return RedirectToPage((RedirectUri ?? "./Index").Split("?")[0]);
-    }
-
-    private bool PostExists(Guid id)
-    {
-        return _context.Posts.Any(e => e.UniqueId == id);
+        return RedirectToPage("./Index");
     }
 }

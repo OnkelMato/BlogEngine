@@ -2,36 +2,34 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
-public class IndexModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class IndexModel(
+    BlogEngineReadRepository repository,
+    IOptionsMonitor<BlogConfiguration> postsConfiguration,
+    IOptionsMonitor<ImportExportConfiguration> importExportConfiguration)
     : PageModel
 {
-    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+
+    [BindProperty(Name = "redirect_uri", SupportsGet = true)]
+    public string? RedirectUri { get; set; }
 
     public IList<PostImageModel> PostImage { get;set; } = null!;
-    public bool AllowNewPosts => _postsConfiguration.CurrentValue.AllowBlogAdministration;
+    public bool AllowNewPosts => _postsConfiguration.CurrentValue.AllowAdministration;
+    public bool AllowExport => importExportConfiguration.CurrentValue.AllowAnyExport;
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        if (!(_postsConfiguration.CurrentValue.AllowAdministration || importExportConfiguration.CurrentValue.AllowAnyExport))
+            return RedirectToPage(RedirectUri ?? "/");
+
+        var blog = repository.Blog();
         
-        PostImage = await _context.PostImages
-            .Where(x=> x.Blog == blog)
-            .OrderByDescending(x=> x.UpdatedAt)
-            .Select(x=> new PostImageModel(){
-                UniqueId = x.UniqueId,
-                Name = x.Name,
-                ContentType = x.ContentType,
-                AltText = x.AltText,
-                IsPublished = x.IsPublished,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt
-            }).ToListAsync();
+        PostImage = repository.GetAllImages().Select(x=> x.ToModel()).ToList();
 
         return Page();
     }

@@ -1,0 +1,73 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using Markdig;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
+using OnkelMato.BlogEngine.Core.Configuration;
+using OnkelMato.BlogEngine.Core.Repository;
+
+namespace OnkelMato.BlogEngine.Web.Pages;
+
+public class PostsModel(BlogEngineReadRepository readRepository, IOptionsMonitor<BlogConfiguration> postsConfiguration) : PageModel
+{
+    public class PostModel
+    {
+        public Guid UniqueId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string HtmlContent { get; set; } = string.Empty;
+        public string HtmlPreview { get; set; } = string.Empty;
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd MMM yyyy}")]
+        public DateTime UpdatedAt { get; set; }
+
+        public Guid? HeaderImage { get; set; }
+
+        public DateTime PublishedAt { get; set; }
+    }
+
+    private readonly BlogEngineReadRepository _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+
+    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowAdministration;
+    public PostModel Post { get; set; } = new PostModel();
+
+    [BindProperty(SupportsGet = true)]
+    public Guid Id { get; set; } = Guid.Empty;
+
+    [BindProperty(SupportsGet = true)]
+    public string? TitleStub { get; set; }
+
+    // todo change to async
+    public IActionResult OnGet()
+    {
+        // get blog data for SEO
+        var blog = _readRepository.Blog() ?? throw new Exception("Cannot read blog. That's wired.");
+        this.BlogTitle = blog.Title;
+        this.BlogDescription = blog.Description;
+
+        // get post data
+        var x = _readRepository.PostAsync(Id).Result;
+        if (x == null)
+            return NotFound($"Post {Id} not found");
+
+        Post = new PostModel()
+        {
+            Title = x.Title,
+            UniqueId = x.UniqueId,
+            UpdatedAt = x.UpdatedAt,
+            PublishedAt = x.PublishedAt,
+            HeaderImage = x.HeaderImage?.UniqueId,
+            //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null),
+            //HtmlContent = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdContent) ?? string.Empty, null, null)
+            HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
+            HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
+        };
+
+        return Page();
+    }
+
+    public string? BlogDescription { get; set; }
+
+    public string? BlogTitle { get; set; }
+}
