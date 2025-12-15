@@ -28,7 +28,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./src
-          file: ./src/OnkelMato.BlogEngine.Web/Dockerfile
+          context: "./src"
+          file: "./src/OnkelMato.BlogEngine.Web/Dockerfile"
           push: true
           tags: thomasley/onkelmatoblogengineweb:latest
