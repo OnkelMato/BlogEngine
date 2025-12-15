@@ -1,5 +1,4 @@
-﻿using System.Web;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -10,11 +9,16 @@ namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 public class EditModel : PageModel
 {
     private readonly BlogEngineContext _context;
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration;
+    private readonly BlogEngineRepository _blogEngineRepository;
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration;
 
-    public EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    public EditModel(
+        BlogEngineContext context,
+        BlogEngineRepository blogEngineRepository,
+        IOptionsMonitor<BlogConfiguration> postsConfiguration)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _blogEngineRepository = blogEngineRepository ?? throw new ArgumentNullException(nameof(blogEngineRepository));
         _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
     }
 
@@ -26,7 +30,7 @@ public class EditModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage(RedirectUri ?? "/Index");
 
         if (id == null)
@@ -34,7 +38,7 @@ public class EditModel : PageModel
             return NotFound();
         }
 
-        var post = await _context.Posts.Include(x => x.HeaderImage).FirstOrDefaultAsync(m => m.UniqueId == id);
+        var post = await _blogEngineRepository.GetPostsWithHeaderImages(id.Value);
         if (post == null)
         {
             return NotFound();

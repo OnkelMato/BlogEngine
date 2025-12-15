@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
-public class PostsModel(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
+public class PostsModel(BlogEngineRepository repository, IOptionsMonitor<BlogConfiguration> postsConfiguration) : PageModel
 {
     public class PostModel
     {
@@ -25,9 +25,9 @@ public class PostsModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
     }
 
     private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
-    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowBlogAdministration;
+    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowAdministration;
     public PostModel Post { get; set; } = new PostModel();
 
     [BindProperty(SupportsGet = true)]
@@ -38,6 +38,12 @@ public class PostsModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
 
     public IActionResult OnGet()
     {
+        // get blog data for SEO
+        var blog = _repository.Blog() ?? throw new Exception("Cannot read blog. That's wired.");
+        this.BlogTitle = blog.Title;
+        this.BlogDescription = blog.Description;
+
+        // get post data
         var x = _repository.Post(Id);
         if (x == null)
             return NotFound($"Post {Id} not found");
@@ -57,4 +63,8 @@ public class PostsModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
 
         return Page();
     }
+
+    public string? BlogDescription { get; set; }
+
+    public string? BlogTitle { get; set; }
 }

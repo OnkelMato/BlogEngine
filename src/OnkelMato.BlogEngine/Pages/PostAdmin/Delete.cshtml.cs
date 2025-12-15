@@ -6,11 +6,11 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
-public class DeleteModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class DeleteModel(BlogEngineContext context, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
     private Post? _originalPost;
 
     [BindProperty]
@@ -18,7 +18,7 @@ public class DeleteModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
@@ -50,7 +50,7 @@ public class DeleteModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
         var entity = _context.Posts.SingleOrDefault(x => x.UniqueId == id && x.Blog == blog);

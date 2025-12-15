@@ -12,7 +12,10 @@ using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Pages;
 
-public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration) : PageModel
+public class ExportModel(BlogEngineContext context,
+    IOptionsMonitor<BlogConfiguration> postsConfiguration,
+    IOptionsMonitor<ImportExportConfiguration> imexConfiguration,
+    IBlogIdProvider blogIdProvider) : PageModel
 {
     [BindProperty(SupportsGet = true)]
     public Guid? Id { get; set; }
@@ -20,13 +23,17 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
     [BindProperty(SupportsGet = true)]
     public string? Entity { get; set; } = "Blog"; // Legacy: Blog, Posts, PostImages
 
+    [BindProperty(SupportsGet = true)]
+    public string? Type { get; set; } = "json"; // TODO replace with content type
+
     public async Task<ActionResult> OnGet()
     {
         if (Entity is null)
             throw new ArgumentException(nameof(Entity));
 
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-        if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        var blogGuid = blogIdProvider.Id;
+        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId ==blogGuid);
+        if (blog == null) { return NotFound($"Blog {blogGuid} not Found"); }
 
         BlogExportModel exportedEntities = null!;
         var filename = string.Empty;
@@ -40,8 +47,8 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
                     blog = await context.Blogs
                         .Include(x => x.Posts).ThenInclude(x => x.HeaderImage)
                         .Include(x => x.PostImages)
-                        .FirstOrDefaultAsync(m => m.UniqueId == postsConfiguration.CurrentValue.BlogUniqueId);
-                    if (blog is null) throw new ArgumentException($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found");
+                        .FirstOrDefaultAsync(m => m.UniqueId == blogGuid);
+                    if (blog is null) throw new ArgumentException($"Blog {blogGuid} not Found");
 
                     exportedEntities = CreateBlogExport(blog);
                     filename = $"{blog!.Title}.{DateTime.Now:yyyyMMdd-hhmm}";
@@ -77,8 +84,9 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
         }
 
         var exportAsJson = exportedEntities.AsJson();
-        if (postsConfiguration.CurrentValue.UseJwt &&
-            !string.IsNullOrWhiteSpace(postsConfiguration.CurrentValue.CertificateKeyFile)) // it requires a private key for signing
+        // todo make this selectable
+        if (imexConfiguration.CurrentValue.CertificateFile.Length > 0 &&
+            !string.IsNullOrWhiteSpace(imexConfiguration.CurrentValue.CertificateKeyFile[0])) // it requires a private key for signing
         {
             filename = filename + ".jwt.json";
             var token = GetTokenForJson(exportAsJson);
@@ -170,7 +178,9 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
     private string GetTokenForJson(object payload)
     {
-        var cert = X509Certificate2.CreateFromPemFile(postsConfiguration.CurrentValue.CertificateFile, postsConfiguration.CurrentValue.CertificateKeyFile);
+        // todo let user select the certificate -multiuser support :) 
+        var cert = X509Certificate2.CreateFromPemFile(
+            imexConfiguration.CurrentValue.CertificateFile[0], imexConfiguration.CurrentValue.CertificateKeyFile[0]);
 
         IJwtAlgorithm algorithm = new RS256Algorithm(cert);
         IJsonSerializer serializer = new JsonNetSerializer();
@@ -180,4 +190,17 @@ public class ExportModel(BlogEngineContext context, IOptionsMonitor<PostsConfigu
 
         return encoder.Encode(payload, key);
     }
+}
+
+public interface IBlogIdProvider
+{
+    Guid Id { get; }
+}
+
+public class SessionBlogIdProvider(IHttpContextAccessor contextAccessor) : IBlogIdProvider
+{
+    public Guid Id =>
+        Guid.Parse(
+            contextAccessor?.HttpContext?.Session.GetString("blogid")
+            ?? Guid.Empty.ToString());
 }

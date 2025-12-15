@@ -5,11 +5,11 @@ using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Web.ViewComponents;
 
-public class BlogMenuViewComponent(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class BlogMenuViewComponent(BlogEngineRepository repository, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : ViewComponent
 {
     private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public List<DynamicMenuModel> MenuPosts { get; set; } = [];
 

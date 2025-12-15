@@ -6,14 +6,14 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
-public class IndexModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class IndexModel(BlogEngineContext context, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public IEnumerable<PostAdminModel> Posts { get; set; } = null!;
-    public bool AllowNewPosts => _postsConfiguration.CurrentValue.AllowBlogAdministration;
+    public bool AllowNewPosts => _postsConfiguration.CurrentValue.AllowAdministration;
 
     public async Task<IActionResult> OnGetAsync(int? id)
     {

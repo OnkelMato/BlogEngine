@@ -9,9 +9,9 @@ namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 public class CreateModel : PageModel
 {
     private readonly BlogEngineContext _context;
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration;
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration;
 
-    public CreateModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    public CreateModel(BlogEngineContext context, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
@@ -22,7 +22,7 @@ public class CreateModel : PageModel
     public IActionResult OnGet()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         return Page();
@@ -35,7 +35,7 @@ public class CreateModel : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         if (!ModelState.IsValid)

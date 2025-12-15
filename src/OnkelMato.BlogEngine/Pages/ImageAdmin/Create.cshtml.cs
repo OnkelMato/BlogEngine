@@ -8,16 +8,16 @@ namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
 public class CreateModel(
     BlogEngineContext context,
-    IOptionsMonitor<PostsConfiguration> postsConfiguration)
+    IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public IActionResult OnGet()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         return Page();
@@ -30,7 +30,7 @@ public class CreateModel(
     public async Task<IActionResult> OnPostAsync()
     {
         // make sure it cannot be accessed if new posts are not allowed
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return RedirectToPage("/Index");
 
         if (!ModelState.IsValid || PostImage.File is null)

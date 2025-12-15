@@ -11,7 +11,7 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
-public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     public class PostModel
@@ -30,12 +30,12 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
     }
 
     private readonly BlogEngineRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public IList<PostModel> Posts { get; set; } = [];
 
-    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowBlogAdministration;
-    
+    public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowAdministration;
+
     [BindProperty(SupportsGet = true)] public int CurrentPage { get; set; } = 1;
     public int NumOfPages { get; set; }
 
@@ -51,9 +51,9 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<PostsCo
         // load posts
         var numOfPosts = _repository.PostsOnBlogCount();
         // cf: https://stackoverflow.com/questions/4846493/how-to-always-round-up-to-the-next-integer
-        NumOfPages = (numOfPosts + (_postsConfiguration.CurrentValue.PageSize - 1)) / _postsConfiguration.CurrentValue.PageSize;
+        NumOfPages = (numOfPosts + (_postsConfiguration.CurrentValue.PostsPerPage - 1)) / _postsConfiguration.CurrentValue.PostsPerPage;
 
-        Posts = _repository.PostsOnBlog(CurrentPage)
+        Posts = _repository.PostsOnBlog(CurrentPage, _postsConfiguration.CurrentValue.PostsPerPage)
             .Select(x => new PostModel()
             {
                 Title = x.Title,

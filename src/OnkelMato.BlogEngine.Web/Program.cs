@@ -39,11 +39,14 @@ public static class SeoExtensions
 {
     public static IServiceCollection AddBlogSeoTags(this IServiceCollection services)
     {
+        var db = services.BuildServiceProvider().GetService<BlogEngineRepository>() ?? throw new Exception("Cannot init Database");
+        var blogTitle = db.Blog()?.Title ?? "Onkel Mato Blog Engine";
+
         //Register your services
         services.AddSeoTags(seoInfo =>
         {
             seoInfo.SetSiteInfo(
-                siteTitle: "My Site Title",
+                siteTitle: blogTitle,
                 //openSearchUrl: "https://site.com/open-search.xml",  //Optional
                 robots: "index, follow"                             //Optional
             );

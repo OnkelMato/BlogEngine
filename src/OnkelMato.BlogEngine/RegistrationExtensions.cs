@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Pages;
 
 namespace OnkelMato.BlogEngine;
 
@@ -38,9 +39,19 @@ public static class RegistrationExtensions
 
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-        builder.Services.Configure<PostsConfiguration>(builder.Configuration.GetSection("Posts"));
+        builder.Services.Configure<BlogConfiguration>(builder.Configuration.GetSection("Blog"));
+        builder.Services.Configure<ImportExportConfiguration>(builder.Configuration.GetSection("ImportExport"));
         builder.Services.AddScoped<BlogEngineRepository>(); // scoped because DbContext (dependency) is scoped
 
+        builder.Services.AddScoped<IBlogIdProvider, SessionBlogIdProvider>();
+
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromDays(10);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
         return builder;
     }
 
@@ -83,7 +94,32 @@ public static class RegistrationExtensions
     {
         using var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
-        var settings = s.ServiceProvider.GetService<IOptionsMonitor<PostsConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
+        var settings = s.ServiceProvider.GetService<IOptionsMonitor<BlogConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
+
+        app.UseSession();
+
+        // rewrite blog unique id in case it is configured
+        if (settings.CurrentValue.EnableBlogSelection)
+            app.Use(async (context, next) =>
+            {
+                var blogUniqueId = Guid.Parse(context.Session.GetString("blogid") ?? Guid.Empty.ToString());
+
+                // this is shot. maybe a session cache or sth
+                if (context.Request.Query.TryGetValue("blogid", out var blogId) &&
+                    Guid.TryParse(blogId, out var blogIdParsed) &&
+                    blogIdParsed != Guid.Empty)
+
+                    blogUniqueId = blogIdParsed;
+
+                if (blogUniqueId == Guid.Empty)
+                    blogUniqueId = settings.CurrentValue.BlogUniqueId;
+
+                context.Session.SetString("blogid", blogUniqueId.ToString());
+
+                await next.Invoke();
+            });
+
+
 
         // this is the perfect way and blog is configured correctly
         if (settings.CurrentValue.BlogUniqueId != Guid.Empty && db.Blogs.Count(x => x.UniqueId == settings.CurrentValue.BlogUniqueId) == 1)
@@ -119,7 +155,7 @@ public static class RegistrationExtensions
             db.Posts.AddFooterLink(blog, Guid.Parse("1A12B373-7E48-4E01-B040-DA896CE67F75"), "Admin", "/Admin", 20000);
             db.Posts.AddFooter(blog, Guid.Parse("1B5FBEA4-10FE-46DD-AC59-7573F54DFDBB"), "Legal Notice", "## Legal Notice", 15100);
             db.Posts.AddFooter(blog, Guid.Parse("D20F7182-1CB6-4A22-AD20-3B49B47D391F"), "Data Protection", "## Data protection", 15000);
-            
+
             db.SaveChanges();
 
             Console.WriteLine($@"New blog created with id '{blog.UniqueId}'");

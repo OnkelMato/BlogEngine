@@ -5,93 +5,204 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<form method="post" enctype="multipart/form-data">
-    <div class="col-md-6">
-        <div class="card">
+<div class="row">
+    @if (Model.UseJsonFileInput)
+    {
+        <div class="col-sm-6">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data">
 
-            <div class="card-header text-light bg-dark">
-                <h1>Import Blog</h1>
-            </div>
+                    <div class="card-header text-light bg-dark">
+                        <h1>Import JSON file </h1>
+                    </div>
 
-            <div class="card-body">
-                @if (Model.AcceptUnsignedImport)
-                {
-                    <div class="card alert-danger">
-                        <div class="card-body">
-                            <p>Unsigned imports are turned on. This should be turned off in production.</p>
-                        </div>
-                    </div>
-                }
-                @if (!Model.AcceptUnsignedImport && !Model.UseJwtTokenSigning)
-                {
-                    <div class="card alert-info">
-                        <div class="card-body">
-                            <p>The import requires a json with the export and a valid RSA signature to import the file.<br />
-                                Make sure you have the proper private key.</p>
-                        </div>
-                    </div>
-                }
-                @if (!Model.AcceptUnsignedImport && Model.UseJwtTokenSigning)
-                {
-                    <div class="card alert-info">
-                        <div class="card-body">
-                            <p>
-                                The import requires a valid JWT. You can check your token with <a href="https://jwt.io">JWT.io</a>
-                            </p>
-                        </div>
-                    </div>
-                }
-                <div class="row">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group">
-                        <label asp-for="Entity" class="control-label col-sm-3"></label>
-                        <select asp-for="Entity" asp-items="Model.EntityList"></select>
-                        <span asp-validation-for="Entity" class="text-danger"></span>
-                    </div>
-                    @if (Model.UseTextarea)
-                    {
-                        <div class="form-group">
-                            <label asp-for="JsonDocument" class="control-label" col-sm-3></label>
-                            <textarea asp-for="JsonDocument" class="form-control" rows="20" cols="150"></textarea>
-                            <span asp-validation-for="JsonDocument" class="text-danger"></span>
-                        </div>
-                        @if (!Model.UseJwtTokenSigning)
+                    <div class="card-body">
+                        @if (!Model.ValidateCertificates)
                         {
+                            <div class="card alert-danger">
+                                <div class="card-body">
+                                    <p>Unsigned imports are turned on. This should be turned off in production.</p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="card alert-info">
+                                <div class="card-body">
+                                    <p>
+                                        The import requires a json with the export and a valid RSA signature to import the file.<br />
+                                        Make sure you have the proper private key.
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <input hidden="true" name="FormType" value="jsonFile" />
+                        </div>
+                        <div class="row">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-group">
+                                <label asp-for="JsonDocumentFile" class="control-label col-sm-3"></label>
+                                <input type="file" asp-for="JsonDocumentFile" class="form-control-file" />
+                                <span asp-validation-for="JsonDocumentFile" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="SignatureFile" class="control-label col-sm-3"></label>
+                                <input type="file" asp-for="SignatureFile" class="form-control-file" />
+                                <span asp-validation-for="SignatureFile" class="text-danger"></span>
+                            </div>
+                        </div>
+                        @*                         <small id="SignatureFileHelp" class="form-text text-muted">The public certificate "@Model.SignaturePublicKey" is used</small>
+ *@                    </div>
+
+                    <div class="card-footer">
+                        <input type="submit" value="Import" class="btn btn-primary" />
+                        <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (Model.UseSyncInput)
+    {
+
+        <div class="col-sm-6">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data">
+
+                    <div class="card-header text-light bg-dark">
+                        <h1>Sync Blog</h1>
+                    </div>
+
+                    <div class="form-group">
+                        <input hidden="true" name="FormType" value="sync" />
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <input type="checkbox" id="ClearBlogBeforeSync" asp-for="ClearBlogBeforeSync" class="form-check-inbox" />
+                            <label asp-for="ClearBlogBeforeSync" class="form-check-label"></label>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="RemoteSyncUrl" class="control-label"></label>
+                            <input asp-for="RemoteSyncUrl" class="form-control" />
+                            <span asp-validation-for="RemoteSyncUrl" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input type="submit" value="Import" class="btn btn-primary" />
+                        <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    }
+
+
+    @if (Model.UseJwtInput)
+    {
+
+        <div class="col-sm-6">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data">
+
+                    <div class="card-header text-light bg-dark">
+                        <h1>Sync Blog</h1>
+                    </div>
+
+                    @if (Model.ValidateCertificates)
+                    {
+                        <div class="card alert-info">
+                            <div class="card-body">
+                                <p>
+                                    The import requires a valid JWT. You can check your token with <a href="https://jwt.io">JWT.io</a>
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    <div class="form-group">
+                        <input hidden="true" name="FormType" value="jwtFile" />
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="JwtDocumentFile" class="control-label col-sm-3"></label>
+                            <input type="file" asp-for="JwtDocumentFile" class="form-control-file" />
+                            <span asp-validation-for="JwtDocumentFile" class="text-danger"></span>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input type="submit" value="Import" class="btn btn-primary" />
+                        <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (Model.UseJsonTextInput)
+    {
+        <div class="col-sm-12">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data">
+
+                    <div class="card-header text-light bg-dark">
+                        <h1>Import JSON file </h1>
+                    </div>
+
+                    <div class="card-body">
+                        @if (!Model.ValidateCertificates)
+                        {
+                            <div class="card alert-danger">
+                                <div class="card-body">
+                                    <p>Unsigned imports are turned on. This should be turned off in production.</p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="card alert-info">
+                                <div class="card-body">
+                                    <p>
+                                        The import requires a json with the export and a valid RSA signature to import the file.<br />
+                                        Make sure you have the proper private key.
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <input hidden="true" name="FormType" value="jsonText" />
+                        </div>
+                        <div class="row">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            <div class="form-group">
+                                <label asp-for="JsonDocument" class="control-label" col-sm-3></label>
+                                <textarea asp-for="JsonDocument" class="form-control" rows="20" cols="150"></textarea>
+                                <span asp-validation-for="JsonDocument" class="text-danger"></span>
+                            </div>
                             <div class="form-group">
                                 <label asp-for="Signature" class="control-label" col-sm-3></label>
                                 <textarea asp-for="Signature" class="form-control" rows="10" cols="150"></textarea>
                                 <span asp-validation-for="Signature" class="text-danger"></span>
                             </div>
-                        }
-                    }
-                    @if (!Model.UseTextarea)
-                    {
-                        <div class="form-group">
-                            <label asp-for="JsonDocumentFile" class="control-label col-sm-3"></label>
-                            <input type="file" asp-for="JsonDocumentFile" class="form-control-file" />
-                            <span asp-validation-for="JsonDocumentFile" class="text-danger"></span>
                         </div>
-                        @if (!Model.UseJwtTokenSigning)
-                        {
-                            <div class="form-group">
-                                <label asp-for="SignatureFile" class="control-label col-sm-3"></label>
-                                <input type="file" asp-for="SignatureFile" class="form-control-file"/>
-                                <span asp-validation-for="SignatureFile" class="text-danger"></span>
-                            </div>
-                        }
-                    }
-                </div>
-                <small id="SignatureFileHelp" class="form-text text-muted">The public certificate "@Model.SignaturePublicKey" is used</small>
-            </div>
+                        @*                         <small id="SignatureFileHelp" class="form-text text-muted">The public certificate "@Model.SignaturePublicKey" is used</small>
+ *@                    </div>
 
-            <div class="card-footer">
-                <input type="submit" value="Import" class="btn btn-primary" />
-                <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    <div class="card-footer">
+                        <input type="submit" value="Import" class="btn btn-primary" />
+                        <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
-</form>
-
+    }
+</div>
 
 @section Scripts {
     @{

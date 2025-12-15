@@ -6,7 +6,7 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
-public class DetailsModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class DetailsModel(BlogEngineContext context, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     public PostImageModel PostImage { get; set; } = null!;
@@ -17,7 +17,7 @@ public class DetailsModel(BlogEngineContext context, IOptionsMonitor<PostsConfig
         if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
         // make sure it cannot be accessed if new posts are not allowed
-        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!postsConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
         var postImage = await context.PostImages.SingleOrDefaultAsync(m => m.UniqueId == id && m.Blog == blog);

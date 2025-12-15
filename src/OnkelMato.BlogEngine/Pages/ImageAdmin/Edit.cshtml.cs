@@ -6,7 +6,7 @@ using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
-public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class EditModel(BlogEngineContext context, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     [BindProperty]
@@ -18,7 +18,7 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
         if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
         // make sure it cannot be accessed if new posts are not allowed
-        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!postsConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
         var postImage = await context.PostImages.SingleOrDefaultAsync(m => m.UniqueId == id && m.Blog == blog);
@@ -43,7 +43,7 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
         if (blog == null) { return NotFound($"Blog {postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
         // make sure it cannot be accessed if new posts are not allowed
-        if (!postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!postsConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
         if (!ModelState.IsValid)

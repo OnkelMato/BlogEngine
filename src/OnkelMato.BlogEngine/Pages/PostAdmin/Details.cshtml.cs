@@ -9,9 +9,9 @@ namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 public class DetailsModel : PageModel
 {
     private readonly BlogEngineContext _context;
-    private readonly IOptionsSnapshot<PostsConfiguration> _postsConfiguration;
+    private readonly IOptionsSnapshot<BlogConfiguration> _postsConfiguration;
 
-    public DetailsModel(BlogEngineContext context, IOptionsSnapshot<PostsConfiguration> postsConfiguration)
+    public DetailsModel(BlogEngineContext context, IOptionsSnapshot<BlogConfiguration> postsConfiguration)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
@@ -21,7 +21,7 @@ public class DetailsModel : PageModel
 
     public async Task<IActionResult> OnGetAsync(Guid? id)
     {
-        if (!_postsConfiguration.Value.AllowBlogAdministration)
+        if (!_postsConfiguration.Value.AllowAdministration)
             return RedirectToPage("/Index");
 
         if (id == null)

@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
 
 namespace OnkelMato.BlogEngine.Pages.BlogAdmin;
 
-public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfiguration> postsConfiguration)
+public class EditModel(BlogEngineRepository repository, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
-    private readonly BlogEngineContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private readonly IOptionsMonitor<PostsConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
+    private readonly BlogEngineRepository _context = repository ?? throw new ArgumentNullException(nameof(repository));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public class BlogEngineInfo
     {
@@ -30,10 +29,10 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
 
     public async Task<IActionResult> OnGetAsync()
     {
-        AllowBlogAdministration = _postsConfiguration.CurrentValue.AllowBlogAdministration;
+        AllowBlogAdministration = _postsConfiguration.CurrentValue.AllowAdministration;
         EngineInfo = GetBlogEngineInfo();
 
-        var blog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == _postsConfiguration.CurrentValue.BlogUniqueId);
+        var blog = _context.Blog();
         if (blog == null) { return NotFound("Blog not found"); }
 
         Blog = new BlogAdminModel()
@@ -41,13 +40,15 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
             UniqueId = blog.UniqueId,
             Title = blog.Title,
             Description = blog.Description,
+            // todo CSS = blog.CSS,
+            Blogs = _context.GetBlogs().Select(x => new BlogAdminModel.BlogItemModel() {BlogId = x.UniqueId, Title = x.Title}).ToArray()
         };
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!_postsConfiguration.CurrentValue.AllowBlogAdministration)
+        if (!_postsConfiguration.CurrentValue.AllowAdministration)
             return Page();
 
         if (!ModelState.IsValid)
@@ -55,31 +56,10 @@ public class EditModel(BlogEngineContext context, IOptionsMonitor<PostsConfigura
             return Page();
         }
 
-        var blogUid = _postsConfiguration.CurrentValue.BlogUniqueId;
-        var dbBlog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == blogUid);
-        if (dbBlog == null) { return NotFound(); }
-
-        dbBlog.Title = Blog.Title;
-        dbBlog.Description = Blog.Description;
-        dbBlog.UpdatedAt = DateTime.Now;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!_context.Blogs.Any(e => e.UniqueId == blogUid))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return RedirectToPage("/Admin");
+        if (await _context.UpdateBlog(Blog.Title, Blog.Description, Blog.CSS))
+            return RedirectToPage("/Admin");
+        else
+            return NotFound();
     }
 
     private static BlogEngineInfo GetBlogEngineInfo()
