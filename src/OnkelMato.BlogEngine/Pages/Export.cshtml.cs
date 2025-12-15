@@ -32,7 +32,7 @@ public class ExportModel(BlogEngineContext context,
             throw new ArgumentException(nameof(Entity));
 
         var blogGuid = blogIdProvider.Id;
-        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId ==blogGuid);
+        var blog = await context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == blogGuid);
         if (blog == null) { return NotFound($"Blog {blogGuid} not Found"); }
 
         BlogExportModel exportedEntities = null!;
@@ -199,8 +199,10 @@ public interface IBlogIdProvider
 
 public class SessionBlogIdProvider(IHttpContextAccessor contextAccessor) : IBlogIdProvider
 {
-    public Guid Id =>
-        Guid.Parse(
-            contextAccessor?.HttpContext?.Session.GetString("blogid")
-            ?? Guid.Empty.ToString());
+    public Guid Id => Guid.Parse(contextAccessor?.HttpContext?.Session.GetString("blogid") ?? Guid.Empty.ToString());
+}
+
+public class ConfiguredBlogIdProvider(IOptionsMonitor<BlogConfiguration> settings) : IBlogIdProvider
+{
+    public Guid Id => settings.CurrentValue.BlogUniqueId;
 }

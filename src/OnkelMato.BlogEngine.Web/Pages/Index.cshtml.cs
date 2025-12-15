@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Text.RegularExpressions;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,10 +5,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Construction;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Database;
+using OnkelMato.BlogEngine.Pages;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
-public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<BlogConfiguration> postsConfiguration)
+public class IndexModel(BlogEngineRepository repository, IBlogIdProvider blogId, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
     public class PostModel
@@ -43,7 +44,7 @@ public class IndexModel(BlogEngineRepository repository, IOptionsMonitor<BlogCon
     {
         // load blog data
         var blog = _repository.Blog();
-        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
+        if (blog == null) { return NotFound($"Blog {blogId.Id} not Found"); }
 
         this.Title = blog.Title;
         this.Description = blog.Description;

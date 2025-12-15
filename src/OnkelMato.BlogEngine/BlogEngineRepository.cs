@@ -34,7 +34,6 @@ public class BlogEngineRepository
     /// <exception cref="InvalidOperationException">Configured blog cannot be found</exception>
     public Blog? Blog() => _lazyBlog.Value;
 
-
     public int PostsOnBlogCount()
     {
         if (_lazyBlog.Value == null)

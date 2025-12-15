@@ -15,6 +15,7 @@ public static class RegistrationExtensions
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         var databaseProvider = builder.Configuration.GetConnectionString("DefaultProvider") ?? "mssql";
+        var useBlogSelectorMiddleware = builder.Configuration.GetValue<bool>("Blog:EnableBlogSelection");
 
         if (string.Compare(databaseProvider, "mssql", StringComparison.InvariantCultureIgnoreCase) == 0)
         {
@@ -43,7 +44,11 @@ public static class RegistrationExtensions
         builder.Services.Configure<ImportExportConfiguration>(builder.Configuration.GetSection("ImportExport"));
         builder.Services.AddScoped<BlogEngineRepository>(); // scoped because DbContext (dependency) is scoped
 
-        builder.Services.AddScoped<IBlogIdProvider, SessionBlogIdProvider>();
+        if (useBlogSelectorMiddleware)
+            builder.Services.AddScoped<IBlogIdProvider, SessionBlogIdProvider>();
+        else
+            builder.Services.AddScoped<IBlogIdProvider, ConfiguredBlogIdProvider>();
+
 
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddSession(options =>
@@ -98,7 +103,7 @@ public static class RegistrationExtensions
 
         app.UseSession();
 
-        // rewrite blog unique id in case it is configured
+        // rewrite blog unique id in case it is configured. This required another IBlogIdProvider implementation
         if (settings.CurrentValue.EnableBlogSelection)
             app.Use(async (context, next) =>
             {
