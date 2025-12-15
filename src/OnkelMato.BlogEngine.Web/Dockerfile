@@ -15,6 +15,7 @@ WORKDIR /src
 COPY ["OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj", "OnkelMato.BlogEngine.Web/"]
 RUN dotnet restore "./OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj"
 COPY . .
+COPY .git/ ./.git/
 WORKDIR "/src/OnkelMato.BlogEngine.Web"
 ENV GITVERSION_DISABLED=true
 RUN dotnet build "./OnkelMato.BlogEngine.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
