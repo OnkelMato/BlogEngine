@@ -16,6 +16,7 @@ COPY ["OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj", "OnkelMato.Blo
 RUN dotnet restore "./OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj"
 COPY . .
 WORKDIR "/src/OnkelMato.BlogEngine.Web"
+ENV GITVERSION_DISABLED=true
 RUN dotnet build "./OnkelMato.BlogEngine.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
