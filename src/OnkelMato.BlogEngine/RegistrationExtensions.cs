@@ -50,19 +50,23 @@ public static class RegistrationExtensions
         builder.Services.AddScoped<BlogEngineMgmtRepository>(); // scoped because DbContext (dependency) is scoped
         builder.Services.AddScoped<BlogEngineImportExportRepository>(); // scoped because DbContext (dependency) is scoped
 
+        // by using a middleware which is only enabled when configured, it cannot be used accidentally
         if (useBlogSelectorMiddleware)
+        // use the session based blog id provider that is maintained via middleware
+        {
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromDays(10);
+                options.Cookie.IsEssential = true;
+            });
             builder.Services.AddScoped<IBlogIdProvider, SessionBlogIdProvider>();
+        }
         else
+            // use the configured blog id provider that reads from configuration
             builder.Services.AddScoped<IBlogIdProvider, ConfiguredBlogIdProvider>();
 
 
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddSession(options =>
-        {
-            options.IdleTimeout = TimeSpan.FromDays(10);
-            options.Cookie.HttpOnly = true;
-            options.Cookie.IsEssential = true;
-        });
         return builder;
     }
 
