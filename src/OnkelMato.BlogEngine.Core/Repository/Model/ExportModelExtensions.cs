@@ -34,7 +34,8 @@ public static class ExportModelExtensions
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
             PublishedAt = post.PublishedAt,
-            Order = post.Order
+            Order = post.Order,
+            PostTags = new(post.PostTags)
         };
     }
 

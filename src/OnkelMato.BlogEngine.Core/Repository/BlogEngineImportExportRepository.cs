@@ -1,5 +1,6 @@
 using OnkelMato.BlogEngine.Core.Database;
 using OnkelMato.BlogEngine.Core.Database.Entity;
+using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Repository.Model;
 using OnkelMato.BlogEngine.Core.Service;
 
@@ -25,6 +26,9 @@ public class BlogEngineImportExportRepository
             return blog;
         });
     }
+
+    // todo caching here
+    public Blog Blog => _lazyBlog.Value!.ToModel();
 
     public async Task DoImportBlog(BlogExportModel blogExport)
     {
