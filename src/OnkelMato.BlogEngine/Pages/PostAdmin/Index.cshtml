@@ -70,8 +70,8 @@
                                         @if (Model.AllowNewPosts)
                                         {
                                             <a asp-page="./Edit" asp-route-id="@item.UniqueId" class="btn btn-primary">Edit</a>
-                                            <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
                                             <a asp-page="./Details" asp-route-id="@item.UniqueId" class="btn btn-primary">Details</a>
+                                            <a asp-page="./Delete" asp-route-id="@item.UniqueId" class="btn btn-danger">Delete</a>
                                         }
                                         @if (Model.AllowExport)
                                         {
