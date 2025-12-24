@@ -9,7 +9,6 @@ using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Repository;
 using OnkelMato.BlogEngine.Core.Repository.Model;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -27,6 +26,7 @@ namespace OnkelMato.BlogEngine.Pages
         public string[] Certificates => importExportConfiguration.Value.JwtPrivateCertificates;
 
         [Display(Name = "Certificate Password")]
+        [BindProperty]
         public string? CertificatePassword { get; set; }
 
         public string? SignaturePrivateKeys { get; set; }
@@ -122,33 +122,52 @@ namespace OnkelMato.BlogEngine.Pages
             var exportAsJson = blogOrParts.AsJson();
             var cert = importExportConfiguration.Value.JwtPrivateCertificates[SelectedCertificate];
 
-            // todo add certificate info in file??
             var filename = $"{blogOrParts.Title ?? "blog-export"}.{DateTime.Now:yyyyMMdd-hhmm}";
 
-            filename = filename + ".jwt.json";
-            var token = GetTokenForJson(exportAsJson);
-            return File(Encoding.UTF8.GetBytes(token), "application/json", filename);
+            var tokenResult = GetTokenForJson(exportAsJson, out var issuer);
+            if (tokenResult.IsFailure)
+            {
+                ModelState.AddModelError(nameof(CertificatePassword), tokenResult.ErrorMessage!);
+                return Page();
+            }
+
+            filename = $"{filename}.{issuer}.jwt";
+            return File(Encoding.UTF8.GetBytes(tokenResult.Value!), "application/json", filename);
         }
 
-        private string GetTokenForJson(object payload)
+        private ModelResult<string> GetTokenForJson(object payload, out string issuer)
         {
-            // todo the certificate is not validated
-            X509Certificate2 cert = string.IsNullOrWhiteSpace(CertificatePassword)
-                ? X509Certificate2.CreateFromPemFile(
-                    importExportConfiguration.Value.JwtPublicCertificates[SelectedCertificate],
-                    importExportConfiguration.Value.JwtPrivateCertificates[SelectedCertificate])
-                : X509Certificate2.CreateFromEncryptedPemFile(
-                    importExportConfiguration.Value.JwtPublicCertificates[SelectedCertificate],
-                    CertificatePassword,
-                    importExportConfiguration.Value.JwtPrivateCertificates[SelectedCertificate]);
+            // open certificate and get issuer
+            X509Certificate2 cert;
+            try
+            {
+                cert = string.IsNullOrWhiteSpace(CertificatePassword)
+                    ? X509Certificate2.CreateFromPemFile(
+                        importExportConfiguration.Value.JwtPublicCertificates[SelectedCertificate],
+                        importExportConfiguration.Value.JwtPrivateCertificates[SelectedCertificate])
+                    : X509Certificate2.CreateFromEncryptedPemFile(
+                        importExportConfiguration.Value.JwtPublicCertificates[SelectedCertificate],
+                        CertificatePassword,
+                        importExportConfiguration.Value.JwtPrivateCertificates[SelectedCertificate]);
+                issuer = cert.Issuer.Split(',')[0].Split('=')[1];
+            }
+            catch (Exception e)
+            {
+                issuer = string.Empty;
+                return ModelResult<string>.Failure(e.Message);
+            }
 
+            // validate certificate
+            if (importExportConfiguration.Value.ValidateCertificates && !cert.Verify())
+                return ModelResult<string>.Failure("certificate is not valid");
+
+            // create the jwt token
             IJwtAlgorithm algorithm = new RS256Algorithm(cert);
             IJsonSerializer serializer = new JsonNetSerializer();
             IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
             IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-            const string key = null; // not needed if algorithm is asymmetric
 
-            return encoder.Encode(payload, key);
+            return ModelResult<string>.Success(encoder.Encode(payload, (string)null!));
         }
 
         #endregion
