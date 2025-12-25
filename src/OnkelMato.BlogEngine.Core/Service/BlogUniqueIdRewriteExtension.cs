@@ -4,7 +4,7 @@ using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Core.Service;
 
-public static class BlogUniqueIdRewriteMiddleware
+public static class BlogUniqueIdRewriteExtension
 {
     public static WebApplication OverwriteEmptyBlogIdInSettings(this WebApplication app)
     {

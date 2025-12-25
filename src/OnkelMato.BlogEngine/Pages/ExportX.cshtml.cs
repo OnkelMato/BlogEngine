@@ -21,7 +21,6 @@ namespace OnkelMato.BlogEngine.Pages;
 public class ExportXModel(
     BlogEngineContext context,
     BlogEngineReadRepository readRepository,
-    IOptionsMonitor<BlogConfiguration> postsConfiguration,
     IOptionsMonitor<ImportExportConfiguration> imexConfiguration,
     IBlogIdProvider blogIdProvider) : PageModel
 {
@@ -109,7 +108,7 @@ public class ExportXModel(
                 .Distinct()
                 .Select(Guid.Parse)
                 .Select(x => context.PostImages.FirstOrDefault(y => y.UniqueId == x && y.Blog == blogDb))
-                .Where(x => x is not null).Select(x => x.ToModel());
+                .Where(x => x is not null).Select(x => x!.ToModel());
 
             img.AddRange(imagesForPosts);
         }
@@ -153,8 +152,7 @@ public class ExportXModel(
         IJsonSerializer serializer = new JsonNetSerializer();
         IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
         IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-        const string key = null; // not needed if algorithm is asymmetric
 
-        return encoder.Encode(payload, key);
+        return encoder.Encode(payload, (string)null!);
     }
 }

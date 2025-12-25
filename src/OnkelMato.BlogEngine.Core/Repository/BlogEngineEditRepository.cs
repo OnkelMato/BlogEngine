@@ -30,7 +30,7 @@ public class BlogEngineEditRepository
 
     public Blog Blog => _lazyBlog.Value?.ToModel() ?? throw new InvalidOperationException("Blog not found");
 
-    public async Task<bool> UpdateBlog(string title, string? description, string css)
+    public async Task<bool> UpdateBlog(string title, string? description, string? css)
     {
         var blogUid = _blogId.Id;
         var dbBlog = await _context.Blogs.FirstOrDefaultAsync(m => m.UniqueId == blogUid);

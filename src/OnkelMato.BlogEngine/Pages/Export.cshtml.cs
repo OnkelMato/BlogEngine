@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 namespace OnkelMato.BlogEngine.Pages
 {
     public class ExportModel(
-        BlogEngineImportExportRepository importExportRepository,
         BlogEngineReadRepository readRepository,
         IOptions<ImportExportConfiguration> importExportConfiguration
     ) : PageModel
@@ -153,7 +152,7 @@ namespace OnkelMato.BlogEngine.Pages
             }
 
             return Page();
-            return Redirect(RemoteSyncUrl!);
+            //return Redirect(RemoteSyncUrl!);
         }
 
         private async Task<ModelResult<object>> UploadToRemoteViaHttp(string token, string remoteSyncUrl, Guid? blogId)

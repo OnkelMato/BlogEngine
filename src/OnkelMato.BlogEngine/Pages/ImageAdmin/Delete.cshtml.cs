@@ -15,13 +15,11 @@ public class DeleteModel(BlogEngineReadRepository readRepository, BlogEngineEdit
 
     public async Task<IActionResult> OnGetAsync(Guid id)
     {
-        var blog = readRepository.Blog;
-
         // make sure it cannot be accessed if new posts are not allowed
         if (!blogConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");
 
-        var postImage = readRepository.GetImage(id);
+        var postImage = await readRepository.PostImageAsync(id);
         if (postImage == null) { return NotFound($"Cannot find image with id {id}"); }
 
         PostImage = new PostImageModel()
@@ -40,8 +38,6 @@ public class DeleteModel(BlogEngineReadRepository readRepository, BlogEngineEdit
 
     public async Task<IActionResult> OnPostAsync(Guid id)
     {
-        var blog = editRepository.Blog;
-
         // make sure it cannot be accessed if new posts are not allowed
         if (!blogConfiguration.CurrentValue.AllowAdministration)
             RedirectToPage("/Index");

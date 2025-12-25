@@ -32,7 +32,7 @@ public class EditModel(BlogEngineEditRepository editRepository, BlogEngineMgmtRe
             Title = blog.Title,
             Description = blog.Description,
             CSS = blog.CSS,
-            Blogs = _managementRepository.GetBlogs().Select(x => new BlogAdminModel.BlogItemModel() { BlogId = x.UniqueId, Title = x.Title }).ToArray()
+            Blogs = _managementRepository.GetAllBlogs().Select(x => new BlogAdminModel.BlogItemModel() { BlogId = x.UniqueId, Title = x.Title }).ToArray()
         };
         return Page();
     }

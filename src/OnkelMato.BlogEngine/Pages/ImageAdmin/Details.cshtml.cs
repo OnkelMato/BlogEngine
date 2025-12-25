@@ -21,7 +21,7 @@ public class DetailsModel(BlogEngineReadRepository readRepository, IOptionsMonit
             return NotFound();
         }
 
-        var db = readRepository.GetImage(id.Value);
+        var db = await readRepository.PostImageAsync(id.Value);
         if (db == null) return NotFound();
         PostImage = db.ToModel();
 
