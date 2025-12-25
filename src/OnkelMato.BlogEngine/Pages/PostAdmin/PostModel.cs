@@ -34,9 +34,9 @@ public class PostModel
     [Display(Name = "Posts Image Guid")]
     public Guid? HeaderImage { get; set; }
 
-    [MaxLength(256)]
+    [MaxLength(1024)]
     [Display(Name = "Tags (comma separated)")]
-    public string Tags { get; set; } = null!;
+    public string? Tags { get; set; } = null!;
 
     [Display(Name = "Posts Image")]
     public bool HasHeaderImage => HeaderImage is not null;
