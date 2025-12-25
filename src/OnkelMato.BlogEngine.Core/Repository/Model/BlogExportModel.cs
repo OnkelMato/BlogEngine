@@ -27,6 +27,14 @@
             public Guid? HeaderImage { get; set; }
 
             public DateTime PublishedAt { get; set; }
+
+            public List<string> PostTags { get; set; } = [];
+        }
+
+        public class PostTagExportModel
+        {
+            public Guid UniqueId { get; set; }
+            public string Title { get; set; }
         }
 
         public string? Title { get; set; }
@@ -38,7 +46,5 @@
         public DateTime UpdatedAt { get; set; }
 
         public bool IsFullExport { get; set; }
-
     }
-
 }

@@ -67,6 +67,19 @@ public static class RegistrationExtensions
 
 
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromDays(10);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.Cookie.Expiration = TimeSpan.FromDays(10);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        });
+
         return builder;
     }
 

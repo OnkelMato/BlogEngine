@@ -55,7 +55,6 @@ public class ImportModel(
 
     #endregion
 
-
     #region  Sync from remote blog
 
     public bool UseSyncInput => imexConfiguration.CurrentValue.EnableBlogSync;
@@ -95,9 +94,6 @@ public class ImportModel(
 
     public async Task<IActionResult> OnPostAsync()
     {
-        //var blog = editRepository.Blog();
-        //if (blog == null) { return NotFound($"Blog {blogConfiguration.CurrentValue.BlogUniqueId} not Found"); }
-
         // todo: change this to just load the blog document (json)
         // implement sth line a strategy pattern here. Single class strategy? Or just methods?
         // after json was loaded the procedure is the same (maybe except the clear blog)
@@ -172,7 +168,7 @@ public class ImportModel(
         else
         {
             await importExportRepository.DoImportBlog(importModel);
-        return Redirect("/");
+            return Redirect("/");
         }
 
     }
@@ -227,8 +223,10 @@ public class ImportModel(
         {
             // in case of certificate validation disabled
             var handler = new HttpClientHandler();
-            if (imexConfiguration.CurrentValue.ValidateCertificates)
-                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            
+            // todo fixme
+            // if (imexConfiguration.CurrentValue.ValidateCertificates)
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
             var client = new HttpClient(handler);
             using var response = await client.GetAsync(RemoteSyncUrl + "/Export?type=json");

@@ -34,12 +34,19 @@ public static class ExportModelExtensions
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
             PublishedAt = post.PublishedAt,
-            Order = post.Order
+            Order = post.Order,
+            PostTags = [..post.PostTags]
         };
     }
 
-    public static string AsJson(this BlogExportModel export)
+    public static string AsJson(this BlogExportModel export, bool asPretty = false)
     {
-        return JsonSerializer.Serialize(export, new JsonSerializerOptions() { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault });
+        return JsonSerializer.Serialize(
+            export, 
+            new JsonSerializerOptions()
+            {
+                WriteIndented = asPretty, 
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            });
     }
 }
