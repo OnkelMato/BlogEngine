@@ -152,7 +152,7 @@ namespace OnkelMato.BlogEngine.Pages
             }
 
             return Page();
-            return Redirect(RemoteSyncUrl!);
+            //return Redirect(RemoteSyncUrl!);
         }
 
         private async Task<ModelResult<object>> UploadToRemoteViaHttp(string token, string remoteSyncUrl, Guid? blogId)

@@ -157,7 +157,7 @@ public class ImportModel(
             await importExportRepository.ClearBlog();
 
         // deserialize and import
-        var importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson) ?? throw new ArgumentNullException(nameof(importModelJson));
+        var importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson!) ?? throw new ArgumentNullException(nameof(importModelJson));
 
         if (ImportAsNewBlog)
         {
@@ -245,7 +245,7 @@ public class ImportModel(
         foreach (var certificate in imexConfiguration.CurrentValue.JwtPublicCertificates)
         {
             var cert = new X509Certificate2(certificate);
-            if (Verify(JsonDocument!, Signature, cert))
+            if (Verify(JsonDocument!, Signature!, cert))
                 result = true;
         }
 

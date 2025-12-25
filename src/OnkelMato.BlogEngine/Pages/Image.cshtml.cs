@@ -5,7 +5,7 @@ using OnkelMato.BlogEngine.Core.Service;
 
 namespace OnkelMato.BlogEngine.Pages;
 
-public class ImageModel(BlogEngineReadRepository readRepository, IBlogIdProvider blogId) : PageModel
+public class ImageModel(BlogEngineReadRepository readRepository) : PageModel
 {
 
     [BindProperty(SupportsGet = true)]

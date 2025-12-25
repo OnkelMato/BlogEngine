@@ -79,7 +79,7 @@ public class EditModel : PageModel
             return Page();
         }
 
-        _editRepository.UpdatePost(PostModelExtensions.FromModel(Post, postHeaderImage, Post.Tags.Split(',')));
+        await _editRepository.UpdatePost(Post.FromModel(postHeaderImage, Post.Tags.Split(',')));
 
        
 
