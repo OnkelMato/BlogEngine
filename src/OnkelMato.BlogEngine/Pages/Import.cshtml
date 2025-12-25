@@ -14,8 +14,6 @@
             </div>
         </div>
     }
-    else
-    {
         <div class="card alert-info">
             <div class="card-body">
                 <p>
@@ -23,7 +21,6 @@
                 </p>
             </div>
         </div>
-    }
     @if (Model.UseJsonFileInput)
     {
         <div class="col-sm-6">
@@ -64,8 +61,7 @@
 
     @if (Model.UseSyncInput)
     {
-
-        <div class="col-sm-6">
+        <div id="sync" class="col-sm-6">
             <div class="card">
                 <form method="post" enctype="multipart/form-data">
 
@@ -106,7 +102,7 @@
                 <form method="post" enctype="multipart/form-data">
 
                     <div class="card-header text-light bg-dark">
-                        <h1>Sync Blog</h1>
+                        <h1>Import JWT</h1>
                     </div>
 
                     <div class="form-group">

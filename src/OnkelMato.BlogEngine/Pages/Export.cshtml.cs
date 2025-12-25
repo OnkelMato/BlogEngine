@@ -3,199 +3,356 @@ using JWT.Algorithms;
 using JWT.Serializers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OnkelMato.BlogEngine.Core.Database;
-using OnkelMato.BlogEngine.Core.Database.Entity;
+using OnkelMato.BlogEngine.Core.Configuration;
 using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Repository;
-using OnkelMato.BlogEngine.Core.Service;
-using System.Reflection.Metadata;
+using OnkelMato.BlogEngine.Core.Repository.Model;
+using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
-using OnkelMato.BlogEngine.Core.Configuration;
-using OnkelMato.BlogEngine.Core.Repository.Model;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace OnkelMato.BlogEngine.Pages;
-
-public class ExportModel(
-    BlogEngineContext context,
-    BlogEngineReadRepository readRepository,
-    IOptionsMonitor<BlogConfiguration> postsConfiguration,
-    IOptionsMonitor<ImportExportConfiguration> imexConfiguration,
-    IBlogIdProvider blogIdProvider) : PageModel
+namespace OnkelMato.BlogEngine.Pages
 {
-    [BindProperty(SupportsGet = true)]
-    public Guid? Id { get; set; }
-
-    [BindProperty(SupportsGet = true)]
-    public string? Entity { get; set; } = "Blog"; // Legacy: Blog, Posts, PostImages
-
-    [BindProperty(SupportsGet = true)]
-    public string? Type { get; set; } = "json"; // TODO replace with content type
-
-    public async Task<ActionResult> OnGet()
+    public class ExportModel(
+        BlogEngineImportExportRepository importExportRepository,
+        BlogEngineReadRepository readRepository,
+        IOptions<ImportExportConfiguration> importExportConfiguration
+    ) : PageModel
     {
-        if (Entity is null)
-            throw new ArgumentException(nameof(Entity));
+        public bool AllowExportJson => importExportConfiguration.Value.EnableJsonExport;
+        public bool AllowExportJwt => importExportConfiguration.Value.EnableJwtExport;
+        public int SelectedCertificate { get; set; } = -1;
+        public string[] Certificates => importExportConfiguration.Value.JwtPrivateCertificates;
 
-        var blogGuid = blogIdProvider.Id;
-        var blog = readRepository.Blog();
-        if (blog == null) { return NotFound($"Blog {blogGuid} not Found"); }
+        [Display(Name = "Certificate Password")]
+        [BindProperty]
+        public string? CertificatePassword { get; set; }
 
-        BlogExportModel exportedEntities = null!;
-        var filename = string.Empty;
+        [Display(Name = "Certificate Password")]
+        [BindProperty]
+        public string? CertificatePasswordRemote { get; set; }
 
-        switch (Entity.ToLower())
+        public string? SignaturePrivateKeys { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string? FormType { get; set; } // Allowed values: "json", "jwt", "sync"
+
+        [BindProperty(SupportsGet = true)]
+        public string? ExportType { get; set; } = "blog";// Allowed values: "blog", "post", "postimage"
+
+        [BindProperty(SupportsGet = true)]
+        public Guid? Id { get; set; } // Id of the entity in case it is post or postImage
+
+        [BindProperty(SupportsGet = true)]
+        public string SelectedJsonFormat { get; set; } = "JSON";
+
+        public string? Scope { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string? RemoteSyncUrl { get; set; }
+
+        public bool AllowExportRemote => importExportConfiguration.Value.EnableRemoteExport;
+
+        [BindProperty(SupportsGet = true)]
+        public int SelectedCertificateRemote { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
         {
-            // todo this could be a strategy pattern
-            case "blog":
-                {
-                    // load full blog
-                    blog = await readRepository.GetEntireBlog();
-                    if (blog is null) throw new ArgumentException($"Blog {blogGuid} not Found");
+            SignaturePrivateKeys = string.Join(',', importExportConfiguration.Value.JwtPrivateCertificates);
+            if (string.Compare(ExportType, "blog", StringComparison.InvariantCultureIgnoreCase) == 0) Scope = "Entire Blog";
+            if (string.Compare(ExportType, "post", StringComparison.InvariantCultureIgnoreCase) == 0)
+                Scope = Id == null ? "All Posts" : $"Post: {(await readRepository.PostAsync(Id.Value))!.Title}";
+            if (string.Compare(ExportType, "postimage", StringComparison.InvariantCultureIgnoreCase) == 0)
+                Scope = Id == null ? "All Post Images" : $"Post Image: {(await readRepository.PostImageAsync(Id.Value))!.Name}";
 
-                    exportedEntities = CreateBlogExport(blog);
-                    filename = $"{blog!.Title}.{DateTime.Now:yyyyMMdd-hhmm}";
-
-                    break;
-                }
-            case "posts":
-                {
-                    exportedEntities = CreatePostExport(Id, blog);
-                    if (exportedEntities.Posts.Count == 0)
-                        throw new ArgumentException($"No posts found for {Id}");
-
-                    filename = Id == null
-                        ? $"{blog!.Title}.GetEntireBlog.{DateTime.Now:yyyyMMdd-hhmm}"
-                        : $"{exportedEntities.Posts.First().Title}.{DateTime.Now:yyyyMMdd-hhmm}";
-
-                    break;
-                }
-            case "postimages":
-                {
-                    exportedEntities = CreatePostImageExport(Id, blog);
-                    if (exportedEntities.PostImages.Count == 0)
-                        throw new ArgumentException($"No posts found for {Id}");
-
-                    filename = Id == null
-                        ? $"{blog!.Title}.AllPostImages.{DateTime.Now:yyyyMMdd-hhmm}"
-                        : $"{exportedEntities.PostImages.First().Name}.{DateTime.Now:yyyyMMdd-hhmm}";
-
-                    break;
-                }
-            default:
-                return BadRequest();
+            ModelState.Clear();
+            return Page();
         }
 
-        var exportAsJson = exportedEntities.AsJson();
-        // todo make this selectable
-        if (imexConfiguration.CurrentValue.JwtPublicCertificates.Length > 0 &&
-            !string.IsNullOrWhiteSpace(imexConfiguration.CurrentValue.JwtPrivateCertificates[0])) // it requires a private key for signing
+        public async Task<IActionResult> OnPostAsync()
         {
-            filename = filename + ".jwt.json";
-            var token = GetTokenForJson(exportAsJson);
-            return File(Encoding.UTF8.GetBytes(token), "application/json", filename);
+            var blogOrParts = await GetBlogOrRequestedParts();
+            if (blogOrParts is null) return BadRequest();
+
+            if (string.Compare(FormType, "jwt", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowExportJwt)
+                return await ExportJwt(blogOrParts);
+
+            if (string.Compare(FormType, "json", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowExportJson)
+                return await ExportJson(blogOrParts);
+
+            if (string.Compare(FormType, "sync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowExportRemote)
+                return await ExportRemote(blogOrParts);
+
+            return BadRequest();
         }
 
-        filename = filename + ".json";
-        return File(Encoding.UTF8.GetBytes(exportAsJson), "application/json", filename);
-    }
-
-    private BlogExportModel CreatePostImageExport(Guid? id, Blog blog)
-    {
-        var blogDb = context.Blogs.First(x => x.UniqueId == blog.UniqueId);
-        Func<PostImageDb, bool> filter = (Id is null || Id == Guid.Empty)
-            ? ((x) => x.Blog == blogDb)
-            : ((x) => x.UniqueId == Id && x.Blog == blogDb);
-        var img = context.PostImages
-            .Where(filter)
-            .Select(x => x.ToModel().ToPostImageExportModel()).ToArray();
-
-        return new BlogExportModel()
+        private async Task<BlogExportModel?> GetBlogOrRequestedParts()
         {
-            IsFullExport = false,
-            PostImages = img.ToList()
-        };
-    }
+            if (ExportType is null) return null;
 
-    private BlogExportModel CreatePostExport(Guid? id, Blog blog)
-    {
-        var blogDb = context.Blogs.First(x => x.UniqueId == blog.UniqueId);
-        Func<PostDb, bool> filter = (Id is null || Id == Guid.Empty)
-            ? ((x) => x.Blog == blogDb)
-            : ((x) => x.UniqueId == Id && x.Blog == blogDb);
-        var pst = context.Posts
-            .Include(x => x.HeaderImage)
-            .Where(filter)
-            .Select(x => x.ToModel().ToPostExportModel()).ToArray();
-
-        var img = new List<PostImage>();
-        foreach (var post in pst)
-        {
-            if (post.HeaderImage == null) continue;
-            var imgPost = context.PostImages.FirstOrDefault(x => x.UniqueId == post.HeaderImage);
-            if (imgPost != null) img.Add(imgPost.ToModel());
+            switch (ExportType.ToLower())
+            {
+                // todo this could be a strategy pattern
+                case "blog":
+                    {
+                        var blog = await readRepository.GetEntireBlog();
+                        return blog is null ? null : CreateBlogExport(blog);
+                    }
+                case "post":
+                    {
+                        if (Id is null) return null;
+                        var post = await readRepository.PostAsync(Id.Value);
+                        return post is null ? null : CreateExport(post);
+                    }
+                case "postimage":
+                    {
+                        if (Id is null) return null;
+                        var postImage = await readRepository.PostImageAsync(Id.Value);
+                        return postImage is null ? null : CreateExport(postImage);
+                    }
+                default:
+                    return null;
+            }
         }
 
-        var regex = new Regex(@"([Ii][Mm][Aa][Gg][Ee]\?[Ii][Dd]=([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}))");
-        var regexPrefix = "image?id=".Length;
-        foreach (var model in pst)
-        {
-            var imagesForPosts = regex
-                .Matches(model.MdContent ?? string.Empty)
-                .Concat(regex.Matches(model.MdPreview))
-                .Select(x => x.Value.Substring(regexPrefix))
-                .Distinct()
-                .Select(Guid.Parse)
-                .Select(x => context.PostImages.FirstOrDefault(y => y.UniqueId == x && y.Blog == blogDb))
-                .Where(x => x is not null).Select(x => x.ToModel());
+        #region remote export
 
-            img.AddRange(imagesForPosts);
+        private async Task<IActionResult> ExportRemote(BlogExportModel blogOrParts)
+        {
+            if (SelectedCertificateRemote < 0 || SelectedCertificateRemote >= importExportConfiguration.Value.JwtPrivateCertificates.Length)
+            {
+                ModelState.AddModelError(nameof(SelectedCertificateRemote), "no certificate selected");
+                return Page();
+            }
+
+            if (RemoteSyncUrl is null)
+            {
+                ModelState.AddModelError(nameof(RemoteSyncUrl), "no remote sync url provided");
+                return Page();
+            }
+
+            var exportAsJson = blogOrParts.AsJson();
+
+            // get token for upload
+            var tokenResult = GetTokenForJson(exportAsJson, SelectedCertificateRemote, CertificatePasswordRemote, out var issuer);
+            if (tokenResult.IsFailure)
+            {
+                ModelState.AddModelError(nameof(CertificatePasswordRemote), tokenResult.ErrorMessage!);
+                return Page();
+            }
+            var token = tokenResult.Value!;
+            var result = await UploadToRemoteViaHttp(token, RemoteSyncUrl, null);
+            if (result.IsFailure)
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage!);
+                return Page();
+            }
+
+            return Page();
+            return Redirect(RemoteSyncUrl!);
         }
 
-        var imageExportList = img.Distinct().Select(x => x.ToPostImageExportModel());
-        return new BlogExportModel()
+        private async Task<ModelResult<object>> UploadToRemoteViaHttp(string token, string remoteSyncUrl, Guid? blogId)
         {
-            IsFullExport = false,
-            Posts = pst.ToList(),
-            PostImages = imageExportList.ToList()
-        };
-    }
+            // create http client that accepts any server certificate (for self-signed certificates) in case it is configured
+            var handler = new HttpClientHandler();
+            if (!importExportConfiguration.Value.ValidateCertificates)
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            var client = new HttpClient(handler);
 
-    private BlogExportModel CreateBlogExport(Blog blog)
-    {
-        var posts = blog.Posts.Select(x => x.ToPostExportModel());
+            // load the import dialog to get an antiforgery token from server
+            var aftResponse = await client.GetAsync(RemoteSyncUrl!.TrimEnd('/') + "/Import");
+            var doc = await aftResponse.Content.ReadAsStringAsync();
+            var aft = ExtractAntiforgeryTokenFromHtml(doc, string.Empty);
+            if (aft is null) return ModelResult<object>.Failure("Failed to extract antiforgery token from remote server.");
 
-        var postImages = blog.PostImages.Select(x => x.ToPostImageExportModel());
+            // add token, file and form type to multipart form data
+            using var form = new MultipartFormDataContent();
+            form.Add(new StringContent("jwtFile"), "FormType");
+            form.Add(new StringContent(aft), "__RequestVerificationToken");
 
-        var export = new BlogExportModel()
+            var content = new ByteArrayContent(Encoding.UTF8.GetBytes(token));
+            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            form.Add(content, "JwtDocumentFile", "export.json");
+
+            // post the data
+            var response = await client.PostAsync(RemoteSyncUrl!.TrimEnd('/') + "/Import", form);
+
+            return response.IsSuccessStatusCode
+                ? ModelResult<object>.Success(new object())
+                : ModelResult<object>.Failure($"Failed to upload data: {response.StatusCode}");
+        }
+
+        private string? ExtractAntiforgeryTokenFromHtml(string html, string divIdOrName)
         {
-            Title = blog.Title,
-            Description = blog.Description,
-            CreatedAt = blog.CreatedAt,
-            UpdatedAt = blog.UpdatedAt,
-            Posts = posts.ToList(),
-            PostImages = postImages.ToList(),
-            IsFullExport = true
-        };
+            // todo fix when divIdOrName is empty string or not found.
+            try
+            {
+                var searchContent = html;
+                // find the div with the given name or id. If not found search take all content.
+                var divPattern = $@"<div[^>]*(?:id|name)=""{divIdOrName}""[^>]*>(.*?)</div>";
+                var divMatch = Regex.Match(html, divPattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-        return export;
-    }
+                if (divMatch.Success)
+                    searchContent = divMatch.Groups[1].Value;
 
-    private string GetTokenForJson(object payload)
-    {
-        // todo let user select the certificate -multiuser support :) 
-        var cert = X509Certificate2.CreateFromPemFile(
-            imexConfiguration.CurrentValue.JwtPublicCertificates[0], imexConfiguration.CurrentValue.JwtPrivateCertificates[0]);
+                // search for hidden field __RequestVerificationToken within the searchContent
+                const string tokenPattern = @"<input[^>]*name=""__RequestVerificationToken""[^>]*value=""([^""]*)""[^>]*/?>";
+                var tokenMatch = Regex.Match(searchContent, tokenPattern, RegexOptions.IgnoreCase);
 
-        IJwtAlgorithm algorithm = new RS256Algorithm(cert);
-        IJsonSerializer serializer = new JsonNetSerializer();
-        IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-        IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-        const string key = null; // not needed if algorithm is asymmetric
+                return tokenMatch.Success ? tokenMatch.Groups[1].Value : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
-        return encoder.Encode(payload, key);
+        #endregion
+
+        #region json export
+
+        private async Task<IActionResult> ExportJson(BlogExportModel blogOrParts)
+        {
+            var asPretty = string.Compare("jsonpretty", SelectedJsonFormat, StringComparison.InvariantCultureIgnoreCase) == 0;
+            var exportAsJson = blogOrParts.AsJson(asPretty);
+
+            var filename = GenerateFilename(blogOrParts);
+
+            filename = $"{filename}.json";
+            return File(Encoding.UTF8.GetBytes(exportAsJson), "application/json", filename);
+        }
+        #endregion
+
+        #region jwt export
+
+        private async Task<IActionResult> ExportJwt(BlogExportModel blogOrParts)
+        {
+            if (SelectedCertificate < 0 || SelectedCertificate >= importExportConfiguration.Value.JwtPrivateCertificates.Length)
+            {
+                ModelState.AddModelError(nameof(SelectedCertificate), "no certificate selected");
+                return Page();
+            }
+
+            var exportAsJson = blogOrParts.AsJson();
+
+            var tokenResult = GetTokenForJson(exportAsJson, SelectedCertificate, CertificatePassword, out var issuer);
+            if (tokenResult.IsFailure)
+            {
+                ModelState.AddModelError(nameof(CertificatePassword), tokenResult.ErrorMessage!);
+                return Page();
+            }
+
+            var filename = GenerateFilename(blogOrParts);
+            filename = $"{filename}.{issuer}.jwt";
+            return File(Encoding.UTF8.GetBytes(tokenResult.Value!), "application/json", filename);
+        }
+
+        private ModelResult<string> GetTokenForJson(object payload, int selectedCertificate, string? certificatePassword, out string issuer)
+        {
+            // open certificate and get issuer
+            X509Certificate2 cert;
+            try
+            {
+                cert = string.IsNullOrWhiteSpace(certificatePassword)
+                    ? X509Certificate2.CreateFromPemFile(
+                        importExportConfiguration.Value.JwtPublicCertificates[selectedCertificate],
+                        importExportConfiguration.Value.JwtPrivateCertificates[selectedCertificate])
+                    : X509Certificate2.CreateFromEncryptedPemFile(
+                        importExportConfiguration.Value.JwtPublicCertificates[selectedCertificate],
+                        certificatePassword,
+                        importExportConfiguration.Value.JwtPrivateCertificates[selectedCertificate]);
+                issuer = cert.Issuer.Split(',')[0].Split('=')[1];
+            }
+            catch (Exception e)
+            {
+                issuer = string.Empty;
+                return ModelResult<string>.Failure(e.Message);
+            }
+
+            // validate certificate
+            if (importExportConfiguration.Value.ValidateCertificates && !cert.Verify())
+                return ModelResult<string>.Failure("certificate is not valid");
+
+            // create the jwt token
+            IJwtAlgorithm algorithm = new RS256Algorithm(cert);
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+
+            return ModelResult<string>.Success(encoder.Encode(payload, (string)null!));
+        }
+
+        #endregion
+
+        #region Create Helper
+
+        private BlogExportModel CreateBlogExport(Blog blog)
+        {
+            var posts = blog.Posts.Select(x => x.ToPostExportModel());
+
+            var postImages = blog.PostImages.Select(x => x.ToPostImageExportModel());
+
+            var export = new BlogExportModel()
+            {
+                Title = blog.Title,
+                Description = blog.Description,
+                CreatedAt = blog.CreatedAt,
+                UpdatedAt = blog.UpdatedAt,
+                Posts = posts.ToList(),
+                PostImages = postImages.ToList(),
+                IsFullExport = true
+            };
+
+            return export;
+        }
+
+        private BlogExportModel CreateExport(Post post)
+        {
+            // todo find all images im post!
+            var export = new BlogExportModel()
+            {
+                Posts = [post.ToPostExportModel()],
+                IsFullExport = false
+            };
+
+            return export;
+        }
+
+        private BlogExportModel CreateExport(PostImage postImage)
+        {
+            var export = new BlogExportModel()
+            {
+                PostImages = [postImage.ToPostImageExportModel()],
+                IsFullExport = false
+            };
+
+            return export;
+        }
+
+        #endregion
+
+        #region filename helper
+
+        private string GenerateFilename(BlogExportModel blog)
+        {
+            if (!string.IsNullOrWhiteSpace(blog.Title))
+                return $"{blog.Title}.{DateTime.Now:yyyyMMdd-hhmm}";
+
+            if (!string.IsNullOrWhiteSpace(blog.Posts.FirstOrDefault()?.Title))
+                return $"{blog.Posts.FirstOrDefault()!.Title}.{DateTime.Now:yyyyMMdd-hhmm}";
+
+            if (!string.IsNullOrWhiteSpace(blog.PostImages.FirstOrDefault()?.Name))
+                return $"{blog.PostImages.FirstOrDefault()!.Name}.{DateTime.Now:yyyyMMdd-hhmm}";
+
+            return $"Blog-Export.{DateTime.Now:yyyyMMdd-hhmm}";
+        }
+
+
+        #endregion
     }
 }

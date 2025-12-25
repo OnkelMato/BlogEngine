@@ -1,5 +1,4 @@
-﻿using OnkelMato.BlogEngine.Core.Database.Entity;
-using OnkelMato.BlogEngine.Core.Model;
+﻿using OnkelMato.BlogEngine.Core.Model;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 

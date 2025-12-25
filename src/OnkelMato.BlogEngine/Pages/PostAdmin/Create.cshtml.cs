@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
-using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;

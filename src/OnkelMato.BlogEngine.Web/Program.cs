@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
-using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Web;
 

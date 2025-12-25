@@ -68,7 +68,7 @@
                                         }
                                         @if (Model.AllowExport)
                                         {
-                                            <a asp-page="/Export" asp-route-entity="PostImages" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
+                                            <a asp-page="/Export" asp-route-exporttype="postimage" asp-route-id="@item.UniqueId" class="btn btn-warning">Export</a>
                                         }
                                         <a asp-page="/Image" asp-route-id="@item.UniqueId" class="btn btn-secondaty">Show</a>
                                     </td>

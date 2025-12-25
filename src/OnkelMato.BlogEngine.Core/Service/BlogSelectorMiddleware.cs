@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
-using OnkelMato.BlogEngine.Core.Database;
 using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Core.Service;

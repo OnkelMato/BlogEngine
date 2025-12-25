@@ -63,6 +63,14 @@ public static class RegistrationExtensions
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
         });
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.Cookie.Expiration = TimeSpan.FromDays(10);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        });
+
+
         return builder;
     }
 
