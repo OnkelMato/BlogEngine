@@ -17,15 +17,15 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var dataProtectionKeysPath = string.Empty;
-        //try
-        //{
-        //    dataProtectionKeysPath = builder.Configuration.GetSection("SystemConfig").GetSection("DataProtectionKeysPath").Value;
-        //}
-        //catch (Exception)
-        //{
-        //    // ignored
-        //}
+        string dataProtectionKeysPath;
+        try
+        {
+            dataProtectionKeysPath = builder.Configuration.GetSection("SystemConfig").GetSection("DataProtectionKeysPath").Value ?? string.Empty;
+        }
+        catch (Exception)
+        {
+            dataProtectionKeysPath = string.Empty;
+        }
 
         builder.AddBlogEngine();
         builder.Services.AddRazorPages(options =>
@@ -34,7 +34,7 @@ public class Program
         });
         builder.Services.AddBlogSeoTags();
 
-        if (false && !string.IsNullOrWhiteSpace(dataProtectionKeysPath) && Directory.Exists(dataProtectionKeysPath))
+        if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath) && Directory.Exists(dataProtectionKeysPath))
             builder.Services.AddDataProtection()
                 .UseCryptographicAlgorithms(
                     new AuthenticatedEncryptorConfiguration
