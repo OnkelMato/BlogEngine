@@ -9,7 +9,7 @@
     <div class="card alert-info">
         <div class="card-body">
             <p>
-                The following public certificates are configured for this blog: @Model.SignaturePrivateKeys.
+                The following scope is defined for the export: <strong>@Model.Scope</strong>
             </p>
         </div>
     </div>
@@ -29,20 +29,15 @@
                             <input hidden="true" name="FormType" value="jwt" />
                         </div>
                         <div class="row">
-                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                            <div class="form-group">
-                                <label asp-for="ExportType" class="control-label col-sm-3"></label>
-                                <input type="text" readonly asp-for="ExportType" class="form-control-plaintex" />
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="form-group">
                                 <select class="form-select" aria-label="Select certificate" asp-for="SelectedCertificate">
+                                    <option selected value="-1">Select certificate for export</option>
                                     @for (int i = 0; i < Model.Certificates.Length; i++)
                                     {
                                         <option value="@i">@Model.Certificates[i]</option>
                                     }
                                 </select>
+                                <span asp-validation-for="SelectedCertificate" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="row">
@@ -63,6 +58,88 @@
         </div>
     }
 
+
+    @if (Model.AllowExportJson)
+    {
+        <div class="col-sm-6">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data">
+
+                    <div class="card-header text-light bg-dark">
+                        <h1>Export unsigned JSON</h1>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <input hidden="true" name="FormType" value="json" />
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <select class="form-select" aria-label="Select json format" asp-for="SelectedJsonFormat">
+                                    <option value="json">JSON</option>
+                                    <option value="jsonpretty">JSON pretty</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <input type="submit" value="Export" class="btn btn-primary" />
+                        <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+    
+    @if (Model.AllowExportRemote)
+    {
+        <div class="col-sm-6">
+            <div class="card">
+                <form method="post" enctype="multipart/form-data">
+
+                    <div class="card-header text-light bg-dark">
+                        <h1>Sync Blog</h1>
+                    </div>
+
+                    <div class="form-group">
+                        <input hidden="true" name="FormType" value="sync" />
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label asp-for="RemoteSyncUrl" class="control-label"></label>
+                            <input asp-for="RemoteSyncUrl" class="form-control" />
+                            <span asp-validation-for="RemoteSyncUrl" class="text-danger"></span>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <select class="form-select" aria-label="Select certificate" asp-for="SelectedCertificateRemote">
+                                    <option selected value="-1">Select certificate for export</option>
+                                    @for (int i = 0; i < Model.Certificates.Length; i++)
+                                    {
+                                        <option value="@i">@Model.Certificates[i]</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SelectedCertificateRemote" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label asp-for="CertificatePasswordRemote" class="control-label col-sm-3"></label>
+                                <input type="password" asp-for="CertificatePasswordRemote" class="form-control" />
+                                <span asp-validation-for="CertificatePasswordRemote" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <input type="submit" value="Upload" class="btn btn-primary" />
+                        <a asp-page="/Admin" class="btn btn-secondary">Back to Admin</a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    }
 
 </div>
 

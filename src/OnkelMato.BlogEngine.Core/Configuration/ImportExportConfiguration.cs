@@ -15,5 +15,8 @@ public class ImportExportConfiguration
 
     public bool EnableBlogSync { get; set; } = true;
 
-    public bool AllowAnyExport => EnableJsonExport || EnableJwtExport;
+    public bool EnableRemoteExport { get; set; }
+
+    public bool AllowAnyExport => EnableJsonExport || EnableJwtExport || EnableRemoteExport;
+
 }

@@ -35,12 +35,18 @@ public static class ExportModelExtensions
             UpdatedAt = post.UpdatedAt,
             PublishedAt = post.PublishedAt,
             Order = post.Order,
-            PostTags = new(post.PostTags)
+            PostTags = [..post.PostTags]
         };
     }
 
-    public static string AsJson(this BlogExportModel export)
+    public static string AsJson(this BlogExportModel export, bool asPretty = false)
     {
-        return JsonSerializer.Serialize(export, new JsonSerializerOptions() { WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault });
+        return JsonSerializer.Serialize(
+            export, 
+            new JsonSerializerOptions()
+            {
+                WriteIndented = asPretty, 
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            });
     }
 }

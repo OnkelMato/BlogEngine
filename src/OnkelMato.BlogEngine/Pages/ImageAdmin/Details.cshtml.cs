@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
-using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Repository;
-using OnkelMato.BlogEngine.Pages.Pages.BlogAdmin;
 
 namespace OnkelMato.BlogEngine.Pages.ImageAdmin;
 
