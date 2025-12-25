@@ -48,7 +48,7 @@ public class CreateModel : PageModel
 
         var blog = _editRepository.Blog;
 
-        var postHeaderImage = Post.HasHeaderImage ? _readRepository.GetImage(Post.HeaderImage!.Value) : null;
+        var postHeaderImage = Post.HasHeaderImage ? await _readRepository.PostImageAsync(Post.HeaderImage!.Value) : null;
         var post = Post.FromModel(postHeaderImage, Post.Tags.Split(','));
 
         var result = await _editRepository.AddPost(post);

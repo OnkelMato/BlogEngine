@@ -13,9 +13,7 @@ public class ImageModel(BlogEngineReadRepository readRepository, IBlogIdProvider
 
     public async Task<ActionResult> OnGet()
     {
-        var blog = readRepository.Blog;
-
-        var img = readRepository.GetImage(Id);
+        var img = await readRepository.PostImageAsync(Id);
         return img is null
             ? File(Properties.Resources._1x1, "image/png") // maybe this is not the best idea
             : File(img.Image, img.ContentType);

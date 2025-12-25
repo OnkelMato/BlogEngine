@@ -1,13 +1,14 @@
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
+using System;
+using System.IO;
 
 namespace OnkelMato.BlogEngine.Web;
 
@@ -20,7 +21,7 @@ public class Program
         string dataProtectionKeysPath;
         try
         {
-            dataProtectionKeysPath = builder.Configuration.GetSection("SystemConfig").GetSection("DataProtectionKeysPath").Value ?? string.Empty;
+             dataProtectionKeysPath = builder.Configuration.GetValue<string>("SystemConfig:DataProtectionKeysPath") ?? string.Empty; ;
         }
         catch (Exception)
         {
@@ -99,9 +100,4 @@ public static class SeoExtensions
         });
         return services;
     }
-}
-
-public class SystemConfigConfiguration
-{
-    public string DataProtectionKeysPath { get; set; } = "./DataProtectionKeys";
 }

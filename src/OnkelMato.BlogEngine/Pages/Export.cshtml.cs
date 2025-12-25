@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 namespace OnkelMato.BlogEngine.Pages
 {
     public class ExportModel(
-        BlogEngineImportExportRepository importExportRepository,
         BlogEngineReadRepository readRepository,
         IOptions<ImportExportConfiguration> importExportConfiguration
     ) : PageModel
