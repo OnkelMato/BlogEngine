@@ -42,7 +42,6 @@ public class ImportModel(
     public string? Signature { get; set; }
 
     public bool UseJsonFileInput = imexConfiguration.CurrentValue.EnableJsonFileImport;
-    private string? _signaturePublicKeys;
 
     // File upload supports json file input
     [BindProperty]
@@ -158,7 +157,7 @@ public class ImportModel(
             await importExportRepository.ClearBlog();
 
         // deserialize and import
-        var importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson) ?? throw new ArgumentNullException(nameof(importModelJson));
+        var importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson!) ?? throw new ArgumentNullException(nameof(importModelJson));
 
         if (ImportAsNewBlog)
         {
@@ -175,8 +174,6 @@ public class ImportModel(
 
     private async Task<string?> ImportJsonFromJwt(string token)
     {
-        var result = string.Empty;
-
         foreach (var certificateFile in imexConfiguration.CurrentValue.JwtPublicCertificates)
         {
             try
@@ -190,7 +187,7 @@ public class ImportModel(
                 IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
 
                 var json = decoder.Decode(token, false);
-                result = JsonSerializer.Deserialize<string>(json!);
+                var result = JsonSerializer.Deserialize<string>(json!);
 
                 return result;
             }
@@ -219,6 +216,7 @@ public class ImportModel(
     /// <returns>The imported JSON as a string.</returns>
     private async Task<string> ImportJsonFromUrl(string remoteSyncUrl)
     {
+        // todo change to ModelResult return value
         try
         {
             // in case of certificate validation disabled
@@ -234,7 +232,7 @@ public class ImportModel(
             var responseBody = await response.Content.ReadAsStringAsync();
             return responseBody;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             throw;
         }
@@ -247,7 +245,7 @@ public class ImportModel(
         foreach (var certificate in imexConfiguration.CurrentValue.JwtPublicCertificates)
         {
             var cert = new X509Certificate2(certificate);
-            if (Verify(JsonDocument!, Signature, cert))
+            if (Verify(JsonDocument!, Signature!, cert))
                 result = true;
         }
 

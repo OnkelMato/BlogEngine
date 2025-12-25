@@ -71,7 +71,7 @@ public class EditModel : PageModel
         var blog = _readRepository.Blog();
 
 
-        var postHeaderImage = Post.HasHeaderImage ? _readRepository.GetImage(Post.HeaderImage!.Value) : null;
+        var postHeaderImage = Post.HasHeaderImage ? (await _readRepository.PostImageAsync(Post.HeaderImage!.Value)) : null;
 
         if (Post.HeaderImage != null && postHeaderImage is null)
         {
@@ -79,7 +79,7 @@ public class EditModel : PageModel
             return Page();
         }
 
-        _editRepository.UpdatePost(PostModelExtensions.FromModel(Post, postHeaderImage, Post.Tags.Split(',')));
+        await _editRepository.UpdatePost(Post.FromModel(postHeaderImage, Post.Tags.Split(',')));
 
        
 

@@ -1,13 +1,14 @@
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
+using System;
+using System.IO;
 
 namespace OnkelMato.BlogEngine.Web;
 
@@ -17,15 +18,15 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var dataProtectionKeysPath = string.Empty;
-        //try
-        //{
-        //    dataProtectionKeysPath = builder.Configuration.GetSection("SystemConfig").GetSection("DataProtectionKeysPath").Value;
-        //}
-        //catch (Exception)
-        //{
-        //    // ignored
-        //}
+        string dataProtectionKeysPath;
+        try
+        {
+             dataProtectionKeysPath = builder.Configuration.GetValue<string>("SystemConfig:DataProtectionKeysPath") ?? string.Empty; ;
+        }
+        catch (Exception)
+        {
+            dataProtectionKeysPath = string.Empty;
+        }
 
         builder.AddBlogEngine();
         builder.Services.AddRazorPages(options =>
@@ -34,7 +35,7 @@ public class Program
         });
         builder.Services.AddBlogSeoTags();
 
-        if (false && !string.IsNullOrWhiteSpace(dataProtectionKeysPath) && Directory.Exists(dataProtectionKeysPath))
+        if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath) && Directory.Exists(dataProtectionKeysPath))
             builder.Services.AddDataProtection()
                 .UseCryptographicAlgorithms(
                     new AuthenticatedEncryptorConfiguration
@@ -99,9 +100,4 @@ public static class SeoExtensions
         });
         return services;
     }
-}
-
-public class SystemConfigConfiguration
-{
-    public string DataProtectionKeysPath { get; set; } = "./DataProtectionKeys";
 }

@@ -89,6 +89,6 @@ public class BlogEngineMgmtRepository
 
     public async Task<Blog?> GetFirstBlogOrDefault()
     {
-        return (await _context.Blogs.FirstOrDefaultAsync())?.ToModel();
+        return (await _context.Blogs.OrderBy(x => x.CreatedAt).FirstOrDefaultAsync())?.ToModel();
     }
 }
