@@ -6,21 +6,15 @@ using OnkelMato.BlogEngine.Core.Repository;
 
 namespace OnkelMato.BlogEngine.Pages.PostAdmin;
 
-public class EditModel : PageModel
+public class EditModel(
+    BlogEngineReadRepository readRepository,
+    BlogEngineEditRepository editRepository,
+    IOptionsMonitor<BlogConfiguration> postsConfiguration)
+    : PageModel
 {
-    private readonly BlogEngineReadRepository _readRepository;
-    private readonly BlogEngineEditRepository _editRepository;
-    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration;
-
-    public EditModel(
-        BlogEngineReadRepository readRepository,
-        BlogEngineEditRepository editRepository,
-        IOptionsMonitor<BlogConfiguration> postsConfiguration)
-    {
-        _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
-        _editRepository = editRepository ?? throw new ArgumentNullException(nameof(editRepository));
-        _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
-    }
+    private readonly BlogEngineReadRepository _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
+    private readonly BlogEngineEditRepository _editRepository = editRepository ?? throw new ArgumentNullException(nameof(editRepository));
+    private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     [BindProperty]
     public PostModel Post { get; set; } = null!;
@@ -43,18 +37,8 @@ public class EditModel : PageModel
         {
             return NotFound();
         }
-        Post = new PostModel()
-        {
-            UniqueId = post.UniqueId,
-            Title = post.Title,
-            MdContent = post.MdContent,
-            UpdatedAt = post.UpdatedAt,
-            PublishedAt = post.PublishedAt,
-            Order = post.Order,
-            ShowState = post.ShowState.FromShowState(),
-            HeaderImage = post.HeaderImage?.UniqueId,
-            MdPreview = post.MdPreview
-        };
+
+        Post = post.ToModel();
         Post.UpdatedAt = DateTime.Now;
         return Page();
     }
@@ -68,9 +52,6 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var blog = _readRepository.Blog();
-
-
         var postHeaderImage = Post.HasHeaderImage ? (await _readRepository.PostImageAsync(Post.HeaderImage!.Value)) : null;
 
         if (Post.HeaderImage != null && postHeaderImage is null)
@@ -79,9 +60,8 @@ public class EditModel : PageModel
             return Page();
         }
 
-        await _editRepository.UpdatePost(Post.FromModel(postHeaderImage, Post.Tags.Split(',')));
-
-       
+        var tags = Post.Tags?.Split(',').Select(x => x.Trim()).ToArray() ?? [];
+        await _editRepository.UpdatePost(Post.FromModel(postHeaderImage, tags));
 
         return RedirectToPage("./Index");
     }

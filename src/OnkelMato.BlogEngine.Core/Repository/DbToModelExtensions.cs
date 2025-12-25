@@ -68,17 +68,6 @@ public static class DbToModelExtensions
         };
     }
 
-    public static PostTag ToModel(this PostTagDb postTagDb)
-    {
-        return new PostTag()
-        {
-
-            Title = postTagDb.Title,
-            Blog = postTagDb.Blog.ToModel(),
-            Post = postTagDb.Post.ToModel()
-        };
-    }
-
     public static Blog ToModel(this BlogDb blogDb)
     {
         return new Blog()
@@ -91,7 +80,7 @@ public static class DbToModelExtensions
             CSS = blogDb.CSS,
             Posts = blogDb.Posts?.Select(x => x.ToModel()).ToList() ?? [],
             PostImages = blogDb.PostImages?.Select(x => x.ToModel()).ToList() ?? [],
-            PostTags = blogDb.PostTags?.Select(x => x.ToModel()).ToList() ?? []
+            //PostTags = blogDb.PostTags?.Select(x => x.ToModel()).ToList() ?? []
         };
     }
 }

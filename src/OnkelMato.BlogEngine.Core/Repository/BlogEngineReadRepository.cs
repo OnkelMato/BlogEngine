@@ -78,6 +78,7 @@ public class BlogEngineReadRepository
 
         var posts = _context.Posts
             .Include(x => x.HeaderImage)
+            .Include(x => x.PostTags)
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
             .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
@@ -165,9 +166,11 @@ public class BlogEngineReadRepository
     public async Task<Blog?> GetEntireBlog()
     {
         var result = await _context.Blogs
-            .Include(x => x.Posts).ThenInclude(x => x.HeaderImage)
+            .Include(x => x.Posts)
+                .ThenInclude(h => h.HeaderImage)
+            .Include(x => x.Posts)
+                .ThenInclude(h => h.PostTags)
             .Include(x => x.PostImages)
-            .Include(x => x.PostTags)
             .FirstOrDefaultAsync(m => m.UniqueId == _lazyBlog.Value!.UniqueId);
         return result?.ToModel();
     }
@@ -189,6 +192,6 @@ public class BlogEngineReadRepository
             .Where(x => x.Blog == _lazyBlog.Value)
             .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
 
-        return posts.Select(x => x.ToModel());
+        return posts.Select(x => x.ToModel()).ToArray();
     }
 }

@@ -9,6 +9,10 @@ public class PostTagDb
     [Key]
     public int Id { get; set; }
 
+    /// <summary>
+    /// Gets or sets the blog associated with this entity.
+    /// Denormalized to allow faster queries.
+    /// </summary>
     [Required]
     public BlogDb Blog { get; set; } = null!;
 

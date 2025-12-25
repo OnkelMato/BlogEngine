@@ -29,12 +29,17 @@
                     }
                 </div>
                 <div class="card-body">
-                    @(new HtmlString(item.HtmlPreview))
+                        @(new HtmlString(item.HtmlPreview))
+                        @foreach (var tag in (item.Tags)
+    )
+                        {
+                            <span class="badge bg-primary">@tag</span>
+                        }
                 </div>
                 <div class="card-footer text-right">
                     @if (item.HasContent)
                     {
-                        <a href="/Post/@HttpUtility.UrlEncode(item.Title)/@item.UniqueId" class="btn btn-dark">
+                        <a href="/Post/@item.TitleSEO)/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-arrow-right-circle"></i> Lesen
                         </a>
                     }
