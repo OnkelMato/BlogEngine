@@ -17,7 +17,7 @@
         public class PostExportModel
         {
             public Guid UniqueId { get; set; }
-            public string Title { get; set; } = null!;
+            public string Title { get; set; } = string.Empty;
             public string MdPreview { get; set; } = null!;
             public string? MdContent { get; set; }
             public int ShowState { get; set; }
@@ -34,7 +34,7 @@
         public class PostTagExportModel
         {
             public Guid UniqueId { get; set; }
-            public string Title { get; set; } = null!;
+            public string Title { get; set; } = string.Empty;
         }
 
         public string? Title { get; set; }

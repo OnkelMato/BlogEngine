@@ -47,7 +47,8 @@ public class CreateModel : PageModel
             return Page();
 
         var postHeaderImage = Post.HasHeaderImage ? await _readRepository.PostImageAsync(Post.HeaderImage!.Value) : null;
-        var post = Post.FromModel(postHeaderImage, Post.Tags?.Split(',').Select(x=> x.Trim()) ?? []);
+        var tags = Post.Tags?.Split(',').Select(x => x.Trim()).ToArray() ?? [];
+        var post = Post.FromModel(postHeaderImage, tags);
 
         var result = await _editRepository.AddPost(post);
 

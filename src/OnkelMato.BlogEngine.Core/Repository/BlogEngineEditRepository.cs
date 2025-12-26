@@ -1,3 +1,4 @@
+using Azure;
 using Microsoft.EntityFrameworkCore;
 using OnkelMato.BlogEngine.Core.Database;
 using OnkelMato.BlogEngine.Core.Database.Entity;
@@ -122,10 +123,15 @@ public class BlogEngineEditRepository
 
     public async Task<RepositoryResult<Post>> UpdatePost(Post post)
     {
-        var dbPost = await _context.Posts.SingleAsync(m => m.UniqueId == post.UniqueId && m.Blog == _lazyBlog.Value);
+        var dbPost = await _context.Posts
+            .Include(x=> x.HeaderImage)
+            .Include(x => x.PostTags)
+            .SingleAsync(m => m.UniqueId == post.UniqueId && m.Blog == _lazyBlog.Value);
+
         var dbImage = post.HeaderImage != null
-            ? await _context.PostImages.SingleAsync(m => m.UniqueId == post.HeaderImage.UniqueId && m.Blog == _lazyBlog.Value)
+            ? await _context.PostImages.SingleOrDefaultAsync(m => m.UniqueId == post.HeaderImage.UniqueId && m.Blog == _lazyBlog.Value)
             : null;
+        // make more validations! dbImage == null is a problem
 
         dbPost.MdContent = post.MdContent;
         dbPost.Title = post.Title;
@@ -135,6 +141,17 @@ public class BlogEngineEditRepository
         dbPost.HeaderImage = dbImage;
         dbPost.ShowState = post.ShowState.FromModel();
         dbPost.MdPreview = post.MdPreview;
+
+        // todo not the best solution but works
+
+        // check dbPost.PostTags with post.Tags and add new and remove missing
+        dbPost.PostTags.Clear();
+        dbPost.PostTags.AddRange(post.PostTags.Distinct().Select(x => new PostTagDb()
+        {
+            Blog = dbPost.Blog,
+            Post = dbPost,
+            Title = x
+        }));
 
         try
         {
@@ -154,7 +171,7 @@ public class BlogEngineEditRepository
             ? await _context.PostImages.SingleAsync(m => m.UniqueId == post.HeaderImage.UniqueId && m.Blog == _lazyBlog.Value)
             : null;
 
-        _context.Posts.Add(new PostDb()
+        var dbPost = _context.Posts.Add(new PostDb()
         {
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
@@ -166,8 +183,10 @@ public class BlogEngineEditRepository
             Title = post.Title,
             Order = post.Order,
             ShowState = post.ShowState.FromModel(),
-            MdPreview = post.MdPreview
+            MdPreview = post.MdPreview,
         });
+        dbPost.Entity.PostTags = post.PostTags
+            .Distinct().Select(x => new PostTagDb() { Post = dbPost.Entity, Blog = _lazyBlog.Value!, Title = x }).ToList();
 
         try
         {
