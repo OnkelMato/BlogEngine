@@ -57,7 +57,13 @@
                                             @Html.DisplayFor(modelItem => item.Order)
                                         </td>
                                         <td>
-                                            @Html.DisplayFor(modelItem => item.Title)
+                                            <div>@Html.DisplayFor(modelItem => item.Title)</div>
+                                            <div>
+                                                @foreach (var tag in item.Tags?.Split(',').Select(x => x.Trim()) ?? [])
+                                                {
+                                                    <span class="badge bg-primary">@tag</span>
+                                                }
+                                            </div>
                                         </td>
                                         <td>
                                             <p>@Html.DisplayFor(modelItem => item.MdPreview)</p>

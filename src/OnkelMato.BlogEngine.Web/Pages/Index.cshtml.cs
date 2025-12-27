@@ -29,6 +29,7 @@ public class IndexModel(BlogEngineReadRepository repository, IBlogIdProvider blo
         public Guid? HeaderImage { get; set; }
 
         public DateTime PublishedAt { get; set; }
+        public IEnumerable<string> Tags { get; set; } = [];
     }
 
     private readonly BlogEngineReadRepository _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -66,8 +67,9 @@ public class IndexModel(BlogEngineReadRepository repository, IBlogIdProvider blo
                 PublishedAt = x.PublishedAt,
                 HasContent = x.MdContent != null,
                 HeaderImage = x.HeaderImage?.UniqueId,
-                //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null)
-                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null)
+                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
+                Tags = x.PostTags.ToArray()
+
             }).ToList();
 
         return Page();

@@ -78,6 +78,7 @@ public class BlogEngineReadRepository
 
         var posts = _context.Posts
             .Include(x => x.HeaderImage)
+            .Include(x => x.PostTags)
             .Where(x => x.Blog == _lazyBlog.Value &&
                         (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
             .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
