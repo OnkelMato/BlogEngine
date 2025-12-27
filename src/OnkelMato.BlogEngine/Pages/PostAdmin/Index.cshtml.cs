@@ -17,7 +17,7 @@ public class IndexModel(
     [BindProperty(Name = "redirect_uri", SupportsGet = true)]
     public string? RedirectUri { get; set; }
 
-    public IEnumerable<PostModel> Posts { get; set; } = null!;
+    public IEnumerable<PostModel> Posts { get; set; } = [];
     public bool AllowNewPosts => _postsConfiguration.CurrentValue.AllowAdministration;
 
     public bool AllowExport => importExportConfiguration.CurrentValue.AllowAnyExport;
@@ -30,7 +30,15 @@ public class IndexModel(
         var blog = repository.Blog();
         if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
 
-        Posts = (await repository.GetAllPosts()).Select(x=> x.ToModel());
+        try
+        {
+            Posts = (await repository.GetAllPosts()).Select(x => x.ToModel());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Posts = [];
+        }
 
         return Page();
     }

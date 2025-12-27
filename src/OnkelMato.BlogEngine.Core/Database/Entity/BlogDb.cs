@@ -26,8 +26,6 @@ public class BlogDb
     
     public List<PostImageDb> PostImages { get; set; } = [];
     
-    public List<PostTagDb> PostTags { get; set; } = [];
-
     [MaxLength(10000)]
     
     public string? CSS { get; set; }

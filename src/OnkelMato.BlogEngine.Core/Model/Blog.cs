@@ -11,5 +11,4 @@ public class Blog
 
     public List<Post> Posts { get; set; } = [];
     public List<PostImage> PostImages { get; set; } = [];
-    public List<PostTag> PostTags { get; set; } = [];
 }

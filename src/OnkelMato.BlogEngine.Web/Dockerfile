@@ -28,7 +28,8 @@ FROM base AS final
 USER 0
 RUN mkdir /data
 RUN mkdir /data/keys
-RUN chown -R $APP_UID /data
+RUN chown -R $APP_UID:$APP_UID /data
+RUN chmod -R 777 /data
 
 USER $APP_UID
 WORKDIR /app

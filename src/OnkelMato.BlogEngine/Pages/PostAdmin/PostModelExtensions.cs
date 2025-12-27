@@ -6,6 +6,8 @@ public static class PostModelExtensions
 {
     public static PostModel ToModel(this Post post)
     {
+        if (post == null) throw new ArgumentNullException(nameof(post));
+
         return new PostModel()
         {
             UniqueId = post.UniqueId,
@@ -16,12 +18,15 @@ public static class PostModelExtensions
             Order = post.Order,
             ShowState = post.ShowState.FromShowState(),
             HeaderImage = post.HeaderImage?.UniqueId,
-            MdPreview = post.MdPreview
+            MdPreview = post.MdPreview,
+            Tags = string.Join(',', post.PostTags.ToArray()),
         };
     }
 
     public static Post FromModel(this PostModel postModel, PostImage? headerImage, IEnumerable<string> tags)
     {
+        if (postModel == null) throw new ArgumentNullException(nameof(postModel));
+
         return new Post()
         {
             UniqueId = postModel.UniqueId,
@@ -31,9 +36,9 @@ public static class PostModelExtensions
             PublishedAt = postModel.PublishedAt,
             Order = postModel.Order,
             HeaderImage = headerImage,
-            PostTags = tags.ToList(),
             ShowState = postModel.ShowState.ToShowState(),
-            MdPreview = postModel.MdPreview
+            MdPreview = postModel.MdPreview,
+            PostTags = tags.ToList(),
         };
     }
 }
