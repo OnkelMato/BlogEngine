@@ -24,6 +24,8 @@ namespace OnkelMato.BlogEngine.Pages
     {
         public bool AllowExportJson => importExportConfiguration.Value.EnableJsonExport;
         public bool AllowExportJwt => importExportConfiguration.Value.EnableJwtExport;
+
+        [BindProperty]
         public int SelectedCertificate { get; set; } = -1;
         public string[] Certificates => importExportConfiguration.Value.JwtPrivateCertificates;
 

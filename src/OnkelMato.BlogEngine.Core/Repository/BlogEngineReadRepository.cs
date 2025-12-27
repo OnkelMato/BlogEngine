@@ -143,17 +143,6 @@ public class BlogEngineReadRepository
     }
 
     /// <summary>
-    /// Retrieves the image associated with the specified unique identifier for the current blog.
-    /// </summary>
-    /// <param name="imageId">The unique identifier of the image to retrieve.</param>
-    /// <returns>A <see cref="PostImage"/> object representing the image if found; otherwise, <see langword="null"/>.</returns>
-    [Obsolete("use PostImageAsync() instead")]
-    public PostImage? GetImage(Guid imageId)
-    {
-        return _context.PostImages.SingleOrDefault(x => x.UniqueId == imageId && x.Blog == _lazyBlog.Value)?.ToModel();
-    }
-
-    /// <summary>
     /// Asynchronously retrieves the image associated with the specified unique identifier for the current blog.
     /// </summary>
     /// <param name="imageId"></param>
