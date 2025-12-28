@@ -41,13 +41,13 @@
                 <div class="card-footer text-right">
                     @if (item.HasContent)
                     {
-                        <a href="/Post/@item.TitleSEO)/@item.UniqueId" class="btn btn-dark">
+                        <a href="/Post/@item.TitleSEO/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-arrow-right-circle"></i> Lesen
                         </a>
                     }
                     @if (Model.AllowBlogAdministration)
                     {
-                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Post/@HttpUtility.UrlEncode(item.Title)/@item.UniqueId" class="btn btn-dark">
+                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Post/@item.TitleSEO/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-pen"></i> Bearbeiten
                         </a>
                         <a asp-page="/Export" asp-route-exporttype="post" asp-route-id="@item.UniqueId" class="btn btn-warning">

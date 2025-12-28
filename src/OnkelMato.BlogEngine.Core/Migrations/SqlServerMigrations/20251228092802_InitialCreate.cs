@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
+namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -14,14 +15,14 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
                 name: "Blog",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UniqueId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CSS = table.Column<string>(type: "TEXT", maxLength: 10000, nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UniqueId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CSS = table.Column<string>(type: "nvarchar(max)", maxLength: 10000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -32,17 +33,17 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
                 name: "PostImage",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UniqueId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    BlogId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Image = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    ContentType = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    AltText = table.Column<string>(type: "TEXT", maxLength: 512, nullable: true),
-                    IsPublished = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UniqueId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BlogId = table.Column<int>(type: "int", nullable: false),
+                    Image = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    AltText = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    IsPublished = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,19 +60,19 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
                 name: "Post",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UniqueId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    BlogId = table.Column<int>(type: "INTEGER", nullable: false),
-                    HeaderImageId = table.Column<int>(type: "INTEGER", nullable: true),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    MdPreview = table.Column<string>(type: "TEXT", maxLength: 4096, nullable: false),
-                    MdContent = table.Column<string>(type: "TEXT", maxLength: 2147483647, nullable: true),
-                    ShowState = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    PublishedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Order = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UniqueId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BlogId = table.Column<int>(type: "int", nullable: false),
+                    HeaderImageId = table.Column<int>(type: "int", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    MdPreview = table.Column<string>(type: "nvarchar(max)", maxLength: 4096, nullable: false),
+                    MdContent = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: true),
+                    ShowState = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PublishedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Order = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -93,11 +94,11 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
                 name: "PostTag",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    BlogId = table.Column<int>(type: "INTEGER", nullable: false),
-                    PostId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BlogId = table.Column<int>(type: "int", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
                 },
                 constraints: table =>
                 {

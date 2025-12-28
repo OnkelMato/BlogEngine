@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using OnkelMato.BlogEngine.Core.Configuration;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace OnkelMato.BlogEngine.Web;
@@ -18,15 +19,15 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        string dataProtectionKeysPath;
-        try
-        {
-             dataProtectionKeysPath = builder.Configuration.GetValue<string>("SystemConfig:DataProtectionKeysPath") ?? string.Empty; ;
-        }
-        catch (Exception)
-        {
-            dataProtectionKeysPath = string.Empty;
-        }
+        //string dataProtectionKeysPath;
+        //try
+        //{
+        //     dataProtectionKeysPath = builder.Configuration.GetValue<string>("SystemConfig:DataProtectionKeysPath") ?? string.Empty; ;
+        //}
+        //catch (Exception)
+        //{
+        //    dataProtectionKeysPath = string.Empty;
+        //}
 
         builder.AddBlogEngine();
         builder.Services.AddRazorPages(options =>
@@ -35,15 +36,15 @@ public class Program
         });
         builder.Services.AddBlogSeoTags();
 
-        if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath) && Directory.Exists(dataProtectionKeysPath))
-            builder.Services.AddDataProtection()
-                .UseCryptographicAlgorithms(
-                    new AuthenticatedEncryptorConfiguration
-                    {
-                        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
-                        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
-                    })
-                .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+        //if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath) && Directory.Exists(dataProtectionKeysPath))
+        //    builder.Services.AddDataProtection()
+        //        .UseCryptographicAlgorithms(
+        //            new AuthenticatedEncryptorConfiguration
+        //            {
+        //                EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+        //                ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+        //            })
+        //        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

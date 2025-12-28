@@ -228,7 +228,7 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Core.Database.Entity.PostTagDb", b =>
                 {
                     b.HasOne("OnkelMato.BlogEngine.Core.Database.Entity.BlogDb", "Blog")
-                        .WithMany("PostTags")
+                        .WithMany()
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -247,8 +247,6 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Core.Database.Entity.BlogDb", b =>
                 {
                     b.Navigation("PostImages");
-
-                    b.Navigation("PostTags");
 
                     b.Navigation("Posts");
                 });
