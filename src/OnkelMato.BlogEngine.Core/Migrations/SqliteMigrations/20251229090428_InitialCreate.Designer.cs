@@ -11,7 +11,7 @@ using OnkelMato.BlogEngine.Core.Database;
 namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
 {
     [DbContext(typeof(SqliteBlogEngineContext))]
-    [Migration("20251228092811_InitialCreate")]
+    [Migration("20251229090428_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

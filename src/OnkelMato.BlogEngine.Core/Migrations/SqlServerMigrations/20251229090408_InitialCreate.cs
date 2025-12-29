@@ -98,7 +98,8 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BlogId = table.Column<int>(type: "int", nullable: false),
                     PostId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false)
+                    Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    PostDbId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -107,14 +108,17 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
                         name: "FK_PostTag_Blog_BlogId",
                         column: x => x.BlogId,
                         principalTable: "Blog",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PostTag_Post_PostDbId",
+                        column: x => x.PostDbId,
+                        principalTable: "Post",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PostTag_Post_PostId",
                         column: x => x.PostId,
                         principalTable: "Post",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -154,6 +158,11 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
                 name: "IX_PostTag_BlogId",
                 table: "PostTag",
                 column: "BlogId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostTag_PostDbId",
+                table: "PostTag",
+                column: "PostDbId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostTag_PostId",
