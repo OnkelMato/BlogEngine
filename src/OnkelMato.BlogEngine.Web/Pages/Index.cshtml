@@ -11,12 +11,18 @@
     });
 }
 
+<!--
+   Blog Engine Version: @typeof(Program).Assembly.GetName().Version
+-->
+
 <div class="row">
     @foreach (var item in Model.Posts)
     {
         <div class="col-sm-4">
             <div class="card">
-                <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(item.HeaderImage)');">
+                <div class="card-header text-light bg-dark post-header" style="background-image: url('/Image?id=@(item.HeaderImage)');">
+                </div>
+                <div class="card-body text-light bg-dark post-title">
                     @if (item.HasContent)
                     {
                         <a href="/Post/@item.TitleSEO/@item.UniqueId" class="link-light link-underline-0">
@@ -39,13 +45,13 @@
                 <div class="card-footer text-right">
                     @if (item.HasContent)
                     {
-                        <a href="/Post/@item.TitleSEO)/@item.UniqueId" class="btn btn-dark">
+                        <a href="/Post/@item.TitleSEO/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-arrow-right-circle"></i> Lesen
                         </a>
                     }
                     @if (Model.AllowBlogAdministration)
                     {
-                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Post/@HttpUtility.UrlEncode(item.Title)/@item.UniqueId" class="btn btn-dark">
+                        <a asp-page="/PostAdmin/Edit" asp-route-id="@item.UniqueId" asp-route-redirect_uri="/Post/@item.TitleSEO/@item.UniqueId" class="btn btn-dark">
                             <i class="bi bi-pen"></i> Bearbeiten
                         </a>
                         <a asp-page="/Export" asp-route-exporttype="post" asp-route-id="@item.UniqueId" class="btn btn-warning">

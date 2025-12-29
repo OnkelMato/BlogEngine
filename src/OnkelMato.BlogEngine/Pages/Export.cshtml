@@ -30,6 +30,7 @@
                         </div>
                         <div class="row">
                             <div class="form-group">
+                                <label asp-for="SelectedCertificate" class="control-label"></label>
                                 <select class="form-select" aria-label="Select certificate" asp-for="SelectedCertificate">
                                     <option selected value="-1">Select certificate for export</option>
                                     @for (int i = 0; i < Model.Certificates.Length; i++)
@@ -42,7 +43,7 @@
                         </div>
                         <div class="row">
                             <div class="form-group">
-                                <label asp-for="CertificatePassword" class="control-label col-sm-3"></label>
+                                <label asp-for="CertificatePassword" class="control-label"></label>
                                 <input type="password" asp-for="CertificatePassword" class="form-control" />
                                 <span asp-validation-for="CertificatePassword" class="text-danger"></span>
                             </div>
@@ -75,6 +76,7 @@
                         </div>
                         <div class="row">
                             <div class="form-group">
+                                <label asp-for="SelectedJsonFormat" class="control-label"></label>
                                 <select class="form-select" aria-label="Select json format" asp-for="SelectedJsonFormat">
                                     <option value="json">JSON</option>
                                     <option value="jsonpretty">JSON pretty</option>
@@ -113,6 +115,7 @@
                         </div>
                         <div class="row">
                             <div class="form-group">
+                                <label asp-for="SelectedCertificateRemote" class="control-label"></label>
                                 <select class="form-select" aria-label="Select certificate" asp-for="SelectedCertificateRemote">
                                     <option selected value="-1">Select certificate for export</option>
                                     @for (int i = 0; i < Model.Certificates.Length; i++)
@@ -125,7 +128,7 @@
                         </div>
                         <div class="row">
                             <div class="form-group">
-                                <label asp-for="CertificatePasswordRemote" class="control-label col-sm-3"></label>
+                                <label asp-for="CertificatePasswordRemote" class="control-label></label>
                                 <input type="password" asp-for="CertificatePasswordRemote" class="form-control" />
                                 <span asp-validation-for="CertificatePasswordRemote" class="text-danger"></span>
                             </div>

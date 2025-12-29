@@ -58,3 +58,10 @@ footer {
 .part {
     margin: 10px 0;
 }
+
+.post-header {
+    min-height: 100px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}

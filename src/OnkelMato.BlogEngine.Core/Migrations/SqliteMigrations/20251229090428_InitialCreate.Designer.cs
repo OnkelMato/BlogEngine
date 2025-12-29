@@ -11,7 +11,7 @@ using OnkelMato.BlogEngine.Core.Database;
 namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
 {
     [DbContext(typeof(SqliteBlogEngineContext))]
-    [Migration("20251223110111_InitialCreate")]
+    [Migration("20251229090428_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -218,7 +218,7 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Core.Database.Entity.PostTagDb", b =>
                 {
                     b.HasOne("OnkelMato.BlogEngine.Core.Database.Entity.BlogDb", "Blog")
-                        .WithMany("PostTags")
+                        .WithMany()
                         .HasForeignKey("BlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -237,8 +237,6 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqliteMigrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Core.Database.Entity.BlogDb", b =>
                 {
                     b.Navigation("PostImages");
-
-                    b.Navigation("PostTags");
 
                     b.Navigation("Posts");
                 });

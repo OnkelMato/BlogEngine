@@ -180,6 +180,9 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
                     b.Property<int>("BlogId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PostDbId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
@@ -191,6 +194,8 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
                     b.HasKey("Id");
 
                     b.HasIndex("BlogId");
+
+                    b.HasIndex("PostDbId");
 
                     b.HasIndex("PostId");
 
@@ -228,15 +233,19 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Core.Database.Entity.PostTagDb", b =>
                 {
                     b.HasOne("OnkelMato.BlogEngine.Core.Database.Entity.BlogDb", "Blog")
-                        .WithMany("PostTags")
+                        .WithMany()
                         .HasForeignKey("BlogId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("OnkelMato.BlogEngine.Core.Database.Entity.PostDb", "Post")
+                    b.HasOne("OnkelMato.BlogEngine.Core.Database.Entity.PostDb", null)
                         .WithMany("PostTags")
+                        .HasForeignKey("PostDbId");
+
+                    b.HasOne("OnkelMato.BlogEngine.Core.Database.Entity.PostDb", "Post")
+                        .WithMany()
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Blog");
@@ -247,8 +256,6 @@ namespace OnkelMato.BlogEngine.Core.Migrations.SqlServerMigrations
             modelBuilder.Entity("OnkelMato.BlogEngine.Core.Database.Entity.BlogDb", b =>
                 {
                     b.Navigation("PostImages");
-
-                    b.Navigation("PostTags");
 
                     b.Navigation("Posts");
                 });

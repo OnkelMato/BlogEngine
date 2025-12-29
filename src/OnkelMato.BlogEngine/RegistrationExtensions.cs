@@ -124,6 +124,7 @@ public static class RegistrationExtensions
         var mgmtContext = s.ServiceProvider.GetService<BlogEngineMgmtRepository>()!;
         var settings = s.ServiceProvider.GetService<IOptionsMonitor<BlogConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
         var blogId = s.ServiceProvider.GetService<IBlogIdProvider>() ?? throw new ArgumentException("Cannot get blog id provider");
+        blogId = new StaticFallbackBlogIdProviderDecorator(blogId, settings.CurrentValue.BlogUniqueId ?? Guid.Empty);
 
         app.UseSession();
 
