@@ -71,7 +71,7 @@ public class BlogEngineReadRepository
     /// the given page.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the configured blog cannot be found.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if postsPerPage is less than or equal to zero.</exception>
-    public IEnumerable<Post> PostsOnBlog(int currentPage, int postsPerPage)
+    public IEnumerable<Post> PostsOnBlog(int currentPage, int postsPerPage, string? tag = null)
     {
         if (_lazyBlog.Value == null)
             throw new InvalidOperationException($"Configured blog {_blogId.Id} cannot be found");
@@ -79,16 +79,31 @@ public class BlogEngineReadRepository
         if (postsPerPage <= 0)
             throw new ArgumentOutOfRangeException(nameof(postsPerPage), "PostsPerPage must be greater than zero");
 
-        var posts = _context.Posts
-            .Include(x => x.HeaderImage)
-            .Include(x => x.PostTags)
-            .Where(x => x.Blog == _lazyBlog.Value &&
-                        (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
-            .Skip((currentPage - 1) * postsPerPage)
-            .Take(postsPerPage);
+        if (tag == null)
+        {
+            var posts = _context.Posts
+                .Include(x => x.HeaderImage)
+                .Include(x => x.PostTags)
+                .Where(x => x.Blog == _lazyBlog.Value &&
+                            (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
+                .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
+                .Skip((currentPage - 1) * postsPerPage)
+                .Take(postsPerPage);
+            return posts.Select(x => x.ToModel());
+        }
+        else
+        {
+            var posts = _context.Posts
+                .Include(x => x.HeaderImage)
+                .Include(x => x.PostTags)
+                .Where(x => x.Blog == _lazyBlog.Value &&  x.PostTags.Any(y => y.Title == tag) &&
+                            (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
+                .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
+                .Skip((currentPage - 1) * postsPerPage)
+                .Take(postsPerPage);
+            return posts.Select(x => x.ToModel());
+        }
 
-        return posts.Select(x => x.ToModel());
     }
 
     /// <summary>
@@ -206,7 +221,7 @@ public class BlogEngineReadRepository
 
             result.AddRange(imagesForPosts);
         }
-        
+
         return result.ToArray();
     }
 }

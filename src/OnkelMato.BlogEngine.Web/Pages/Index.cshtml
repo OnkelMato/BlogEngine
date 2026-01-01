@@ -39,7 +39,7 @@
                         @foreach (var tag in (item.Tags)
     )
                         {
-                            <span class="badge bg-primary">@tag</span>
+                            <a href="?tag=@tag"><span class="badge bg-secondary">@tag</span></a>
                         }
                 </div>
                 <div class="card-footer text-right">
