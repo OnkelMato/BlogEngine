@@ -315,12 +315,16 @@ namespace OnkelMato.BlogEngine.Pages
 
         private BlogExportModel CreateExport(Post post)
         {
-            // todo find all images im post!
             var export = new BlogExportModel()
             {
                 Posts = [post.ToPostExportModel()],
                 IsFullExport = false
             };
+
+            // let's include all images that are used in the post
+            var imagesInPost = readRepository.GetPostImagesUsedInPosts(post).Result;
+            foreach (var img in imagesInPost)
+                export.PostImages.Add(img.ToPostImageExportModel());
 
             return export;
         }

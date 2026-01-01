@@ -3,6 +3,9 @@ using OnkelMato.BlogEngine.Core.Database;
 using OnkelMato.BlogEngine.Core.Database.Entity;
 using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Service;
+using System;
+using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Core.Repository;
 
@@ -182,5 +185,28 @@ public class BlogEngineReadRepository
             .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
 
         return posts.Select(x => x.ToModel()).ToArray();
+    }
+
+    public async Task<IEnumerable<PostImage>> GetPostImagesUsedInPosts(params Post[] post)
+    {
+        var result = new List<PostImage>();
+        var regex = new Regex(@"([Ii][Mm][Aa][Gg][Ee]\?[Ii][Dd]=([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}))");
+        var regexPrefix = "image?id=".Length;
+        foreach (var model in post)
+        {
+            var imagesForPosts = regex
+                .Matches(model.MdContent ?? string.Empty)
+                .Concat(regex.Matches(model.MdPreview))
+                .Select(x => x.Value.Substring(regexPrefix))
+                .Distinct()
+                .Select(Guid.Parse)
+                .Select(x => _context.PostImages.FirstOrDefault(y => y.UniqueId == x && y.Blog == _lazyBlog.Value))
+                .Where(x => x is not null)
+                .Select(x => x!.ToModel());
+
+            result.AddRange(imagesForPosts);
+        }
+        
+        return result.ToArray();
     }
 }
