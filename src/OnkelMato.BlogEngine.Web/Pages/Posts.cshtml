@@ -14,7 +14,9 @@
 <div class="row">
     <div class="col-sm-12">
         <div class="card post-detail">
-            <div class="card-header text-light bg-dark" style="background-image: url('/Image?id=@(Model.Post.HeaderImage)');">
+            <div class="card-header text-light bg-dark post-header" style="background-image: url('/Image?id=@(Model.Post.HeaderImage)');">
+            </div>
+            <div class="card-header text-light bg-dark post-title">
                 <h6>@Html.DisplayFor(item => item.Post.UpdatedAt)</h6>
                 <h1>@Html.DisplayFor(modelItem => Model.Post.Title)</h1>
             </div>
