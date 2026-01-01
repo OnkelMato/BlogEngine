@@ -13,7 +13,6 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace OnkelMato.BlogEngine.Pages
 {
@@ -24,6 +23,8 @@ namespace OnkelMato.BlogEngine.Pages
     {
         public bool AllowExportJson => importExportConfiguration.Value.EnableJsonExport;
         public bool AllowExportJwt => importExportConfiguration.Value.EnableJwtExport;
+        public bool AllowSyncToRemote => importExportConfiguration.Value.EnableSyncToRemote;
+        public bool AllowSyncExportJson => importExportConfiguration.Value.EnableBlogExportSync;
 
         [BindProperty]
         public int SelectedCertificate { get; set; } = -1;
@@ -40,7 +41,10 @@ namespace OnkelMato.BlogEngine.Pages
         public string? SignaturePrivateKeys { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string? FormType { get; set; } // Allowed values: "json", "jwt", "sync"
+        public string? FormType { get; set; } // Allowed values: "json", "jwt", "sync", "syncJson"
+
+        [BindProperty(SupportsGet = true)]
+        public string? Secret { get; set; } // secret for sync export. overwrites configuration "AllowJsonExport"
 
         [BindProperty(SupportsGet = true)]
         public string? ExportType { get; set; } = "blog";// Allowed values: "blog", "post", "postimage"
@@ -55,8 +59,6 @@ namespace OnkelMato.BlogEngine.Pages
 
         [BindProperty(SupportsGet = true)]
         public string? RemoteSyncUrl { get; set; }
-
-        public bool AllowExportRemote => importExportConfiguration.Value.EnableRemoteExport;
 
         [BindProperty(SupportsGet = true)]
         public int SelectedCertificateRemote { get; set; }
@@ -85,8 +87,11 @@ namespace OnkelMato.BlogEngine.Pages
             if (string.Compare(FormType, "json", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowExportJson)
                 return await ExportJson(blogOrParts);
 
-            if (string.Compare(FormType, "sync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowExportRemote)
+            if (string.Compare(FormType, "sync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncToRemote)
                 return await ExportRemote(blogOrParts);
+
+            if (string.Compare(FormType, "syncJson", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncExportJson)
+                return await ExportJsonForRemote(blogOrParts);
 
             return BadRequest();
         }
@@ -215,6 +220,25 @@ namespace OnkelMato.BlogEngine.Pages
 
         #endregion
 
+        #region json sync export
+
+        private async Task<IActionResult> ExportJsonForRemote(BlogExportModel blogOrParts)
+        {
+            if (Secret != importExportConfiguration.Value.BlogSyncSecret)
+            {
+                ModelState.AddModelError(nameof(Secret), "invalid secret for sync export");
+                return Page();
+            }
+
+            var asPretty = string.Compare("jsonpretty", SelectedJsonFormat, StringComparison.InvariantCultureIgnoreCase) == 0;
+            var exportAsJson = blogOrParts.AsJson(asPretty);
+
+            var filename = GenerateFilename(blogOrParts);
+
+            filename = $"{filename}.json";
+            return File(Encoding.UTF8.GetBytes(exportAsJson), "application/json", filename);
+        }
+        #endregion
         #region json export
 
         private async Task<IActionResult> ExportJson(BlogExportModel blogOrParts)
