@@ -1,14 +1,12 @@
 ﻿@page
 @using Microsoft.AspNetCore.Html
-@using Microsoft.AspNetCore.Http.Extensions
+@using OnkelMato.BlogEngine.Core.Service
 @model IndexModel
-
+@inject ISeoProvider SeoProvider
 @{
-    Html.SetSeoInfo(seo =>
-    {
-        seo.SetCommonInfo(Model.Title, Model.Description, ViewContext.HttpContext.Request.GetDisplayUrl(), []);
-    });
+    SeoProvider.SetSiteInfo(Html, Model.Title, Model.Title, "index, follow");
 }
+
 
 <!--
 Blog Engine Version: @typeof(Program).Assembly.GetName().Version

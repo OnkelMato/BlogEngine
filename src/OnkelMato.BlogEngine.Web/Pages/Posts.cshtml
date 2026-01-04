@@ -1,14 +1,11 @@
 ﻿@page
 @using System.Web
 @using Microsoft.AspNetCore.Html
-@using Microsoft.AspNetCore.Http.Extensions
+@using OnkelMato.BlogEngine.Core.Service
 @model PostsModel
-
+@inject ISeoProvider SeoProvider
 @{
-    Html.SetSeoInfo(seo =>
-    {
-        seo.SetCommonInfo(Model.Post.Title, Model.Post.HtmlPreview, ViewContext.HttpContext.Request.GetDisplayUrl(), []);
-    });
+    SeoProvider.SetSiteInfo(Html, Model.Post.Title, Model.Post.HtmlPreview);
 }
 
 <div class="row">
@@ -19,6 +16,10 @@
             <div class="card-header text-light bg-dark post-title">
                 <h6>@Html.DisplayFor(item => item.Post.UpdatedAt)</h6>
                 <h1>@Html.DisplayFor(modelItem => Model.Post.Title)</h1>
+            </div>
+            <div class="card-footer post-preview">
+                <p>@(new HtmlString(Model.Post.HtmlPreview))</p>
+
             </div>
             <div class="card-body">
                 <p>@(new HtmlString(Model.Post.HtmlContent))</p>

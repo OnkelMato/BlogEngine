@@ -1,8 +1,9 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.ImageAdmin.IndexModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Index";
+    SeoProvider.SetSiteInfo(Html, "Image Overview", "Blog Engine Image Overview Page", "noindex, nofollow");
 }
 
 <div class="row">

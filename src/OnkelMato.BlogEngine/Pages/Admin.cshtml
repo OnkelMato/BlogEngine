@@ -1,9 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.AdminModel
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Admin";
-    Layout = "_Layout";
+    SeoProvider.SetSiteInfo(Html, "Admin Overview", "Blog Engine Admin Page", "noindex, nofollow");
 }
+
 
 <h2>Admin</h2>
 @if (Model.AllowNewPosts)

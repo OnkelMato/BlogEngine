@@ -1,8 +1,9 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.ExportModel
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Import";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Export: " + Model.Scope, "Blog Engine Export Page", "noindex, nofollow");
 }
 
 <div class="row">

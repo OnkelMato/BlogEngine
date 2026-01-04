@@ -1,9 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.ImageAdmin.DeleteModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Delete";
+    SeoProvider.SetSiteInfo(Html, "Delete Image", "Blog Engine Image Delete Page", "noindex, nofollow");
 }
+
 
 <div class="col-md-6">
     <form method="post">

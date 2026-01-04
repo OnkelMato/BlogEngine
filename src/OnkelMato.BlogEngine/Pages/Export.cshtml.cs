@@ -90,7 +90,7 @@ namespace OnkelMato.BlogEngine.Pages
             if (string.Compare(FormType, "sync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncToRemote)
                 return await ExportRemote(blogOrParts);
 
-            if (string.Compare(FormType, "syncJson", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncExportJson)
+            if (string.Compare(FormType, "jsonSync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncExportJson)
                 return await ExportJsonForRemote(blogOrParts);
 
             return BadRequest();

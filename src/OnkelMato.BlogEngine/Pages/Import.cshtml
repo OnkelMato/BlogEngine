@@ -1,9 +1,11 @@
 ﻿@page
 @model OnkelMato.BlogEngine.Pages.ImportModel
+@using OnkelMato.BlogEngine.Core.Service
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Import";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Import", "Blog Engine Import Page", "noindex, nofollow");
 }
+
 
 <div class="row">
     @if (!Model.ValidateCertificates)
@@ -42,7 +44,7 @@
                                 <input type="file" asp-for="JsonDocumentFile" class="form-control-file" />
                                 <span asp-validation-for="JsonDocumentFile" class="text-danger"></span>
                             </div>
-                            @if (!Model.ValidateCertificates)
+                            @if (Model.ValidateCertificates)
                             {
                                 <div class="form-group">
                                     <label asp-for="SignatureFile" class="control-label"></label>
@@ -143,7 +145,7 @@
                 <form method="post" enctype="multipart/form-data">
 
                     <div class="card-header text-light bg-dark">
-                        <h1>Import JSON file </h1>
+                        <h1>Import JSON as text</h1>
                     </div>
 
                     <div class="card-body">
@@ -157,7 +159,7 @@
                                 <textarea asp-for="JsonDocument" class="form-control" rows="20" cols="150"></textarea>
                                 <span asp-validation-for="JsonDocument" class="text-danger"></span>
                             </div>
-                            @if (!Model.ValidateCertificates)
+                            @if (Model.ValidateCertificates)
                             {
                                 <div class="form-group">
                                     <label asp-for="Signature" class="control-label" col-sm-3></label>

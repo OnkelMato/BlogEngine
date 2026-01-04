@@ -1,9 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.ImageAdmin.EditModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Edit";
+    SeoProvider.SetSiteInfo(Html, "Image Edit", "Blog Engine Edit Image Page", "noindex, nofollow");
 }
+
 
 <form method="post">
     <div class="col-md-6">

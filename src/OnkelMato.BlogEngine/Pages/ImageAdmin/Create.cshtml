@@ -1,9 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.ImageAdmin.CreateModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Create";
+    SeoProvider.SetSiteInfo(Html, "Upload Image", "Blog Engine Image Upload Page", "noindex, nofollow");
 }
+
 
 <form method="post" enctype="multipart/form-data">
     <div class="col-md-6">

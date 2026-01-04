@@ -1,11 +1,12 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @using OnkelMato.BlogEngine.Pages.PostAdmin
 @model OnkelMato.BlogEngine.Pages.PostAdmin.EditModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Edit";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Edit Post", "Blog Engine Post Edit Page", "noindex, nofollow");
 }
+
 
 <form method="post" enctype="multipart/form-data">
     <div class="col-md-12">

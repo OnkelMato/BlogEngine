@@ -1,9 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.ImageAdmin.DetailsModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Details";
+    SeoProvider.SetSiteInfo(Html, "Image Details", "Blog Engine Image Details Page", "noindex, nofollow");
 }
+
 
 <div class="col-md-6">
     <div class="card">
