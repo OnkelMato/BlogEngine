@@ -12,8 +12,16 @@
 }
 
 <!--
-   Blog Engine Version: @typeof(Program).Assembly.GetName().Version
+Blog Engine Version: @typeof(Program).Assembly.GetName().Version
 -->
+@if (!string.IsNullOrWhiteSpace(Model.Tag))
+{
+    <div class="row">
+        <a href="?tag=">
+            <span class="badge bg-secondary">@Model.Tag &times;</span>
+        </a>
+    </div>
+}
 
 <div class="row">
     @foreach (var item in Model.Posts)
@@ -35,12 +43,12 @@
                     }
                 </div>
                 <div class="card-body">
-                        @(new HtmlString(item.HtmlPreview))
-                        @foreach (var tag in (item.Tags)
-    )
-                        {
-                            <a href="?tag=@tag"><span class="badge bg-secondary">@tag</span></a>
-                        }
+                    @(new HtmlString(item.HtmlPreview))
+                    @foreach (var tag in (item.Tags)
+                                    )
+                    {
+                        <a href="?tag=@tag"><span class="badge bg-secondary">@tag</span></a>
+                    }
                 </div>
                 <div class="card-footer text-right">
                     @if (item.HasContent)
