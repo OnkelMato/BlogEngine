@@ -3,6 +3,7 @@ using OnkelMato.BlogEngine.Core.Database;
 using OnkelMato.BlogEngine.Core.Database.Entity;
 using OnkelMato.BlogEngine.Core.Model;
 using OnkelMato.BlogEngine.Core.Service;
+using System.Text.RegularExpressions;
 
 namespace OnkelMato.BlogEngine.Core.Repository;
 
@@ -68,7 +69,7 @@ public class BlogEngineReadRepository
     /// the given page.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the configured blog cannot be found.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if postsPerPage is less than or equal to zero.</exception>
-    public IEnumerable<Post> PostsOnBlog(int currentPage, int postsPerPage)
+    public IEnumerable<Post> PostsOnBlog(int currentPage, int postsPerPage, string? tag = null)
     {
         if (_lazyBlog.Value == null)
             throw new InvalidOperationException($"Configured blog {_blogId.Id} cannot be found");
@@ -76,16 +77,31 @@ public class BlogEngineReadRepository
         if (postsPerPage <= 0)
             throw new ArgumentOutOfRangeException(nameof(postsPerPage), "PostsPerPage must be greater than zero");
 
-        var posts = _context.Posts
-            .Include(x => x.HeaderImage)
-            .Include(x => x.PostTags)
-            .Where(x => x.Blog == _lazyBlog.Value &&
-                        (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
-            .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
-            .Skip((currentPage - 1) * postsPerPage)
-            .Take(postsPerPage);
+        if (tag == null)
+        {
+            var posts = _context.Posts
+                .Include(x => x.HeaderImage)
+                .Include(x => x.PostTags)
+                .Where(x => x.Blog == _lazyBlog.Value &&
+                            (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
+                .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
+                .Skip((currentPage - 1) * postsPerPage)
+                .Take(postsPerPage);
+            return posts.Select(x => x.ToModel());
+        }
+        else
+        {
+            var posts = _context.Posts
+                .Include(x => x.HeaderImage)
+                .Include(x => x.PostTags)
+                .Where(x => x.Blog == _lazyBlog.Value &&  x.PostTags.Any(y => y.Title == tag) &&
+                            (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
+                .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
+                .Skip((currentPage - 1) * postsPerPage)
+                .Take(postsPerPage);
+            return posts.Select(x => x.ToModel());
+        }
 
-        return posts.Select(x => x.ToModel());
     }
 
     /// <summary>
@@ -182,5 +198,28 @@ public class BlogEngineReadRepository
             .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt);
 
         return posts.Select(x => x.ToModel()).ToArray();
+    }
+
+    public async Task<IEnumerable<PostImage>> GetPostImagesUsedInPosts(params Post[] post)
+    {
+        var result = new List<PostImage>();
+        var regex = new Regex(@"([Ii][Mm][Aa][Gg][Ee]\?[Ii][Dd]=([0-9A-Fa-f]{8}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{4}[-][0-9A-Fa-f]{12}))");
+        var regexPrefix = "image?id=".Length;
+        foreach (var model in post)
+        {
+            var imagesForPosts = regex
+                .Matches(model.MdContent ?? string.Empty)
+                .Concat(regex.Matches(model.MdPreview))
+                .Select(x => x.Value.Substring(regexPrefix))
+                .Distinct()
+                .Select(Guid.Parse)
+                .Select(x => _context.PostImages.FirstOrDefault(y => y.UniqueId == x && y.Blog == _lazyBlog.Value))
+                .Where(x => x is not null)
+                .Select(x => x!.ToModel());
+
+            result.AddRange(imagesForPosts);
+        }
+
+        return result.ToArray();
     }
 }

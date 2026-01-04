@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OnkelMato.BlogEngine.Core.Repository;
-using OnkelMato.BlogEngine.Core.Service;
 
 namespace OnkelMato.BlogEngine.Pages;
 

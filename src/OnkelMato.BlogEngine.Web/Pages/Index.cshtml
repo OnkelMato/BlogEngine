@@ -1,19 +1,24 @@
 ﻿@page
-@using System.Web
 @using Microsoft.AspNetCore.Html
-@using Microsoft.AspNetCore.Http.Extensions
+@using OnkelMato.BlogEngine.Core.Service
 @model IndexModel
-
+@inject ISeoProvider SeoProvider
 @{
-    Html.SetSeoInfo(seo =>
-    {
-        seo.SetCommonInfo(Model.Title, Model.Description, ViewContext.HttpContext.Request.GetDisplayUrl(), []);
-    });
+    SeoProvider.SetSiteInfo(Html, Model.Title, Model.Title, "index, follow");
 }
 
+
 <!--
-   Blog Engine Version: @typeof(Program).Assembly.GetName().Version
+Blog Engine Version: @typeof(Program).Assembly.GetName().Version
 -->
+@if (!string.IsNullOrWhiteSpace(Model.Tag))
+{
+    <div class="row">
+        <a href="?tag=">
+            <span class="badge bg-secondary">@Model.Tag &times;</span>
+        </a>
+    </div>
+}
 
 <div class="row">
     @foreach (var item in Model.Posts)
@@ -35,12 +40,12 @@
                     }
                 </div>
                 <div class="card-body">
-                        @(new HtmlString(item.HtmlPreview))
-                        @foreach (var tag in (item.Tags)
-    )
-                        {
-                            <span class="badge bg-primary">@tag</span>
-                        }
+                    @(new HtmlString(item.HtmlPreview))
+                    @foreach (var tag in (item.Tags)
+                                    )
+                    {
+                        <a href="?tag=@tag"><span class="badge bg-secondary">@tag</span></a>
+                    }
                 </div>
                 <div class="card-footer text-right">
                     @if (item.HasContent)

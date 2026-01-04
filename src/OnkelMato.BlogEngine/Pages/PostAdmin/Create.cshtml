@@ -1,11 +1,12 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @using OnkelMato.BlogEngine.Pages.PostAdmin
 @model OnkelMato.BlogEngine.Pages.PostAdmin.CreateModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Create";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Create Post", "Blog Engine Post Creation Page", "noindex, nofollow");
 }
+
 
 <form method="post" enctype="multipart/form-data">
     <div class="col-md-12">

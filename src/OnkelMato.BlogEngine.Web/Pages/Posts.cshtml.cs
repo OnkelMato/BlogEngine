@@ -51,6 +51,10 @@ public class PostsModel(BlogEngineReadRepository readRepository, IOptionsMonitor
         if (x == null)
             return NotFound($"Post {Id} not found");
 
+        // check if post is published. Only show unpublished posts when administration is allowed
+        if (x.ShowState == Core.Model.ShowState.None && !AllowBlogAdministration)
+            return NotFound($"Post {Id} is in draft mode.");
+
         Post = new PostModel()
         {
             Title = x.Title,
@@ -58,8 +62,6 @@ public class PostsModel(BlogEngineReadRepository readRepository, IOptionsMonitor
             UpdatedAt = x.UpdatedAt,
             PublishedAt = x.PublishedAt,
             HeaderImage = x.HeaderImage?.UniqueId,
-            //HtmlPreview = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdPreview), null, null),
-            //HtmlContent = Markdown.ToHtml(WebUtility.HtmlEncode(x.MdContent) ?? string.Empty, null, null)
             HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
             HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
         };

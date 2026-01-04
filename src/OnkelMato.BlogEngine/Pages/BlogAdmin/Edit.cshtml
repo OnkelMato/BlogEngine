@@ -1,10 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.BlogAdmin.EditModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Edit Blog";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Edit Blog", "Blog Engine Blog Edit Page", "noindex, nofollow");
 }
+
 
 <div class="row">
     @if (Model.AllowBlogAdministration)

@@ -56,7 +56,7 @@ public class ImportModel(
 
     #region  Sync from remote blog
 
-    public bool UseSyncInput => imexConfiguration.CurrentValue.EnableBlogSync;
+    public bool UseSyncInput => imexConfiguration.CurrentValue.EnableBlogImportSync;
 
     [BindProperty(SupportsGet = true)]
     [Display(Name = "Remote Blog Url")]
@@ -217,6 +217,7 @@ public class ImportModel(
     private async Task<string> ImportJsonFromUrl(string remoteSyncUrl)
     {
         // todo change to ModelResult return value
+        // todo add secret validation
         try
         {
             // in case of certificate validation disabled
@@ -227,7 +228,7 @@ public class ImportModel(
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
             var client = new HttpClient(handler);
-            using var response = await client.GetAsync(RemoteSyncUrl + "/Export?type=json");
+            using var response = await client.GetAsync(RemoteSyncUrl + "/Export?type=jsonSync&secret=" + imexConfiguration.CurrentValue.BlogSyncSecret);
             response.EnsureSuccessStatusCode();
             var responseBody = await response.Content.ReadAsStringAsync();
             return responseBody;

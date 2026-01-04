@@ -1,10 +1,11 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @model OnkelMato.BlogEngine.Pages.PostAdmin.DetailsModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Details";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Post Details", "Blog Engine Post Details Page", "noindex, nofollow");
 }
+
 
 <div class="col-md-12">
     <form method="post">

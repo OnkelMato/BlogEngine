@@ -1,11 +1,12 @@
 ﻿@page
+@using OnkelMato.BlogEngine.Core.Service
 @using OnkelMato.BlogEngine.Pages.PostAdmin
 @model OnkelMato.BlogEngine.Pages.PostAdmin.IndexModel
-
+@inject ISeoProvider SeoProvider
 @{
-    ViewData["Title"] = "Posts";
-    Layout = "~/Pages/Shared/_Layout.cshtml";
+    SeoProvider.SetSiteInfo(Html, "Post Overview", "Blog Engine Post Overview Page", "noindex, nofollow");
 }
+
 
 <div class="row">
 
