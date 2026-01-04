@@ -1,4 +1,3 @@
-using Azure;
 using Microsoft.EntityFrameworkCore;
 using OnkelMato.BlogEngine.Core.Database;
 using OnkelMato.BlogEngine.Core.Database.Entity;
