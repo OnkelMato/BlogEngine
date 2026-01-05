@@ -44,7 +44,8 @@ Blog Engine Version: @typeof(Program).Assembly.GetName().Version
                     @foreach (var tag in (item.Tags)
                                     )
                     {
-                        <a href="?tag=@tag"><span class="badge bg-secondary">@tag</span></a>
+                        var tagEncoded = System.Net.WebUtility.UrlEncode(tag);
+                        <a href="?tag=@tagEncoded"><span class="badge bg-secondary">@tag</span></a>
                     }
                 </div>
                 <div class="card-footer text-right">
