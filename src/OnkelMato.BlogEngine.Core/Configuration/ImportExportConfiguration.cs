@@ -24,6 +24,7 @@ public class ImportExportConfiguration
     #region Export to remote page. Automates JWT import 
 
     public bool EnableSyncToRemote { get; set; } = false;
+    public string? RemoteBlogUrl { get; set; } = null;
 
     #endregion
 

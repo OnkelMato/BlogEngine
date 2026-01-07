@@ -72,6 +72,8 @@ namespace OnkelMato.BlogEngine.Pages
             if (string.Compare(ExportType, "postimage", StringComparison.InvariantCultureIgnoreCase) == 0)
                 Scope = Id == null ? "All Post Images" : $"Post Image: {(await readRepository.PostImageAsync(Id.Value))!.Name}";
 
+            RemoteSyncUrl = importExportConfiguration.Value.RemoteBlogUrl;
+
             ModelState.Clear();
             return Page();
         }
