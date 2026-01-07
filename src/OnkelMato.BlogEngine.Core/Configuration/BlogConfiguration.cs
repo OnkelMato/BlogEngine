@@ -3,7 +3,6 @@ namespace OnkelMato.BlogEngine.Core.Configuration;
 public class BlogConfiguration
 {
     public Guid? BlogUniqueId { get; set; }
-    public bool CreateBlogIfNotExist { get; set; } = false;
     public bool EnableBlogSelection { get; set; } = true;
     public string Language { get; set; } = "de-DE";
     public bool AllowAdministration { get; set; } = false;
