@@ -16,6 +16,7 @@ namespace OnkelMato.BlogEngine.Web.Pages;
 public class IndexModel(BlogEngineReadRepository repository, IBlogIdProvider blogId, IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
+
     public class PostModel
     {
         public Guid UniqueId { get; set; }

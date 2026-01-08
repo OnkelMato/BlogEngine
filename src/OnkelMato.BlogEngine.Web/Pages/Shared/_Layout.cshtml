@@ -47,20 +47,37 @@
     </div>
 </footer>
 
+<!-- Status Message Magic comes here -->
+<div class="d-none">
+    <input id="StatusMessage" value="@TempData["StatusMessage"]"/>
+</div>
+
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 <script>
-        javascript:(function(){
-          allowCopyAndPaste = function(e){
-          e.stopImmediatePropagation();
-          return true;
-          };
-          document.addEventListener('copy', allowCopyAndPaste, true);
-          document.addEventListener('paste', allowCopyAndPaste, true);
-          document.addEventListener('onpaste', allowCopyAndPaste, true);
-        })();
-    </script>
+    javascript:(function(){
+        allowCopyAndPaste = function(e){
+        e.stopImmediatePropagation();
+        return true;
+        };
+        document.addEventListener('copy', allowCopyAndPaste, true);
+        document.addEventListener('paste', allowCopyAndPaste, true);
+        document.addEventListener('onpaste', allowCopyAndPaste, true);
+    })();
+</script>
+<script src="~/lib/sweetalert2/sweetalert2.all.min.js"></script>
+<script>
+    $(document).ready(function () {
+        let msg = $('#StatusMessage').val();
+        if(msg.length > 0) {
+            swal.fire({
+                icon: "error",
+                text: msg
+            });
+        }
+    });
+</script>
 
 @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -5,12 +5,14 @@
     {
       "library": "bootstrap-icons@1.11.3",
       "destination": "wwwroot/lib/bootstrap-icons/"
+    },
+    {
+      "library": "bootstrap@5.3.8",
+      "destination": "wwwroot/lib/bootstrap/"
+    },
+    {
+      "library": "sweetalert2@11.23.0",
+      "destination": "wwwroot/lib/sweetalert2/"
     }
-  ,
-{
-  "provider": "cdnjs",
-  "library": "bootstrap@5.3.8",
-  "destination": "wwwroot/lib/bootstrap/"
-}
-]
+  ]
 }

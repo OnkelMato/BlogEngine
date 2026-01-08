@@ -35,21 +35,22 @@ public class PostsModel(BlogEngineReadRepository readRepository, IOptionsMonitor
     [BindProperty(SupportsGet = true)]
     public Guid Id { get; set; } = Guid.Empty;
 
-    [BindProperty(SupportsGet = true)]
-    public string? TitleStub { get; set; }
-
     // todo change to async
     public IActionResult OnGet()
     {
         // get blog data for SEO
-        var blog = _readRepository.Blog() ?? throw new Exception("Cannot read blog. That's wired.");
+        var blog = _readRepository.Blog()!;
+                  
         this.BlogTitle = blog.Title;
         this.BlogDescription = blog.Description;
 
         // get post data
         var x = _readRepository.PostAsync(Id).Result;
         if (x == null)
-            return NotFound($"Post {Id} not found");
+        {
+            TempData["StatusMessage"] = "Post does not exist.";
+            return RedirectToPage("Index");
+        }
 
         // check if post is published. Only show unpublished posts when administration is allowed
         if (x.ShowState == Core.Model.ShowState.None && !AllowBlogAdministration)
