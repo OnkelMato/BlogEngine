@@ -8,7 +8,8 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.Extensions.Logging;
+using OnkelMato.BlogEngine.Core.Repository;
+using OnkelMato.BlogEngine.Pages;
 
 namespace OnkelMato.BlogEngine.Web;
 
@@ -40,6 +41,9 @@ public class Program
 
         // add all blog engine infrastructure services
         builder.AddBlogEngine();
+        builder.Services.AddScoped<ILinkFactory, BlogEngineLinkFactory>();
+        var enableRssFeed = builder.Configuration.GetValue<bool>("Blog:EnableRssFeed");
+        if (enableRssFeed) builder.AddRssFeed();
 
         // add routing for blog posts to be more SEO friendly
         builder.Services.AddRazorPages(options =>

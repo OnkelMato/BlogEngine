@@ -9,6 +9,12 @@ namespace OnkelMato.BlogEngine;
 
 public static class RegistrationExtensions
 {
+    public static WebApplicationBuilder AddRssFeed(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<IBlogEngineRssProvider, BlogEngineRssProvider>();
+        return builder;
+    }
+
     public static WebApplicationBuilder AddBlogEngine(this WebApplicationBuilder builder)
     {
         builder.Services.AddRazorPages().AddApplicationPart(typeof(RegistrationExtensions).Assembly);
@@ -130,6 +136,8 @@ public static class RegistrationExtensions
 
         app.UseSession();
 
+        // todo logging with selected strategy
+
         // rewrite blog unique id in case it is configured. This requires another IBlogIdProvider implementation
         app.OverwriteEmptyBlogIdInSettings(); // blogid rewrite needs to be before
         if (settings.CurrentValue.EnableBlogSelection)
@@ -148,11 +156,10 @@ public static class RegistrationExtensions
         }
 
         // Blog id is not set but in case there is only one DB, this should be used
-        if (blogId.Id == Guid.Empty && db.Blogs.Count() == 1)
+        if (blogId.Id == Guid.Empty && db.Blogs.Count() > 1)
         {
             // use blog if not set
-            var blog = db.Blogs.Single();
-            Console.WriteLine($@"Existing single blog used with id '{blog.UniqueId}'");
+            var blog = db.Blogs.First();
 
             // add id to session. 
             settings.CurrentValue.BlogUniqueId = blog.UniqueId;

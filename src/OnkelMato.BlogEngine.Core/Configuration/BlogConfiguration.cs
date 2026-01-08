@@ -9,4 +9,6 @@ public class BlogConfiguration
     public bool AllowBlogCreation { get; set; } = false;
     public bool AllowBlogDeletion { get; set; } = false;
     public int PostsPerPage { get; set; } = 12;
+
+    public bool EnableRssFeed { get; set; } = true;
 }

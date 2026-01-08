@@ -11,6 +11,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="JWT" Version="11.0.0" />
+		<PackageReference Include="Markdig" Version="0.44.0" />
+		<PackageReference Include="System.ServiceModel.Syndication" Version="10.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -94,14 +94,13 @@ public class BlogEngineReadRepository
             var posts = _context.Posts
                 .Include(x => x.HeaderImage)
                 .Include(x => x.PostTags)
-                .Where(x => x.Blog == _lazyBlog.Value &&  x.PostTags.Any(y => y.Title == tag) &&
+                .Where(x => x.Blog == _lazyBlog.Value && x.PostTags.Any(y => y.Title == tag) &&
                             (x.ShowState == ShowStateDb.Blog || x.ShowState == ShowStateDb.BlogAndMenu || x.ShowState == ShowStateDb.BlogAndFooter))
                 .OrderBy(x => x.Order).ThenByDescending(x => x.PublishedAt)
                 .Skip((currentPage - 1) * postsPerPage)
                 .Take(postsPerPage);
             return posts.Select(x => x.ToModel());
         }
-
     }
 
     /// <summary>
