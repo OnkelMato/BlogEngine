@@ -57,6 +57,7 @@ public class EditModel(
         if (Post.HeaderImage != null && postHeaderImage is null)
         {
             ModelState.AddModelError("Post.HeaderImage", $"Cannot find header image {Post.HeaderImage} in images");
+            TempData["ErrorMessage"] = $"Cannot find header image {Post.HeaderImage} in images";
             return Page();
         }
 
