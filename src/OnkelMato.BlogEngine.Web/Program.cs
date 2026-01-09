@@ -8,8 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using System.IO;
-using OnkelMato.BlogEngine.Core.Repository;
-using OnkelMato.BlogEngine.Pages;
+using OnkelMato.BlogEngine.Core.Service;
 
 namespace OnkelMato.BlogEngine.Web;
 

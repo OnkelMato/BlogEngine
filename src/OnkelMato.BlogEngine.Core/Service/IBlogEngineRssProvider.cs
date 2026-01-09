@@ -5,4 +5,5 @@ namespace OnkelMato.BlogEngine.Core.Service;
 public interface IBlogEngineRssProvider
 {
     Task<SyndicationFeed> RetrieveSyndicationFeed();
+    Task<SyndicationFeed> RetrieveEmptyFeed();
 }

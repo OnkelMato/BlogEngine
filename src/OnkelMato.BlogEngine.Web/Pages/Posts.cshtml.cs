@@ -30,7 +30,7 @@ public class PostsModel(BlogEngineReadRepository readRepository, IOptionsMonitor
     private readonly IOptionsMonitor<BlogConfiguration> _postsConfiguration = postsConfiguration ?? throw new ArgumentNullException(nameof(postsConfiguration));
 
     public bool AllowBlogAdministration => _postsConfiguration.CurrentValue.AllowAdministration;
-    public PostModel Post { get; set; } = new PostModel();
+    public PostModel Post { get; set; } = new();
 
     [BindProperty(SupportsGet = true)]
     public Guid Id { get; set; } = Guid.Empty;
@@ -38,39 +38,29 @@ public class PostsModel(BlogEngineReadRepository readRepository, IOptionsMonitor
     // todo change to async
     public IActionResult OnGet()
     {
-        // get blog data for SEO
-        var blog = _readRepository.Blog()!;
-                  
-        this.BlogTitle = blog.Title;
-        this.BlogDescription = blog.Description;
-
         // get post data
-        var x = _readRepository.PostAsync(Id).Result;
-        if (x == null)
+        var dbPost = _readRepository.PostAsync(Id).Result;
+        if (dbPost == null)
         {
-            TempData["StatusMessage"] = "Post does not exist.";
-            return RedirectToPage("Index");
+            TempData["StatusMessage"] = "Post does not exist. Sending you back to index page.";
+            return RedirectToPage(nameof(Index));
         }
 
         // check if post is published. Only show unpublished posts when administration is allowed
-        if (x.ShowState == Core.Model.ShowState.None && !AllowBlogAdministration)
+        if (dbPost.ShowState == Core.Model.ShowState.None && !AllowBlogAdministration)
             return NotFound($"Post {Id} is in draft mode.");
 
         Post = new PostModel()
         {
-            Title = x.Title,
-            UniqueId = x.UniqueId,
-            UpdatedAt = x.UpdatedAt,
-            PublishedAt = x.PublishedAt,
-            HeaderImage = x.HeaderImage?.UniqueId,
-            HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
-            HtmlContent = Markdown.ToHtml(x.MdContent ?? string.Empty, null, null)
+            Title = dbPost.Title,
+            UniqueId = dbPost.UniqueId,
+            UpdatedAt = dbPost.UpdatedAt,
+            PublishedAt = dbPost.PublishedAt,
+            HeaderImage = dbPost.HeaderImage?.UniqueId,
+            HtmlPreview = Markdown.ToHtml(dbPost.MdPreview),
+            HtmlContent = Markdown.ToHtml(dbPost.MdContent ?? string.Empty)
         };
 
         return Page();
     }
-
-    public string? BlogDescription { get; set; }
-
-    public string? BlogTitle { get; set; }
 }

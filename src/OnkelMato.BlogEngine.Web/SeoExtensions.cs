@@ -2,11 +2,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using NuGet.Configuration;
 using OnkelMato.BlogEngine.Core.Configuration;
 using OnkelMato.BlogEngine.Core.Repository;
 using OnkelMato.BlogEngine.Core.Service;
-using SeoTags;
 using System;
 
 namespace OnkelMato.BlogEngine.Web;

@@ -20,7 +20,10 @@ namespace OnkelMato.BlogEngine.Pages.BlogAdmin
         public async Task<RedirectResult> OnGet()
         {
             if (blogConfiguration.CurrentValue.AllowBlogDeletion == false)
-                throw new InvalidOperationException("Blog Deletion is disabled in the configuration.");
+            {
+                TempData["StatusMessage"] = "Blog Deletion is disabled in the configuration.";
+                return Redirect("/BlogAdmin/Edit?blogId=" + blogId.Id);
+            }
 
             var redirectId = (BlogId == Guid.Empty || BlogId == blogId.Id) ? blogConfiguration.CurrentValue.BlogUniqueId : blogId.Id;
 

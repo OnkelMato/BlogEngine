@@ -15,11 +15,11 @@ public class RssModel(
 {
     public async Task<IActionResult> OnGet()
     {
-        if (!blogConfiguration.CurrentValue.EnableRssFeed)
-            return RedirectToPage("/Error");
-
         // create feed xml
-        var feed = await rssProvider.RetrieveSyndicationFeed();
+        var feed = blogConfiguration.CurrentValue.EnableRssFeed
+            ? await rssProvider.RetrieveSyndicationFeed()
+            : await rssProvider.RetrieveEmptyFeed();
+
         var settings = new XmlWriterSettings
         {
             Async = true,

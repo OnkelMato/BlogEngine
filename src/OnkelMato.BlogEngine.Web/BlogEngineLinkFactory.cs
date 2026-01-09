@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using OnkelMato.BlogEngine.Core.Model;
-using OnkelMato.BlogEngine.Pages;
+using OnkelMato.BlogEngine.Core.Service;
 
 namespace OnkelMato.BlogEngine.Web;
 
@@ -9,9 +9,14 @@ public class BlogEngineLinkFactory(IHttpContextAccessor contextAccessor) : ILink
 {
     public string CreatePostLink(Post post)
     {
-        // get blogurl and port
+        // get blog url and port
         var blogUrl = contextAccessor.HttpContext?.Request.Scheme + "://" + contextAccessor.HttpContext?.Request.Host.Value;
 
-        return blogUrl.TrimEnd('/') + "/Post/" + Regex.Replace(post.Title, "[^a-zA-Z0-9 ]", "").Replace(" ", "_") + "/" + post.UniqueId + "/";
+        return blogUrl.TrimEnd('/') + "/Post/" + GetSEOTitle(post.Title) + "/" + post.UniqueId + "/";
+    }
+
+    public string GetSEOTitle(string title)
+    {
+        return Regex.Replace(title, "[^a-zA-Z0-9 ]", "").Replace(" ", "_");
     }
 }
