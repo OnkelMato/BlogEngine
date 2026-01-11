@@ -35,10 +35,10 @@ jobs:
       - name: Zip Folder
         run: |
           cd ./Release
-          zip -r Testversion_${{ steps.version_step.outputs.majorMinorPatch }}.zip * -x ".git/*" ".github/*" "appsettings.Development.json"
+          zip -r OnkelMatoBlogEngine_${{ steps.version_step.outputs.majorMinorPatch }}.zip * -x ".git/*" ".github/*" "appsettings.Development.json"
       - uses: actions/upload-artifact@v4
         with:
-          name: Testversion_${{ steps.version_step.outputs.majorMinorPatch }}
+          name: OnkelMatoBlogEngine_${{ steps.version_step.outputs.majorMinorPatch }}
           path: ./Release/OnkelMatoBlogEngine_${{ steps.version_step.outputs.majorMinorPatch }}.zip
       - uses: softprops/action-gh-release@v2
         name: Release
