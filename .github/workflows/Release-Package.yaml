@@ -1,0 +1,49 @@
+name: Release Package on Tag
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:        
+      - '*'
+
+jobs:
+
+  buildAndPublish:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.2.0
+        with:
+          versionSpec: '6.4.x'
+      - name: Determine Version
+        id: version_step # step id used as a reference for output values
+        uses: gittools/actions/gitversion/execute@v4.2.0
+        with:
+          updateProjectFiles: true
+      - name: Install dependencies
+        run: dotnet restore ./src/OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj
+      - name: Build with dotnet
+        run: dotnet build --configuration Release --no-restore ./src/OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj
+      - name: Publish
+        run: dotnet publish -c Release --output ./Release ./src/OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj
+      - name: Zip Folder
+        run: |
+          cd ./Release
+          zip -r Testversion_${{ steps.version_step.outputs.majorMinorPatch }}.zip * -x ".git/*" ".github/*" "appsettings.Development.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Testversion_${{ steps.version_step.outputs.majorMinorPatch }}
+          path: ./Release/OnkelMatoBlogEngine_${{ steps.version_step.outputs.majorMinorPatch }}.zip
+      - uses: softprops/action-gh-release@v2
+        name: Release
+        if: github.ref_type == 'tag'
+        with:
+          files: ./Release/OnkelMatoBlogEngine_${{ steps.version_step.outputs.majorMinorPatch }}.zip
+        env:
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }}
