@@ -28,8 +28,8 @@ jobs:
         uses: gittools/actions/gitversion/execute@v4.2.0
         with:
           updateProjectFiles: true
-      #- name: Install dependencies
-      #  run: dotnet restore  ./src/OnkelMato.BlogEngine.sln
+      - name: Install dependencies
+        run: dotnet restore  ./src/OnkelMato.BlogEngine.sln
       - name: Build with dotnet
         run: dotnet build --configuration Release --no-restore  ./src/OnkelMato.BlogEngine.sln
 
