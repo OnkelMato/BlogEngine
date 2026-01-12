@@ -9,6 +9,12 @@ namespace OnkelMato.BlogEngine;
 
 public static class RegistrationExtensions
 {
+    public static WebApplicationBuilder AddRssFeed(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<IBlogEngineRssProvider, BlogEngineRssProvider>();
+        return builder;
+    }
+
     public static WebApplicationBuilder AddBlogEngine(this WebApplicationBuilder builder)
     {
         builder.Services.AddRazorPages().AddApplicationPart(typeof(RegistrationExtensions).Assembly);
@@ -122,11 +128,15 @@ public static class RegistrationExtensions
         using var s = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var db = s.ServiceProvider.GetRequiredService<BlogEngineContext>();
         var mgmtContext = s.ServiceProvider.GetService<BlogEngineMgmtRepository>()!;
-        var settings = s.ServiceProvider.GetService<IOptionsMonitor<BlogConfiguration>>() ?? throw new ArgumentException("Cannot get settings for posts");
-        var blogId = s.ServiceProvider.GetService<IBlogIdProvider>() ?? throw new ArgumentException("Cannot get blog id provider");
+        var settings = s.ServiceProvider.GetService<IOptionsMonitor<BlogConfiguration>>() ??
+                       throw new ArgumentException("Cannot get settings for posts");
+        var blogId = s.ServiceProvider.GetService<IBlogIdProvider>() ??
+                     throw new ArgumentException("Cannot get blog id provider");
         blogId = new StaticFallbackBlogIdProviderDecorator(blogId, settings.CurrentValue.BlogUniqueId ?? Guid.Empty);
 
         app.UseSession();
+
+        // todo logging with selected strategy
 
         // rewrite blog unique id in case it is configured. This requires another IBlogIdProvider implementation
         app.OverwriteEmptyBlogIdInSettings(); // blogid rewrite needs to be before
@@ -146,31 +156,23 @@ public static class RegistrationExtensions
         }
 
         // Blog id is not set but in case there is only one DB, this should be used
-        if (blogId.Id == Guid.Empty && db.Blogs.Count() == 1)
+        if (blogId.Id == Guid.Empty && db.Blogs.Count() > 1)
         {
             // use blog if not set
-            var blog = db.Blogs.Single();
-            Console.WriteLine($@"Existing single blog used with id '{blog.UniqueId}'");
+            var blog = db.Blogs.First();
 
             // add id to session. 
             settings.CurrentValue.BlogUniqueId = blog.UniqueId;
             return app;
         }
 
-        // A blog id is set (or not), cannot be found and the blog is not created (and should be created)
-        if (settings.CurrentValue.CreateBlogIfNotExist)
+        // A blog id is set (or was set by code), and cannot be found it should be created
+        if (blogId.Id != Guid.Empty)
         {
             _ = mgmtContext.CreateBlog(blogId.Id).Result;
             return app;
         }
 
-        // validate of blog is set correctly
-        if (settings.CurrentValue.BlogUniqueId == Guid.Empty)
-            throw new InvalidOperationException("BlogUniqueId is not set in configuration and no blog exists. Please create a blog or set BlogUniqueId in configuration.");
-        if (!db.Blogs.Any(x => x.UniqueId == settings.CurrentValue.BlogUniqueId))
-            throw new InvalidOperationException($"Blog with id '{settings.CurrentValue.BlogUniqueId}' does not exist. Please create a blog or set BlogUniqueId in configuration.");
-
-        //throw new ArgumentException("Cannot determine or create blog. Please set the blog Uid in App Settings.");
-        return app;
+        throw new InvalidOperationException("BlogUniqueId is not set in configuration and no blog exists. Please create a blog or set BlogUniqueId in configuration.");
     }
 }

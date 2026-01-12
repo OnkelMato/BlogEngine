@@ -65,12 +65,28 @@ namespace OnkelMato.BlogEngine.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
+            // the jsonSync is supported as get operation (to avoid antiforgery issues on remote sync)
+            if (string.Compare(FormType, "jsonSync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncExportJson)
+            {
+                if (string.Compare(Secret, importExportConfiguration.Value.BlogSyncSecret, StringComparison.InvariantCulture) != 0)
+                    return Unauthorized();
+
+                var blogOrParts = await GetBlogOrRequestedParts();
+                if (blogOrParts is null)
+                    return BadRequest();
+
+                return await ExportJsonForRemote(blogOrParts);
+            }
+
+            // otherwise show page
             SignaturePrivateKeys = string.Join(',', importExportConfiguration.Value.JwtPrivateCertificates);
             if (string.Compare(ExportType, "blog", StringComparison.InvariantCultureIgnoreCase) == 0) Scope = "Entire Blog";
             if (string.Compare(ExportType, "post", StringComparison.InvariantCultureIgnoreCase) == 0)
                 Scope = Id == null ? "All Posts" : $"Post: {(await readRepository.PostAsync(Id.Value))!.Title}";
             if (string.Compare(ExportType, "postimage", StringComparison.InvariantCultureIgnoreCase) == 0)
                 Scope = Id == null ? "All Post Images" : $"Post Image: {(await readRepository.PostImageAsync(Id.Value))!.Name}";
+
+            RemoteSyncUrl = importExportConfiguration.Value.RemoteBlogUrl;
 
             ModelState.Clear();
             return Page();
@@ -79,7 +95,11 @@ namespace OnkelMato.BlogEngine.Pages
         public async Task<IActionResult> OnPostAsync()
         {
             var blogOrParts = await GetBlogOrRequestedParts();
-            if (blogOrParts is null) return BadRequest();
+            if (blogOrParts is null)
+            {
+                TempData["StatusMessage"] = "No valid export data found.";
+                return Page();
+            }
 
             if (string.Compare(FormType, "jwt", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowExportJwt)
                 return await ExportJwt(blogOrParts);
@@ -90,10 +110,8 @@ namespace OnkelMato.BlogEngine.Pages
             if (string.Compare(FormType, "sync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncToRemote)
                 return await ExportRemote(blogOrParts);
 
-            if (string.Compare(FormType, "jsonSync", StringComparison.InvariantCultureIgnoreCase) == 0 && AllowSyncExportJson)
-                return await ExportJsonForRemote(blogOrParts);
-
-            return BadRequest();
+            TempData["StatusMessage"] = "No valid export type selected.";
+            return Page();
         }
 
         private async Task<BlogExportModel?> GetBlogOrRequestedParts()
@@ -155,6 +173,7 @@ namespace OnkelMato.BlogEngine.Pages
             if (result.IsFailure)
             {
                 ModelState.AddModelError(string.Empty, result.ErrorMessage!);
+                TempData["StatusMessage"] = $"Failed to sync to remote blog. {result.ErrorMessage}";
                 return Page();
             }
 
@@ -225,10 +244,7 @@ namespace OnkelMato.BlogEngine.Pages
         private async Task<IActionResult> ExportJsonForRemote(BlogExportModel blogOrParts)
         {
             if (Secret != importExportConfiguration.Value.BlogSyncSecret)
-            {
-                ModelState.AddModelError(nameof(Secret), "invalid secret for sync export");
-                return Page();
-            }
+                return BadRequest();
 
             var asPretty = string.Compare("jsonpretty", SelectedJsonFormat, StringComparison.InvariantCultureIgnoreCase) == 0;
             var exportAsJson = blogOrParts.AsJson(asPretty);
@@ -239,6 +255,7 @@ namespace OnkelMato.BlogEngine.Pages
             return File(Encoding.UTF8.GetBytes(exportAsJson), "application/json", filename);
         }
         #endregion
+
         #region json export
 
         private async Task<IActionResult> ExportJson(BlogExportModel blogOrParts)

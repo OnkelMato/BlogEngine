@@ -27,16 +27,13 @@ public class IndexModel(
         if (!(_postsConfiguration.CurrentValue.AllowAdministration || importExportConfiguration.CurrentValue.AllowAnyExport))
             return RedirectToPage(RedirectUri ?? "/");
 
-        var blog = repository.Blog();
-        if (blog == null) { return NotFound($"Blog {_postsConfiguration.CurrentValue.BlogUniqueId} not Found"); }
-
         try
         {
             Posts = (await repository.GetAllPosts()).Select(x => x.ToModel());
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            TempData["ErrorMessage"] = $"Error loading posts: {e.Message}";
             Posts = [];
         }
 

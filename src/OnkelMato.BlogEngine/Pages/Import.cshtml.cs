@@ -96,7 +96,7 @@ public class ImportModel(
         // todo: change this to just load the blog document (json)
         // implement sth line a strategy pattern here. Single class strategy? Or just methods?
         // after json was loaded the procedure is the same (maybe except the clear blog)
-
+        
         var importModelJson = string.Empty;
         var clearBlog = false;
 
@@ -105,6 +105,8 @@ public class ImportModel(
             // this is the typical pattern for a strategy pattern. Could be refactored to strategy classes later.
             case "sync":
                 importModelJson = await ImportJsonFromUrl(RemoteSyncUrl);
+                if (importModelJson == null)
+                    return Page();
                 clearBlog = ClearBlogBeforeSync;
                 break;
             case "jwtFile":
@@ -140,7 +142,7 @@ public class ImportModel(
 
                         if (!SignatureIsValid(jsonDocumentTemp, signatureTemp))
                         {
-                            ModelState.AddModelError(nameof(Signature), "Signature is invalid.");
+                            TempData["StatusMessage"] = "Signature is invalid.";
                             return Page();
                         }
                     }
@@ -157,7 +159,16 @@ public class ImportModel(
             await importExportRepository.ClearBlog();
 
         // deserialize and import
-        var importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson!) ?? throw new ArgumentNullException(nameof(importModelJson));
+        BlogExportModel importModel;
+        try
+        {
+            importModel = JsonSerializer.Deserialize<BlogExportModel>(importModelJson!) ?? throw new ArgumentNullException(nameof(importModelJson));
+        }
+        catch (Exception e)
+        {
+            TempData["StatusMessage"] = "Import failed. Cannot deserialize blog export data. Error: " + e.Message;
+            return Page();
+        }
 
         if (ImportAsNewBlog)
         {
@@ -193,15 +204,15 @@ public class ImportModel(
             }
             catch (TokenNotYetValidException)
             {
-                // todo return to error page
+                TempData["StatusMessage"] = "The JWT token is not yet valid.";
             }
             catch (TokenExpiredException)
             {
-                // todo return to error page
+                TempData["StatusMessage"] = "The JWT token has expired.";
             }
             catch (SignatureVerificationException)
             {
-                // todo return to error page
+                TempData["StatusMessage"] = "The JWT signature is invalid.";
             }
         }
 
@@ -214,7 +225,7 @@ public class ImportModel(
     /// </summary>
     /// <param name="remoteSyncUrl">The remote URL to import JSON from.</param>
     /// <returns>The imported JSON as a string.</returns>
-    private async Task<string> ImportJsonFromUrl(string remoteSyncUrl)
+    private async Task<string?> ImportJsonFromUrl(string remoteSyncUrl)
     {
         // todo change to ModelResult return value
         // todo add secret validation
@@ -222,20 +233,21 @@ public class ImportModel(
         {
             // in case of certificate validation disabled
             var handler = new HttpClientHandler();
-            
+
             // todo fixme
             // if (imexConfiguration.CurrentValue.ValidateCertificates)
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
             var client = new HttpClient(handler);
-            using var response = await client.GetAsync(RemoteSyncUrl + "/Export?type=jsonSync&secret=" + imexConfiguration.CurrentValue.BlogSyncSecret);
+            using var response = await client.GetAsync(RemoteSyncUrl.TrimEnd('/') + "/Export?formType=jsonSync&secret=" + imexConfiguration.CurrentValue.BlogSyncSecret);
             response.EnsureSuccessStatusCode();
             var responseBody = await response.Content.ReadAsStringAsync();
             return responseBody;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            TempData["StatusMessage"] = $"Cannot sync blog from {RemoteSyncUrl}. Error: {ex.Message}";
+            return null;
         }
     }
 

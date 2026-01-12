@@ -6,16 +6,19 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text.RegularExpressions;
 using OnkelMato.BlogEngine.Core.Configuration;
 using OnkelMato.BlogEngine.Core.Repository;
 using OnkelMato.BlogEngine.Core.Service;
 
 namespace OnkelMato.BlogEngine.Web.Pages;
 
-public class IndexModel(BlogEngineReadRepository repository, IBlogIdProvider blogId, IOptionsMonitor<BlogConfiguration> postsConfiguration)
+public class IndexModel(
+    BlogEngineReadRepository repository, 
+    ILinkFactory linkFactory,
+    IOptionsMonitor<BlogConfiguration> postsConfiguration)
     : PageModel
 {
+
     public class PostModel
     {
         public Guid UniqueId { get; set; }
@@ -50,12 +53,11 @@ public class IndexModel(BlogEngineReadRepository repository, IBlogIdProvider blo
     public IActionResult OnGet()
     {
         // load blog data
-        var blog = _repository.Blog();
-        if (blog == null) { return NotFound($"Blog {blogId.Id} not Found"); }
+        var blog = _repository.Blog()!;
 
-        this.Title = blog.Title;
+        Title = blog.Title;
 
-        this.Description = blog.Description;
+        Description = blog.Description;
 
         // load posts
         var numOfPosts = _repository.PostsOnBlogCount();
@@ -66,13 +68,13 @@ public class IndexModel(BlogEngineReadRepository repository, IBlogIdProvider blo
             .Select(x => new PostModel()
             {
                 Title = x.Title,
-                TitleSEO = Regex.Replace(x.Title, "[^a-zA-Z0-9 ]", "").Replace(" ", "_"),
+                TitleSEO = linkFactory.GetSEOTitle(x.Title),
                 UniqueId = x.UniqueId,
                 UpdatedAt = x.UpdatedAt,
                 PublishedAt = x.PublishedAt,
                 HasContent = x.MdContent != null,
                 HeaderImage = x.HeaderImage?.UniqueId,
-                HtmlPreview = Markdown.ToHtml(x.MdPreview, null, null),
+                HtmlPreview = Markdown.ToHtml(x.MdPreview),
                 Tags = x.PostTags.ToArray()
 
             }).ToList();
