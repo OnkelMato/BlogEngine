@@ -3,8 +3,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:        
+      - '*'           # Push events to every tag not containing /
 
 jobs:
 
@@ -23,6 +23,7 @@ jobs:
 
       - name: Determine Version
         uses: gittools/actions/gitversion/execute@v4.2.0
+        id: version_step # step id used as a reference for output values
         with:
           updateProjectFiles: true
       
@@ -38,11 +39,31 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         
-      - name: Build and push
+      - name: Build only
         uses: docker/build-push-action@v6
         with:
+          if: github.event.pull_request.base.ref == 'main'
+          platforms: linux/amd64,linux/arm64
+          context: "./src"
+          file: "./src/OnkelMato.BlogEngine.Web/Dockerfile"
+          push: false
+
+      - name: Build and push nightly
+        uses: docker/build-push-action@v6
+        with:
+          if: startsWith(github.ref, 'refs/heads/main')
           platforms: linux/amd64,linux/arm64
           context: "./src"
           file: "./src/OnkelMato.BlogEngine.Web/Dockerfile"
           push: true
           tags: thomasley/onkelmatoblogengineweb:latest
+
+      - name: Build and push tag
+        uses: docker/build-push-action@v6
+        with:
+          if: github.ref_type == 'tag'
+          platforms: linux/amd64,linux/arm64
+          context: "./src"
+          file: "./src/OnkelMato.BlogEngine.Web/Dockerfile"
+          push: true
+          tags: thomasley/onkelmatoblogengineweb:${{ steps.version_step.outputs.majorMinorPatch }}
