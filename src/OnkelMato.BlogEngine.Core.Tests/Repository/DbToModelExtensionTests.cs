@@ -206,7 +206,7 @@ public class DbToModelExtensionTests
             ShowState = ShowStateDb.BlogAndMenu,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            PublishedAt = null,
+            PublishedAt = DateTime.UtcNow,
             Order = 1,
             HeaderImage = headerImageDb,
             PostTags = null
