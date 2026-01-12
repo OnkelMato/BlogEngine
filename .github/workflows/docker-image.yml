@@ -5,7 +5,8 @@ on:
     branches: [ "main" ]
     tags:        
       - '*'           # Push events to every tag not containing /
-
+  pull_request:
+    branches: [ "main" ]
 jobs:
 
   docker:
@@ -42,7 +43,7 @@ jobs:
       - name: Build only
         uses: docker/build-push-action@v6
         with:
-          if: github.event.pull_request.base.ref == 'main'
+          if: github.event_name == 'pull_request'
           platforms: linux/amd64,linux/arm64
           context: "./src"
           file: "./src/OnkelMato.BlogEngine.Web/Dockerfile"
