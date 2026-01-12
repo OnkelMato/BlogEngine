@@ -20,7 +20,6 @@ The blog engine features a secure import and export functionality that leverages
 
 ```mermaid
 sequenceDiagram
-sequenceDiagram
     participant Staging as Staging Blog
     participant Prod as Production Blog
     
