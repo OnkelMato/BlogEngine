@@ -62,12 +62,12 @@ jobs:
           output: both
           thresholds: '0 80'
 
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
-        with:
-          recreate: true
-          path: code-coverage-results.md
+      #- name: Add Coverage PR Comment
+      #  uses: marocchino/sticky-pull-request-comment@v2
+      #  if: github.event_name == 'pull_request'
+      #  with:
+      #    recreate: true
+      #    path: code-coverage-results.md
 
       - name: Publish
         run: dotnet publish -c Release --output ./Release ./src/OnkelMato.BlogEngine.Web/OnkelMato.BlogEngine.Web.csproj
