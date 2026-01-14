@@ -61,7 +61,9 @@ Production mode disables the administration interface by default, preventing dir
 
 ## Configuration settings in `appsettings.json`
 
-The `appsettings.json` file serves as the central configuration hub for the blog engine, controlling everything from system-level settings to blog behavior and content synchronization features. The configuration is organized into three main sections: SystemConfig manages system infrastructure like data protection keys and search indexing, Blog controls the public-facing behavior including language settings, post pagination, and administrative access, while ImportExport handles the security model with certificate-based content verification and various import/export mechanisms. This flexible configuration approach allows the same application to operate in different modes, from a staging environment with full administrative capabilities and export functionality to a locked-down production deployment that only accepts cryptographically signed content imports.
+The `appsettings.json` file serves as the central configuration hub for the blog engine, controlling everything from system-level settings to blog behavior and content synchronization features. The configuration is organized into three main sections: **SystemConfig** manages system infrastructure like data protection keys and search indexing, **Blog** controls the public-facing behavior including language settings, post pagination, and administrative access, while **ImportExport** handles the security model with certificate-based content verification and various import/export mechanisms.
+
+This flexible configuration approach allows the same application to operate in different modes, from a staging environment with full administrative capabilities and export functionality to a locked-down production deployment that only accepts cryptographically signed content imports.
 
 
 | Section | Setting | Default Value | Description |
