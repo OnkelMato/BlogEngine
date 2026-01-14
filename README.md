@@ -57,7 +57,7 @@ The administration flag enables full editing capabilities and the export functio
       -e "ImportExport__JwtPublicCertificates__0=/data/demo.crt" \
       thomasley/onkelmatoblogengineweb
 
-Production mode disables the administration interface by default, preventing direct editing and ensuring that all content must be properly signed and verified before publication. The database is automatically created and managed within the `/data` directory, which should be mapped to persistent storage for data retention across container restarts. Sample certificate files and the signing utility can be found in the [certs](certs/) directory, including the [SignExport.ps1](certs/SignExport.ps1) PowerShell script for certificate management.
+Production mode disables the administration interface by default, preventing direct editing and ensuring that all content must be properly signed and verified before publication. The database is automatically created and managed within the `/data` directory, which should be mapped to persistent storage for data retention across container restarts. Sample certificate files and the signing utility can be found in the [certs](certs/) directory, including the [SignExport.ps1](certs/SignExport.ps1) PowerShell script for creating the signature of a JSON export.
 
 ## Configuration settings in `appsettings.json`
 
