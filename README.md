@@ -16,7 +16,9 @@ Traditional authentication and authorization mechanisms have been replaced with 
 
 ## Import & Export
 
-The blog engine features a secure import and export functionality that leverages digital certificates for data integrity and authenticity verification. When exporting blog content, the system creates a signed JSON Web Token (JWT) that contains all the necessary data while ensuring its authenticity through cryptographic signatures. This signed token can then be imported into another instance of the blog engine, where the certificate is validated before any data is written to the database. For JSON-based exports, the system generates two files: the actual data file and a separate signature file that contains the cryptographic proof of authenticity. The certificate management and signing process can be explored in detail by examining the [certs/SignExport.ps1](certs/SignExport.ps1) script, which demonstrates how to create and manage certificates for the export functionality. This certificate-based approach ensures that only trusted and verified content can be imported, protecting against data tampering and maintaining the integrity of your blog content across different deployments. The signing mechanism provides a robust solution for migrating blog content between environments while maintaining security and trust.
+The blog engine features a secure import and export functionality that leverages digital certificates for data integrity and authenticity verification. When exporting blog content, the system creates a signed JSON Web Token (JWT) that contains all the necessary data while ensuring its authenticity through cryptographic signatures. This signed token can then be imported into another instance of the blog engine, where the certificate is validated before any data is written to the database. For JSON-based exports, the system generates two files: the actual data file and a separate signature file that contains the cryptographic proof of authenticity. The signing process can be explored in detail by examining the [certs/SignExport.ps1](certs/SignExport.ps1) script, which demonstrates how to create a signature for an JSON export.
+
+This certificate-based approach ensures that only trusted and verified content can be imported, protecting against data tampering and maintaining the integrity of your blog content across different deployments. The signing mechanism provides a robust solution for migrating blog content between environments while maintaining security and trust.
 
 ```mermaid
 sequenceDiagram
@@ -56,3 +58,32 @@ The administration flag enables full editing capabilities and the export functio
       thomasley/onkelmatoblogengineweb
 
 Production mode disables the administration interface by default, preventing direct editing and ensuring that all content must be properly signed and verified before publication. The database is automatically created and managed within the `/data` directory, which should be mapped to persistent storage for data retention across container restarts. Sample certificate files and the signing utility can be found in the [certs](certs/) directory, including the [SignExport.ps1](certs/SignExport.ps1) PowerShell script for certificate management.
+
+## Configuration settings in `appsettings.json`
+
+| Section | Setting | Default Value | Description |
+|---------|---------|---------------|-------------|
+| SystemConfig | DataProtectionKeysPath | "/data/keys/" | Path for storing data protection keys |
+| SystemConfig | SearchServerUrl | "" | Address of the elastic search server. Leave empty to disable search indexing. Example: http://elasticsearch:9200. Not Implemented. |
+| Blog | BlogUniqueId | null | In multi blog scenarios, the unique ID of the blog to be used. Required if multiple blogs exist. |
+| Blog | EnableBlogSelection | false | In case of multiple blogs, enable selection of the blog via a dropdown in the UI or through parameter. This enables a middleware to rewrite the configuration. |
+| Blog | Language | "de-DE" | Primary language of the blog |
+| Blog | AllowAdministration | false | Show and allow post/image/tag administration links |
+| Blog | AllowBlogCreation | false | Allow creation of new blogs |
+| Blog | AllowBlogDeletion | false | Allow deletion of blogs |
+| Blog | PostsPerPage | 15 | Number of posts per page |
+| Blog | EnableRssFeed | true | Metadata required for RSS/Atom feeds and sitemaps |
+| ImportExport | ValidateCertificates | true | Certificate validation for all JSON and JWT operations |
+| ImportExport | JwtPublicCertificates | [] | Public certificates for JWT operations |
+| ImportExport | JwtPrivateCertificates | [] | Private certificates for JWT operations |
+| ImportExport | EnableJwtImport | true | Enable JWT token import |
+| ImportExport | EnableJwtExport | false | Enable JWT token export |
+| ImportExport | EnableJsonFileImport | false | Enable JSON file import |
+| ImportExport | EnableJsonStringImport | false | Enable JSON string import |
+| ImportExport | EnableJsonExport | false | Enable JSON export |
+| ImportExport | EnableSyncToRemote | false | Sync to a remote page (export). Uses automated JWT upload |
+| ImportExport | RemoteSyncUrl | "" | URL of the remote blog engine to sync to. Useful when using a 1:1 staging:production configuration. |
+| ImportExport | EnableBlogExportSync | false | End that should answer to sync requests. Enable Sync from (public) blog engine. Needs to be activated at both ends. |
+| ImportExport | EnableBlogImportSync | false | End that initiates sync requests. Enable Sync from (public) blog engine. Needs to be activated at both ends. |
+| ImportExport | BlogSyncSecret | "" | Shared secret for blog sync authentication. Required to make the sync more secure. |
+
